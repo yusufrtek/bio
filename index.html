@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yusuf Ertek</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: url('arkapnl.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            min-height: 100vh;
+            color: #fff;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Hafif koyu bir katman */
+            z-index: 1;
+        }
+        .container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 20px;
+            max-width: 90%;
+            width: 400px;
+            margin: 0 auto;
+        }
+        .title-section {
+            position: relative;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0; /* Resmin tam ekran olması için padding kaldırıldı */
+            border-radius: 0; /* Keskin köşeler */
+            overflow: hidden; /* Resmin taşmasını engeller */
+        }
+        .title-section img {
+            width: 100%;
+            height: auto;
+            display: block; /* Resmin tam olarak oturmasını sağlar */
+        }
+        .title-section h1 {
+            position: absolute;
+            bottom: 20px; /* Sol alt köşeden biraz yukarıda */
+            left: 20px; /* Sol kenardan biraz içeride */
+            margin: 0;
+            font-size: 24px;
+            color: #fff;
+            font-weight: 900;
+            text-align: left;
+        }
+        .link-container {
+            background-color: #fff;
+            border-radius: 0; /* Keskin köşeler */
+            margin-top: 0; /* Başlık paneliyle birleşik */
+        }
+        .link-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #000;
+            font-weight: 600;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            border-bottom: 1px solid #e0e0e0; /* Satırlar arasında ince bir çizgi */
+        }
+        .link-row:last-child {
+            border-bottom: none; /* Son satırda alt çizgi olmasın */
+        }
+        .link-row:hover {
+            background-color: #f0f0f0;
+        }
+        .link-row img {
+            height: 24px;
+            margin-right: 10px;
+        }
+        .link-content {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+        .link-row span {
+            text-align: left;
+        }
+        .link-row .action {
+            color: #666;
+            font-size: 14px;
+            margin-left: auto; /* Sağ tarafa hizalar */
+            padding-left: 20px; /* Sağda boşluk bırakır */
+        }
+        @media (max-width: 600px) {
+            .title-section h1 {
+                font-size: 20px;
+                bottom: 15px; /* Küçük ekranlarda daha az boşluk */
+                left: 15px;
+            }
+            .link-row {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+            .link-row img {
+                height: 20px;
+            }
+            .link-row .action {
+                padding-left: 10px; /* Küçük ekranlarda boşluk azaltıldı */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-section">
+            <img src="yusufert.jpg" alt="Yusuf Ertek">
+            <h1>YUSUF ERTEK</h1>
+        </div>
+        <div class="link-container">
+            <!-- Linkler güncellendi -->
+            <a href="https://x.com/myusufrtek" class="link-row">
+                <div class="link-content">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023.svg" alt="X">
+                    <span>X</span>
+                </div>
+                <span class="action">Follow</span>
+            </a>
+            <a href="https://www.instagram.com/yusufrtek/" class="link-row">
+                <div class="link-content">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
+                    <span>Instagram</span>
+                </div>
+                <span class="action">Follow</span>
+            </a>
+            <a href="https://www.tiktok.com/@ovvn3r" class="link-row">
+                <div class="link-content">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg" alt="TikTok">
+                    <span>TikTok</span>
+                </div>
+                <span class="action">Follow</span>
+            </a>
+            <a href="https://bsky.app/profile/yusufertek.com.tr" class="link-row">
+                <div class="link-content">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Bluesky_Logo.svg" alt="Bluesky">
+                    <span>Bluesky</span>
+                </div>
+                <span class="action">Follow</span>
+            </a>
+            <a href="https://theleng.site" class="link-row">
+                <div class="link-content">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Generic-Company-Logo.svg" alt="The Leng">
+                    <span>The Leng</span>
+                </div>
+                <span class="action">Visit</span>
+            </a>
+            <a href="https://sadecekuran.com.tr" class="link-row">
+                <div class="link-content">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Generic-Company-Logo.svg" alt="Sadece Kuran">
+                    <span>Sadece Kuran</span>
+                </div>
+                <span class="action">Visit</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
