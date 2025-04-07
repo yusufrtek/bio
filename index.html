@@ -7,109 +7,151 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: url('arkapnl.jpg') no-repeat center center fixed;
-            background-size: cover;
+            background: linear-gradient(135deg, #1a1a1a, #2b2b2b);
             margin: 0;
-            min-height: 100vh;
-            color: #fff;
-            position: relative;
+            padding: 0; /* Gereksiz boşlukları kaldırır */
+            min-height: 100vh; /* Minimum yükseklik ekran kadar */
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Üstten başlasın, taşarsa aşağı insin */
+            overflow-y: auto; /* İçerik taşarsa kaydırma çubuğu ekler */
         }
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5); /* Hafif koyu bir katman */
-            z-index: 1;
-        }
+
         .container {
-            position: relative;
-            z-index: 2;
             text-align: center;
-            padding: 20px;
-            max-width: 90%;
-            width: 400px;
-            margin: 0 auto;
+            padding: 30px;
+            max-width: 450px;
+            width: 100%;
+            animation: fadeIn 1s ease-in-out;
+            box-sizing: border-box; /* Padding içeriğe dahil edilir */
         }
+
         .title-section {
             position: relative;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 0; /* Resmin tam ekran olması için padding kaldırıldı */
-            border-radius: 0; /* Keskin köşeler */
-            overflow: hidden; /* Resmin taşmasını engeller */
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transform: translateY(-20px);
+            animation: slideIn 0.8s ease-out forwards;
         }
+
         .title-section img {
             width: 100%;
             height: auto;
-            display: block; /* Resmin tam olarak oturmasını sağlar */
+            filter: brightness(80%);
+            transition: transform 0.5s ease;
         }
+
+        .title-section:hover img {
+            transform: scale(1.05);
+        }
+
         .title-section h1 {
             position: absolute;
-            bottom: 20px; /* Sol alt köşeden biraz yukarıda */
-            left: 20px; /* Sol kenardan biraz içeride */
+            bottom: 20px;
+            left: 20px;
             margin: 0;
-            font-size: 24px;
-            color: #fff;
-            font-weight: 900;
-            text-align: left;
+            font-size: 28px;
+            color: #e0e0e0;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
         }
+
         .link-container {
-            background-color: rgb(255, 221, 221);
-            border-radius: 0; /* Keskin köşeler */
-            margin-top: 0; /* Başlık paneliyle birleşik */
+            background: rgba(30, 30, 30, 0.95);
+            border-radius: 15px;
+            margin-top: 20px;
+            padding: 10px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            animation: fadeInUp 1s ease-out;
         }
+
         .link-row {
             display: flex;
             align-items: center;
-            padding: 10px 15px;
+            padding: 15px 20px;
             text-decoration: none;
-            color: rgb(158, 0, 0);
-            font-weight: 600;
+            color: #e0e0e0;
+            font-weight: 500;
             font-size: 16px;
-            transition: background-color 0.3s;
-            border-bottom: 1px solid #7c0000; /* Satırlar arasında ince bir çizgi */
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            perspective: 1000px;
+            transform-style: preserve-3d;
         }
+
         .link-row:last-child {
-            border-bottom: none; /* Son satırda alt çizgi olmasın */
+            border-bottom: none;
         }
+
         .link-row:hover {
-            background-color: #ffffff;
+            background: #e0e0e0;
+            transform: rotateY(15deg) translateX(10px);
+            color: rgba(0, 0, 0, 0.9);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
+
         .link-row img {
-            height: 24px;
-            margin-right: 10px;
+            height: 28px;
+            margin-right: 15px;
+            transition: transform 0.3s ease;
         }
+
+        .link-row:hover img {
+            transform: rotate(360deg);
+        }
+
         .link-content {
             display: flex;
             align-items: center;
             flex-grow: 1;
         }
-        .link-row span {
-            text-align: left;
-        }
+
         .link-row .action {
-            color: #666;
+            color: #ffd700;
             font-size: 14px;
-            margin-left: auto; /* Sağ tarafa hizalar */
-            padding-left: 20px; /* Sağda boşluk bırakır */
+            margin-left: auto;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
         }
+
+        .link-row:hover .action {
+            opacity: 1;
+        }
+
+        /* Animasyonlar */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive Tasarım */
         @media (max-width: 600px) {
             .title-section h1 {
-                font-size: 20px;
-                bottom: 15px; /* Küçük ekranlarda daha az boşluk */
+                font-size: 22px;
+                bottom: 15px;
                 left: 15px;
             }
             .link-row {
                 font-size: 14px;
-                padding: 8px 10px;
+                padding: 12px 15px;
             }
             .link-row img {
-                height: 37px;
-            }
-            .link-row .action {
-                padding-left: 10px; /* Küçük ekranlarda boşluk azaltıldı */
+                height: 24px;
             }
         }
     </style>
@@ -117,11 +159,10 @@
 <body>
     <div class="container">
         <div class="title-section">
-            <img src="yusufert.jpg" alt="Yusuf Ertek">
+            <img src="yusuf4.jpg" alt="Yusuf Ertek">
             <h1>YUSUF ERTEK</h1>
         </div>
         <div class="link-container">
-            <!-- Linkler güncellendi -->
             <a href="https://x.com/myusufrtek" class="link-row">
                 <div class="link-content">
                     <img src="xlogoo.png" alt="X">
@@ -150,7 +191,6 @@
                 </div>
                 <span class="action">Follow</span>
             </a>
-        
             <a href="https://theleng.site" class="link-row">
                 <div class="link-content">
                     <img src="sitelogo.jpg" alt="The Leng">
@@ -164,6 +204,23 @@
                     <span>SADECE KURAN / sadecekuran.com.tr</span>
                 </div>
                 <span class="action">Visit</span>
+            </a>
+        </div>
+        <!-- İletişim Bölümü -->
+        <div class="link-container" style="margin-top: 20px;">
+            <a href="mailto:m.yusufertek@gmail.com" class="link-row">
+                <div class="link-content">
+                    <img src="gmail.png" alt="Email">
+                    <span>BANA ULAŞ - E-POSTA</span>
+                </div>
+                <span class="action">Mail</span>
+            </a>
+            <a href="https://wa.me/6282245924114?text=Merhaba%20Yusuf!" class="link-row">
+                <div class="link-content">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968841.png" alt="WhatsApp">
+                    <span>BANA ULAŞ - WHATSAPP</span>
+                </div>
+                <span class="action">Mesaj</span>
             </a>
         </div>
     </div>
