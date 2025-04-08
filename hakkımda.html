@@ -4,20 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Yusuf Ertek - Hakkımda</title>
+    <meta name="description" content="Yusuf Ertek’in hayatı, projeleri ve ilgi alanları hakkında bilgi edinin.">
+    <link rel="icon" type="image/png" href="/sitelogo.jpg" />
+    <link rel="apple-touch-icon" href="/sitelogo.jpg">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #000000, rgb(99, 102, 107));
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: black;
+            font-family: Arial, sans-serif;
             min-height: 100vh;
             color: #e0e0e0;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
-
         .container {
             padding: 20px;
             max-width: 1200px;
@@ -25,19 +32,25 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            box-sizing: border-box;
+            position: relative;
+            z-index: 2;
         }
-
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
         .header-section {
             position: relative;
             background: rgba(0, 0, 0, 0.9);
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-            width: 100%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             height: 400px;
         }
-
         .header-section img {
             width: 100%;
             height: 100%;
@@ -45,11 +58,9 @@
             filter: brightness(60%) contrast(120%);
             transition: transform 0.5s ease;
         }
-
         .header-section:hover img {
             transform: scale(1.1);
         }
-
         .header-section .overlay {
             position: absolute;
             top: 0;
@@ -64,315 +75,213 @@
             text-align: center;
             padding: 20px;
         }
-
         .header-section h1 {
-            margin: 0;
             font-size: 48px;
-            color: #ffd700;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 4px;
-            text-shadow: 0 0 15px rgba(0, 0, 0, 0.9);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            background: linear-gradient(45deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleShine 4s infinite;
         }
-
-        .header-section p {
-            font-size: 22px;
-            color: #e0e0e0;
-            margin: 15px 0 0;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
-            max-width: 600px;
-        }
-
         .content-wrapper {
             display: flex;
             flex-wrap: wrap;
-            width: 100%;
             gap: 20px;
             justify-content: space-between;
         }
-
         .about-section, .company-section, .interests-section {
-            background: rgba(30, 30, 30, 0.95);
+            background: rgba(0, 0, 0, 0.9);
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             flex: 1;
             min-width: 300px;
-            max-width: calc(33.33% - 14px); /* 3 eşit parça, gap hesaba katılarak */
-            box-sizing: border-box;
+            max-width: calc(33.33% - 14px);
         }
-
         .social-section {
-            background: rgba(30, 30, 30, 0.95);
+            background: rgba(0, 0, 0, 0.9);
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             width: 100%;
-            box-sizing: border-box;
         }
-
-        .about-section h2, .company-section h2, 
-   
-        .interests-section h2, .social-section h2 {
+        .about-section h2, .company-section h2, .interests-section h2, .social-section h2 {
             font-size: 28px;
-            color: #ffd700;
+            color: #fff;
             margin-bottom: 20px;
             text-transform: uppercase;
             letter-spacing: 2px;
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
             text-align: center;
+            background: linear-gradient(45deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleShine 4s infinite;
         }
-
         .about-section p {
             font-size: 16px;
             line-height: 1.8;
             margin: 15px 0;
-            color: #e0e0e0;
-            transition: color 0.3s ease;
+            color: rgba(255, 255, 255, 0.9);
         }
-
-        .about-section p:hover {
-            color: #ffd700;
-        }
-
         .company-section .company-card {
             display: flex;
             align-items: center;
-            background: rgba(255, 215, 0, 0.1);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
             border-radius: 10px;
             padding: 15px;
             transition: all 0.3s ease;
         }
-
         .company-section .company-card:hover {
-            background: rgba(255, 215, 0, 0.3);
+            transform: translateX(5px); /* Minimal kayma */
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.15);
         }
-
         .company-section .company-card img {
             width: 80px;
             height: 80px;
             object-fit: contain;
             margin-right: 15px;
         }
-
-        .company-section .company-info {
-            text-align: left;
-        }
-
         .company-section .company-info h3 {
             font-size: 24px;
-            color: #ffd700;
+            color: #e0e0e0;
             margin: 0 0 10px;
         }
-
         .company-section .company-info a {
             font-size: 18px;
             color: #e0e0e0;
             text-decoration: none;
             transition: color 0.3s ease;
         }
-
         .company-section .company-info a:hover {
             color: #ffd700;
-            text-decoration: underline;
         }
-
         .interests-list {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             justify-content: center;
         }
-
         .interest-item {
-            background: rgba(255, 215, 0, 0.1);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
             padding: 10px 20px;
             border-radius: 25px;
             font-size: 16px;
-            color: #ffd700;
+            color: #e0e0e0;
             transition: all 0.3s ease;
         }
-
         .interest-item:hover {
-            background: #ffd700;
-            color: #1a1a1a;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.15));
+            transform: scale(1.05); /* Minimal büyüme */
         }
-
         .social-list {
             display: flex;
-            flex-wrap: nowrap; /* Tek sıra */
+            flex-wrap: nowrap;
             gap: 15px;
             justify-content: center;
-            overflow-x: auto; /* Taşarsa kaydırma çubuğu çıkar */
+            overflow-x: auto;
         }
-
         .social-item {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+            padding: 10px;
+            border-radius: 10px;
+            width: 80px;
+            height: 80px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-            transition: background 0.3s ease;
-            width: 80px;
-            height: 80px;
-            flex-shrink: 0; /* Küçülmeyi engeller */
+            transition: all 0.3s ease;
+            flex-shrink: 0;
         }
-
         .social-item:hover {
-            background: rgba(255, 215, 0, 0.3);
+            transform: translateY(-3px); /* Minimal yükselme */
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.15);
         }
-
         .social-item img {
             width: 50px;
             height: 50px;
             object-fit: contain;
         }
-
-        /* Mobil Tasarım (600px ve altı) */
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            z-index: 1;
+            animation: twinkleGlow 5s infinite ease-in-out;
+        }
+        @keyframes titleShine {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes twinkleGlow {
+            0% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+            100% { opacity: 0.4; transform: scale(1); }
+        }
         @media (max-width: 600px) {
-            body {
-                background: #1a1a1a;
-                overflow-x: hidden;
+            .container { padding: 10px; gap: 10px; }
+            .header-section { height: 250px; border-radius: 0; }
+            .header-section h1 { font-size: 32px; letter-spacing: 2px; }
+            .content-wrapper { flex-direction: column; gap: 10px; }
+            .about-section, .company-section, .interests-section { 
+                border-radius: 0; 
+                padding: 15px; 
+                max-width: 100%; 
             }
-
-            .container {
-                padding: 0;
-                width: 100vw;
-                max-width: 100%;
-                gap: 10px;
+            .social-section { 
+                border-radius: 0; 
+                padding: 15px; 
             }
-
-            .header-section {
-                height: 250px;
-                border-radius: 0;
-                box-shadow: none;
-                background: none;
+            .about-section h2, .company-section h2, .interests-section h2, .social-section h2 { 
+                font-size: 24px; 
             }
-
-            .header-section img {
-                filter: brightness(70%);
+            .about-section p { font-size: 15px; line-height: 1.6; }
+            .company-section .company-card img { width: 50px; height: 50px; }
+            .company-section .company-info h3 { font-size: 18px; }
+            .company-section .company-info a { font-size: 16px; }
+            .interest-item { font-size: 14px; padding: 8px 15px; }
+            .social-list { 
+                display: grid; 
+                grid-template-columns: repeat(3, 1fr); 
+                gap: 10px; 
             }
-
-            .header-section .overlay {
-                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9));
-            }
-
-            .header-section h1 {
-                font-size: 32px;
-                letter-spacing: 1px;
-            }
-
-            .header-section p {
-                font-size: 16px;
-                padding: 0 20px;
-            }
-
-            .content-wrapper {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .about-section, .company-section, .interests-section {
-                border-radius: 0;
-                padding: 15px;
-                box-shadow: none;
-                min-width: 0;
-                max-width: 100%;
-            }
-
-            .social-section {
-                border-radius: 0;
-                padding: 115px;
-                box-shadow: none;
-                width: 100%;
-            }
-
-            .about-section h2, .company-section h2, .interests-section h2, .social-section h2 {
-                font-size: 24px;
-                margin-bottom: 15px;
-            }
-
-            .about-section p {
-                font-size: 15px;
-                line-height: 1.5;
-                margin: 10px 0;
-            }
-
-            .company-section .company-card {
-                padding: 10px;
-            }
-
-            .company-section .company-card img {
-                width: 50px;
-                height: 50px;
-                margin-right: 10px;
-            }
-
-            .company-section .company-info h3 {
-                font-size: 18px;
-            }
-
-            .company-section .company-info a {
-                font-size: 16px;
-            }
-
-            .interests-list {
-                gap: 10px;
-            }
-
-            .interest-item {
-                padding: 8px 15px;
-                font-size: 14px;
-            }
-
-            .social-list {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr); /* Mobilde üçerli sıralar */
-                gap: 10px;
-            }
-
-            .social-item {
-                width: 60px;
-                height: 60px;
-                padding: 5px;
-            }
-
-            .social-item img {
-                width: 40px;
-                height: 40px;
-            }
+            .social-item { width: 60px; height: 60px; }
+            .social-item img { width: 40px; height: 40px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-section">
-            <img src="yusuf4.jpg" alt="Yusuf Ertek">
+            <img src="yusuf4.jpg" alt="Yusuf Ertek" onerror="this.src='https://via.placeholder.com/1200x400'; this.alt='Resim Yüklenemedi';">
             <div class="overlay">
-                <h1>YUSUF ERTEK</h1>
+                <h1>Yusuf Ertek</h1>
             </div>
         </div>
-
         <div class="content-wrapper">
             <div class="about-section">
                 <h2>Ben Kimim?</h2>
-                <p>Merhaba, ben Muhammed Yusuf Ertek. Hayatımın her anında öğrenmeye, düşünmeye ve üretmeye tutkuyla bağlı biriyim.</p>
-                <p> THE LENG kuruluşunun kurucusu ve sahibiyim; bu platform benim hayallerimin ve ideallerimin bir yansımasıdır. </p>
-                <p>Din, tarih, siyaset ve felsefe gibi derin konuları araştırmak, tartışmak ve bu alanlarda fikirler üretmek en büyük zevklerimden biri. Hayatımı, hem kendimi geliştirmek hem de çevreme ilham olmak için anlamlı bir yolculuk olarak görüyorum. Burada, bu alanlardaki birikimimi sizlerle paylaşarak, hep birlikte daha derin bir anlayışa ulaşmayı hedefliyorum!</p>
+                <p>Merhaba, ben Muhammed Yusuf Ertek. Hayatım boyunca öğrenmeye, sorgulamaya ve üretmeye olan tutkumla hareket ettim. 2024 yılında "SONSUZ MİRAS" projesini başlatarak insanlığın bilgi birikimini korumayı ve gelecek nesillere aktarmayı amaçladım. Geleneksel düşünce kalıplarını sorgulayan bu vizyon, modern teknolojiyle birleşerek "Sadece Kuran" gibi dikkat çeken projelere hayat verdim.</p>
+                <p>The Leng Company’nin kurucusu olarak sanat, teknoloji ve eğitimi bir araya getiren bir ekosistem inşa ettim. Din, tarih, siyaset ve felsefe gibi konuları derinlemesine araştırmak benim için bir tutku. Hayatımı, kendimi geliştirirken çevreme ilham olacak anlamlı bir yolculuğa dönüştürmeye özen gösteriyorum.</p>
+                <p>Burada, birikimlerimi sizinle paylaşarak birlikte daha geniş bir bakış açısına ulaşmayı hedefliyorum. "Bilgi paylaştıkça sonsuzlaşır" inancıyla, dünyayı daha bilinçli ve yaratıcı bir yer haline getirmek için çalışıyorum.</p>
             </div>
-
             <div class="company-section">
                 <h2>Şirketim</h2>
                 <div class="company-card">
                     <img src="sitelogo.jpg" alt="The Leng Logo">
                     <div class="company-info">
-                        <h3>THE LENG</h3>
+                        <h3>The Leng</h3>
                         <a href="https://theleng.site" target="_blank">theleng.site</a>
                     </div>
                 </div>
             </div>
-
             <div class="interests-section">
                 <h2>İlgi Alanlarım</h2>
                 <div class="interests-list">
@@ -382,7 +291,6 @@
                     <div class="interest-item">Tarih</div>
                 </div>
             </div>
-
             <div class="social-section">
                 <h2>Sosyal Medya</h2>
                 <div class="social-list">
@@ -408,5 +316,44 @@
             </div>
         </div>
     </div>
+    <script>
+        const canvas = document.getElementById("waveCanvas");
+        const ctx = canvas.getContext("2d");
+        let time = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = document.body.scrollHeight;
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        function drawWaves() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            time += 0.02;
+            for (let i = 0; i < 5; i++) {
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 + i * 0.05})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let x = 0; x < canvas.width; x++) {
+                    const y = canvas.height / 2 + Math.sin(x * 0.01 + time + i) * 100 * Math.sin(time * 0.5 + i);
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            requestAnimationFrame(drawWaves);
+        }
+        drawWaves();
+
+        for (let i = 0; i < 50; i++) {
+            const star = document.createElement("div");
+            star.className = "star";
+            star.style.left = Math.random() * 100 + "vw";
+            star.style.top = Math.random() * 100 + "vh";
+            star.style.animationDelay = Math.random() * 5 + "s";
+            document.body.appendChild(star);
+        }
+    </script>
 </body>
 </html>
