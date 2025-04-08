@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Yusuf Ertek - Hakkımda</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000, rgb(99, 102, 107));
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .header-section {
+            position: relative;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            height: 400px;
+        }
+
+        .header-section img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(60%) contrast(120%);
+            transition: transform 0.5s ease;
+        }
+
+        .header-section:hover img {
+            transform: scale(1.1);
+        }
+
+        .header-section .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.8));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-size: 48px;
+            color: #ffd700;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.9);
+        }
+
+        .header-section p {
+            font-size: 22px;
+            color: #e0e0e0;
+            margin: 15px 0 0;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+            max-width: 600px;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .about-section, .company-section, .interests-section {
+            background: rgba(30, 30, 30, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            flex: 1;
+            min-width: 300px;
+            max-width: calc(33.33% - 14px); /* 3 eşit parça, gap hesaba katılarak */
+            box-sizing: border-box;
+        }
+
+        .social-section {
+            background: rgba(30, 30, 30, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .about-section h2, .company-section h2, 
+   
+        .interests-section h2, .social-section h2 {
+            font-size: 28px;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+            text-align: center;
+        }
+
+        .about-section p {
+            font-size: 16px;
+            line-height: 1.8;
+            margin: 15px 0;
+            color: #e0e0e0;
+            transition: color 0.3s ease;
+        }
+
+        .about-section p:hover {
+            color: #ffd700;
+        }
+
+        .company-section .company-card {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .company-section .company-card:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+
+        .company-section .company-card img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-right: 15px;
+        }
+
+        .company-section .company-info {
+            text-align: left;
+        }
+
+        .company-section .company-info h3 {
+            font-size: 24px;
+            color: #ffd700;
+            margin: 0 0 10px;
+        }
+
+        .company-section .company-info a {
+            font-size: 18px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .company-section .company-info a:hover {
+            color: #ffd700;
+            text-decoration: underline;
+        }
+
+        .interests-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .interest-item {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            color: #ffd700;
+            transition: all 0.3s ease;
+        }
+
+        .interest-item:hover {
+            background: #ffd700;
+            color: #1a1a1a;
+        }
+
+        .social-list {
+            display: flex;
+            flex-wrap: nowrap; /* Tek sıra */
+            gap: 15px;
+            justify-content: center;
+            overflow-x: auto; /* Taşarsa kaydırma çubuğu çıkar */
+        }
+
+        .social-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            transition: background 0.3s ease;
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0; /* Küçülmeyi engeller */
+        }
+
+        .social-item:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+
+        .social-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        /* Mobil Tasarım (600px ve altı) */
+        @media (max-width: 600px) {
+            body {
+                background: #1a1a1a;
+                overflow-x: hidden;
+            }
+
+            .container {
+                padding: 0;
+                width: 100vw;
+                max-width: 100%;
+                gap: 10px;
+            }
+
+            .header-section {
+                height: 250px;
+                border-radius: 0;
+                box-shadow: none;
+                background: none;
+            }
+
+            .header-section img {
+                filter: brightness(70%);
+            }
+
+            .header-section .overlay {
+                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9));
+            }
+
+            .header-section h1 {
+                font-size: 32px;
+                letter-spacing: 1px;
+            }
+
+            .header-section p {
+                font-size: 16px;
+                padding: 0 20px;
+            }
+
+            .content-wrapper {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .about-section, .company-section, .interests-section {
+                border-radius: 0;
+                padding: 15px;
+                box-shadow: none;
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            .social-section {
+                border-radius: 0;
+                padding: 115px;
+                box-shadow: none;
+                width: 100%;
+            }
+
+            .about-section h2, .company-section h2, .interests-section h2, .social-section h2 {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+
+            .about-section p {
+                font-size: 15px;
+                line-height: 1.5;
+                margin: 10px 0;
+            }
+
+            .company-section .company-card {
+                padding: 10px;
+            }
+
+            .company-section .company-card img {
+                width: 50px;
+                height: 50px;
+                margin-right: 10px;
+            }
+
+            .company-section .company-info h3 {
+                font-size: 18px;
+            }
+
+            .company-section .company-info a {
+                font-size: 16px;
+            }
+
+            .interests-list {
+                gap: 10px;
+            }
+
+            .interest-item {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+
+            .social-list {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr); /* Mobilde üçerli sıralar */
+                gap: 10px;
+            }
+
+            .social-item {
+                width: 60px;
+                height: 60px;
+                padding: 5px;
+            }
+
+            .social-item img {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <img src="yusuf4.jpg" alt="Yusuf Ertek">
+            <div class="overlay">
+                <h1>YUSUF ERTEK</h1>
+            </div>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="about-section">
+                <h2>Ben Kimim?</h2>
+                <p>Merhaba, ben Muhammed Yusuf Ertek. Hayatımın her anında öğrenmeye, düşünmeye ve üretmeye tutkuyla bağlı biriyim.</p>
+                <p> THE LENG kuruluşunun kurucusu ve sahibiyim; bu platform benim hayallerimin ve ideallerimin bir yansımasıdır. </p>
+                <p>Din, tarih, siyaset ve felsefe gibi derin konuları araştırmak, tartışmak ve bu alanlarda fikirler üretmek en büyük zevklerimden biri. Hayatımı, hem kendimi geliştirmek hem de çevreme ilham olmak için anlamlı bir yolculuk olarak görüyorum. Burada, bu alanlardaki birikimimi sizlerle paylaşarak, hep birlikte daha derin bir anlayışa ulaşmayı hedefliyorum!</p>
+            </div>
+
+            <div class="company-section">
+                <h2>Şirketim</h2>
+                <div class="company-card">
+                    <img src="sitelogo.jpg" alt="The Leng Logo">
+                    <div class="company-info">
+                        <h3>THE LENG</h3>
+                        <a href="https://theleng.site" target="_blank">theleng.site</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interests-section">
+                <h2>İlgi Alanlarım</h2>
+                <div class="interests-list">
+                    <div class="interest-item">Siyaset</div>
+                    <div class="interest-item">Felsefe</div>
+                    <div class="interest-item">Din</div>
+                    <div class="interest-item">Tarih</div>
+                </div>
+            </div>
+
+            <div class="social-section">
+                <h2>Sosyal Medya</h2>
+                <div class="social-list">
+                    <a href="https://x.com/myusufrtek" class="social-item" target="_blank">
+                        <img src="xlogoo.png" alt="X">
+                    </a>
+                    <a href="https://www.instagram.com/yusufrtek/" class="social-item" target="_blank">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
+                    </a>
+                    <a href="https://bsky.app/profile/yusufertek.com.tr" class="social-item" target="_blank">
+                        <img src="bluesky.jpg" alt="Bluesky">
+                    </a>
+                    <a href="https://www.tiktok.com/@ovvn3r" class="social-item" target="_blank">
+                        <img src="tticon.jpg" alt="TikTok">
+                    </a>
+                    <a href="https://theleng.site" class="social-item" target="_blank">
+                        <img src="sitelogo.jpg" alt="The Leng">
+                    </a>
+                    <a href="https://sadecekuran.com.tr" class="social-item" target="_blank">
+                        <img src="logokuran.jpg" alt="Sadece Kuran">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
