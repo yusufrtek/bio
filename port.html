@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yusuf Ertek | SONSUZ MİRAS Kurucusu & Dijital İnovatör</title>
+    <meta name="description" content="SONSUZ MİRAS'ın kurucusu Yusuf Ertek. Din, felsefe ve teknoloji alanlarında uzman. The Leng Company ve Sadece Kuran projelerinin yaratıcısı.">
+    <meta name="keywords" content="Yusuf Ertek, SONSUZ MİRAS, The Leng Company, Sadece Kuran, dijital projeler, din, felsefe, teknoloji, kurucu">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Yusuf Ertek | SONSUZ MİRAS Kurucusu & Dijital İnovatör">
+    <meta property="og:description" content="Din, felsefe ve teknoloji alanlarında uzman. The Leng Company ve Sadece Kuran projelerinin yaratıcısı.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yusufertek.com.tr">
+    <meta property="og:image" content="yusuf4.jpg">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Yusuf Ertek | SONSUZ MİRAS Kurucusu & Dijital İnovatör">
+    <meta name="twitter:description" content="Din, felsefe ve teknoloji alanlarında uzman. The Leng Company ve Sadece Kuran projelerinin yaratıcısı.">
+    <meta name="twitter:image" content="yusuf4.jpg">
+    
+    <link rel="canonical" href="https://yusufertek.com.tr">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            padding: 2rem 1.5rem;
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        .nav-links {
+            display: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #d1d5db;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+            width: 2rem;
+            height: 2rem;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-menu span {
+            width: 100%;
+            height: 0.125rem;
+            background-color: #ffffff;
+        }
+
+        /* Main Section */
+        .main-section {
+            padding-top: 6rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .picture-slider {
+            margin-bottom: 4rem;
+        }
+
+        .project-grid {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .project-image {
+            aspect-ratio: 4/3;
+            position: relative;
+            background-color: #374151;
+            overflow: hidden;
+        }
+
+        .project-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mobile-slider {
+            display: block;
+        }
+
+        .slider-container {
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            display: flex;
+            gap: 1.25rem;
+            padding-bottom: 1rem;
+        }
+
+        .slider-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .slide {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            margin-bottom: 8rem;
+        }
+
+        .hero-subtitle {
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            line-height: 1.1;
+        }
+
+        .hero-title .italic {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .hero-description {
+            max-width: 28rem;
+            color: #9ca3af;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid #ffffff;
+            padding: 0.75rem 1.5rem;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            width: fit-content;
+        }
+
+        .cta-button:hover {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .arrow-icon {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        /* Services Section */
+        .services-section {
+            margin-bottom: 8rem;
+        }
+
+        .services-intro {
+            max-width: 28rem;
+            margin-bottom: 4rem;
+        }
+
+        .services-list {
+            list-style: none;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            border-top: 1px solid #374151;
+        }
+
+        .service-name {
+            font-size: 1.25rem;
+        }
+
+        .service-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .service-link:hover {
+            color: #d1d5db;
+        }
+
+        /* Exhibition Image */
+        .exhibition-image {
+            aspect-ratio: 16/9;
+            position: relative;
+            background-color: #374151;
+            margin-bottom: 8rem;
+        }
+
+        .exhibition-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Featured Work Section */
+        .featured-work {
+            padding: 0 1rem;
+            margin-bottom: 8rem;
+        }
+
+        .section-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .section-description {
+            max-width: 28rem;
+        }
+
+        .section-description p {
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+
+        .category-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 2rem 0;
+            border-top: 1px solid #374151;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .category-number {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .category-description {
+            color: #9ca3af;
+        }
+
+        .category-footer {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .category-image {
+            display: none;
+            position: relative;
+            width: 12rem;
+            height: 8rem;
+            background-color: #374151;
+        }
+
+        .category-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Service Expertise */
+        .service-expertise {
+            margin-bottom: 8rem;
+        }
+
+        .expertise-grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .expertise-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .expertise-number {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .expertise-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .expertise-description {
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        /* Running Projects */
+        .running-projects {
+            padding: 4rem 1rem;
+            margin-bottom: 8rem;
+        }
+
+        .running-header {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .running-title {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 0.9;
+            letter-spacing: -0.025em;
+        }
+
+        .running-description {
+            max-width: 28rem;
+        }
+
+        .running-description p {
+            color: #9ca3af;
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+        }
+
+        .project-showcase {
+            position: relative;
+        }
+
+        .project-showcase-image {
+            aspect-ratio: 16/9;
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+        }
+
+        .project-showcase-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 4rem 1rem;
+            margin-bottom: 8rem;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .testimonial-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .testimonial-image {
+            position: relative;
+            aspect-ratio: 3/4;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+
+        .testimonial-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .testimonial-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .testimonial-quote {
+            font-size: 1.125rem;
+            color: #d1d5db;
+        }
+
+        .testimonial-author {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .testimonial-role {
+            color: #9ca3af;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            margin-top: 8rem;
+        }
+
+        .contact-grid {
+            display: grid;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .contact-title {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .contact-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .contact-subtitle {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .contact-description {
+            color: #9ca3af;
+        }
+
+        .contact-image {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .contact-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 8rem;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .footer-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .footer-title {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .footer-link {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: #d1d5db;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-bottom {
+            margin-top: 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-copyright {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 640px) {
+            .nav-links {
+                display: flex;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .main-section {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+                padding-top: 8rem;
+            }
+
+            .mobile-slider {
+                display: none;
+            }
+
+            .project-grid {
+                display: grid;
+            }
+
+            .hero-title {
+                font-size: 4rem;
+            }
+
+            .hero-content {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: start;
+            }
+
+            .section-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: start;
+            }
+
+            .section-title {
+                font-size: 4rem;
+            }
+
+            .category-item {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .category-info {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .category-footer {
+                gap: 2rem;
+            }
+
+            .expertise-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 3rem;
+            }
+
+            .running-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: start;
+                gap: 4rem;
+            }
+
+            .running-title {
+                font-size: 4rem;
+            }
+
+            .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 4rem;
+            }
+
+            .contact-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 4rem;
+            }
+
+            .footer {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .footer-bottom {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .project-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .category-image {
+                display: block;
+            }
+
+            .expertise-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .running-title {
+                font-size: 5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .hero-title {
+                font-size: 6rem;
+            }
+
+            .section-title {
+                font-size: 5rem;
+            }
+
+            .running-title {
+                font-size: 6rem;
+            }
+        }
+
+        /* WhatsApp Mesaj Barı */
+        .whatsapp-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: linear-gradient(45deg, rgb(155, 149, 149), rgba(0, 0, 0, 0.9));
+            padding: 4px;
+            border-radius: 30px;
+            box-shadow: 0 0 20px rgba(37, 211, 102, 0.5),
+                          0 0 40px rgba(37, 211, 102, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: bounceIn 0.8s ease-out forwards,
+                       glow 2s infinite alternate;
+            transition: transform 0.3s ease;
+        }
+
+        .whatsapp-bar:hover {
+            transform: translateX(-50%) scale(1.03);
+        }
+
+        .whatsapp-bar input {
+            width: 70%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px 0 0 25px;
+            outline: none;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.63);
+            color: #1a1a1a;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .whatsapp-bar input:focus {
+            background: #f5f5f5;
+            transform: scale(1.02);
+            animation: wave 1s infinite;
+        }
+
+        .whatsapp-bar button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 0 25px 25px 0;
+            background: rgba(30, 30, 30, 0.95);
+            color: rgb(173, 173, 173);
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .whatsapp-bar button:hover {
+            background: #00c851;
+            transform: rotate(5deg) scale(1.1);
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.8);
+        }
+
+        .whatsapp-bar button:active {
+            animation: explode 0.4s ease;
+        }
+
+        .whatsapp-bar button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        .whatsapp-bar button:hover::after {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Animasyonlar */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            60% { transform: translateX(-50%) translateY(-10px); opacity: 1; }
+            80% { transform: translateX(-50%) translateY(5px); }
+            100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px #737373, 0 0 40px rgba(37, 211, 102, 0); }
+            to { box-shadow: 0 0 30px rgba(37, 211, 102, 0), 0 0 50px rgba(37, 211, 102, 0); }
+        }
+
+        @keyframes wave {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes explode {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">Yusuf.</a>
+            <div class="nav-links">
+                <a href="#work">Projeler</a>
+                <a href="#about">Hakkımda</a>
+                <a href="#contact">İletişim</a>
+            </div>
+            <button class="nav-menu">
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Section -->
+    <section id="main" class="main-section">
+        <div class="container">
+            <!-- Project Images -->
+            <div id="picture-slider" class="picture-slider">
+                <!-- Mobile Slider -->
+                <div class="mobile-slider">
+                    <div class="slider-container">
+                        <div class="slide">
+                            <div class="project-image">
+                                <img src="sitelogo.jpg" alt="The Leng Company">
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <div class="project-image">
+                                <img src="logokuran.jpg" alt="Sadece Kuran">
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <div class="project-image">
+                                <img src="yusuf4.jpg" alt="Yusuf Ertek">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desktop Grid -->
+                <div class="project-grid">
+                    <div class="project-image">
+                        <img src="sitelogo.jpg" alt="The Leng Company">
+                    </div>
+                    <div class="project-image">
+                        <img src="logokuran.jpg" alt="Sadece Kuran">
+                    </div>
+                    <div class="project-image">
+                        <img src="yusuf4.jpg" alt="Yusuf Ertek">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <div class="hero-subtitle">(MERHABA, BEN YUSUF ERTEK)</div>
+                <h1 class="hero-title">
+                    SONSUZ MİRAS <span class="italic">kurucusu</span><br>
+                    & DİJİTAL İNOVATÖR
+                </h1>
+                <div class="hero-content">
+                    <p class="hero-description">
+                        Din, felsefe ve teknoloji alanlarında uzman. İnsanlığın bilgi birikimini korumayı ve gelecek nesillere aktarmayı amaçlayan projeler geliştiriyorum.
+                    </p>
+                    <a href="#contact" class="cta-button">
+                        İşbirliği yapalım 
+                        <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Services Section -->
+            <div class="services-section">
+                <p class="services-intro">
+                    Hayatım boyunca öğrenmeye, sorgulamaya ve üretmeye olan tutkumla hareket ettim. Geleneksel düşünce kalıplarını sorgulayan vizyonumla modern teknolojiyi birleştiriyorum.
+                </p>
+
+                <ul class="services-list">
+                    <li class="service-item">
+                        <h3 class="service-name">DİJİTAL PROJELER</h3>
+                        <a href="https://theleng.site" class="service-link">
+                            Keşfet 
+                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="service-item">
+                        <h3 class="service-name">DİN VE FELSEFE</h3>
+                        <a href="https://sadecekuran.com.tr" class="service-link">
+                            Keşfet 
+                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="service-item">
+                        <h3 class="service-name">EĞİTİM VE ARAŞTIRMA</h3>
+                        <a href="#" class="service-link">
+                            Keşfet 
+                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="service-item">
+                        <h3 class="service-name">SOSYAL MEDYA</h3>
+                        <a href="https://x.com/myusufrtek" class="service-link">
+                            Keşfet 
+                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Exhibition Image -->
+            <div class="exhibition-image">
+                <img src="yusuf4.jpg" alt="Yusuf Ertek Profil">
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Work Section -->
+    <section id="featured-work" class="featured-work">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    ÖNE ÇIKAN<br>
+                    PROJELER
+                </h2>
+                <div class="section-description">
+                    <p>
+                        The Leng Company'den Sadece Kuran'a kadar, sanat, teknoloji ve eğitimi bir araya getiren anlamlı projeler geliştiriyorum.
+                    </p>
+                    <a href="#contact" class="cta-button">
+                        Birlikte çalışalım 
+                        <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project Categories -->
+            <div class="category-item">
+                <div class="category-info">
+                    <div class="category-header">
+                        <h3 class="category-title">THE LENG COMPANY</h3>
+                        <span class="category-number">(01)</span>
+                    </div>
+                    <p class="category-description">Sanat, teknoloji ve eğitimi bir araya getiren dijital ekosistem</p>
+                </div>
+                <div class="category-footer">
+                    <div class="category-image">
+                        <img src="sitelogo.jpg" alt="The Leng Company">
+                    </div>
+                    <a href="https://theleng.site" class="service-link">
+                        Projeyi görüntüle 
+                        <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="category-item">
+                <div class="category-info">
+                    <div class="category-header">
+                        <h3 class="category-title">SADECE KURAN</h3>
+                        <span class="category-number">(02)</span>
+                    </div>
+                    <p class="category-description">Din ve felsefeyi sade, anlaşılır ve çağdaş yaklaşımla ele alan platform</p>
+                </div>
+                <div class="category-footer">
+                    <div class="category-image">
+                        <img src="logokuran.jpg" alt="Sadece Kuran">
+                    </div>
+                    <a href="https://sadecekuran.com.tr" class="service-link">
+                        Projeyi görüntüle 
+                        <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="category-item">
+                <div class="category-info">
+                    <div class="category-header">
+                        <h3 class="category-title">SONSUZ MİRAS</h3>
+                        <span class="category-number">(03)</span>
+                    </div>
+                    <p class="category-description">İnsanlığın bilgi birikimini koruma ve gelecek nesillere aktarma projesi</p>
+                </div>
+                <div class="category-footer">
+                    <div class="category-image">
+                        <img src="logo2.PNG" alt="Sonsuz Miras">
+                    </div>
+                    <a href="#" class="service-link">
+                        Projeyi görüntüle 
+                        <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Expertise -->
+        <div class="service-expertise">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        UZMANLIK<br>
+                        ALANLARIM
+                    </h2>
+                    <div class="section-description">
+                        <p>
+                            Din, felsefe, teknoloji ve eğitim alanlarında derin bilgi birikimi ve yenilikçi yaklaşımlarla anlamlı projeler geliştiriyorum.
+                        </p>
+                        <a href="#contact" class="cta-button">
+                            Proje başlatalım 
+                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="expertise-grid">
+                    <div class="expertise-item">
+                        <span class="expertise-number">(01)</span>
+                        <h3 class="expertise-title">DİN VE FELSEFE</h3>
+                        <p class="expertise-description">
+                            Geleneksel düşünce kalıplarını sorgulayan yaklaşım.
+                        </p>
+                        <p class="expertise-description">
+                            Evrensel değerleri çağdaş perspektifle ele alma.
+                        </p>
+                    </div>
+                    <div class="expertise-item">
+                        <span class="expertise-number">(02)</span>
+                        <h3 class="expertise-title">DİJİTAL PROJELER</h3>
+                        <p class="expertise-description">
+                            Modern teknoloji ile anlamlı içerik üretimi.
+                        </p>
+                        <p class="expertise-description">
+                            Kullanıcı odaklı dijital deneyimler tasarlama.
+                        </p>
+                    </div>
+                    <div class="expertise-item">
+                        <span class="expertise-number">(03)</span>
+                        <h3 class="expertise-title">EĞİTİM VE ARAŞTIRMA</h3>
+                        <p class="expertise-description">
+                            Bilgi paylaşımı ve öğretim metodolojileri.
+                        </p>
+                        <p class="expertise-description">
+                            Tarih, bilimkurgu ve doğa araştırmaları.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Running Projects -->
+    <section id="running-project" class="running-projects">
+        <div class="container">
+            <div class="running-header">
+                <h2 class="running-title">
+                    GÜNCEL<br>
+                    PROJELER
+                </h2>
+                <div class="running-description">
+                    <p>
+                        "Bilgi paylaştıkça sonsuzlaşır" inancıyla dünyayı daha bilinçli ve yaratıcı bir yer haline getirmek için sürekli yeni projeler geliştiriyorum.
+                    </p>
+                    <a href="#contact" class="cta-button">
+                        Konuşalım 
+                        <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="project-showcase">
+                <div class="project-showcase-image">
+                    <img src="yusuf4.jpg" alt="Yusuf Ertek - Sonsuz Miras Kurucusu">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="running-header">
+                <h2 class="running-title">
+                    HAKKIMDA<br>
+                    SÖYLENENLER
+                </h2>
+                <div class="running-description">
+                    <p>
+                        Hayatımı, kendimi geliştirirken çevreme ilham olacak anlamlı bir yolculuğa dönüştürmeye özen gösteriyorum.
+                    </p>
+                    <a href="#contact" class="cta-button">
+                        İletişime geçelim 
+                        <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-item">
+                    <div class="testimonial-image">
+                        <img src="/placeholder.svg?height=600&width=450" alt="Takipçi yorumu">
+                    </div>
+                    <div class="testimonial-content">
+                        <blockquote class="testimonial-quote">
+                            "Yusuf'un projelerindeki derin düşünce ve yenilikçi yaklaşım gerçekten ilham verici. Özellikle Sadece Kuran projesi, dini konuları modern bir perspektifle ele alması açısından çok değerli."
+                        </blockquote>
+                        <div>
+                            <div class="testimonial-author">Ahmet Kaya</div>
+                            <div class="testimonial-role">Takipçi</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-item">
+                    <div class="testimonial-image">
+                        <img src="/placeholder.svg?height=600&width=450" alt="İşbirlikçi yorumu">
+                    </div>
+                    <div class="testimonial-content">
+                        <blockquote class="testimonial-quote">
+                            "The Leng Company ile yaptığımız işbirliği sırasında Yusuf'un vizyoner yaklaşımı ve detaylara verdiği önem bizi çok etkiledi. Gerçek bir lider ve yaratıcı."
+                        </blockquote>
+                        <div>
+                            <div class="testimonial-author">Zeynep Demir</div>
+                            <div class="testimonial-role">İş Ortağı</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="contact-grid">
+            <div class="contact-info">
+                <h2 class="contact-title">Yusuf Ertek.</h2>
+                <div class="contact-content">
+                    <h3 class="contact-subtitle">İŞBİRLİĞİ FIRSATLARI</h3>
+                    <p class="contact-description">
+                        Din, felsefe, teknoloji ve eğitim alanlarında anlamlı projeler geliştirmek istiyorsanız, birlikte çalışabiliriz. SONSUZ MİRAS vizyonuyla geleceğe değer katacak projeler üretelim.
+                    </p>
+                    <div>
+                        <a href="mailto:m.yusufertek@gmail.com" class="cta-button">
+                            E-posta Gönder 
+                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-image">
+                <img src="yusuf4.jpg" alt="Yusuf Ertek - SONSUZ MİRAS Kurucusu">
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-column">
+                <div class="footer-title">Navigasyon</div>
+                <a href="#work" class="footer-link">Projeler</a>
+                <a href="#about" class="footer-link">Hakkımda</a>
+                <a href="#contact" class="footer-link">İletişim</a>
+                <a href="https://theleng.site" class="footer-link">The Leng</a>
+            </div>
+            <div class="footer-column">
+                <div class="footer-title">Projeler</div>
+                <a href="https://theleng.site" class="footer-link">The Leng Company</a>
+                <a href="https://sadecekuran.com.tr" class="footer-link">Sadece Kuran</a>
+                <a href="#" class="footer-link">Sonsuz Miras</a>
+                <a href="https://theleng.site/PANEL" class="footer-link">Panel</a>
+            </div>
+            <div class="footer-column" style="grid-column: span 2;">
+                <div class="footer-title">Sosyal Medya</div>
+                <div class="footer-social">
+                    <a href="https://x.com/myusufrtek" class="footer-link">X (Twitter)</a>
+                    <a href="https://www.instagram.com/yusufrtek/" class="footer-link">Instagram</a>
+                    <a href="https://bsky.app/profile/yusufertek.com.tr" class="footer-link">Bluesky</a>
+                    <a href="https://www.tiktok.com/@ovvn3r" class="footer-link">TikTok</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-copyright">© 2024 Yusuf Ertek. Tüm hakları saklıdır.</div>
+            <div class="footer-legal">
+                <a href="#" class="footer-link">Gizlilik Politikası</a>
+                <a href="#" class="footer-link">Kullanım Şartları</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- WhatsApp Mesaj Barı -->
+    <div class="whatsapp-bar">
+        <input type="text" id="whatsappMessage" placeholder="Mesajınızı yazın...">
+        <button onclick="sendWhatsApp()">Gönder</button>
+    </div>
+
+    <script>
+        function sendWhatsApp() {
+            const message = document.getElementById("whatsappMessage").value;
+            if (message.trim() === "") {
+                alert("Lütfen bir mesaj yazın!");
+                return;
+            }
+            // WhatsApp stilini uygulamak için mesajı biçimlendir (kalın yazı)
+            const formattedMessage = `*${encodeURIComponent(message)}*`;
+            const whatsappUrl = `https://wa.me/6282245924114?text=${formattedMessage}`;
+            window.open(whatsappUrl, "_blank");
+            document.getElementById("whatsappMessage").value = ""; // Inputu temizle
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Mobile menu toggle (if needed)
+        const mobileMenuButton = document.querySelector('.nav-menu');
+        const navLinks = document.querySelector('.nav-links');
+        
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', function() {
+                navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+            });
+        }
+
+        // Contact form handling
+        function handleContactClick() {
+            const phoneNumber = '+6282245924114';
+            const message = 'Merhaba Yusuf!';
+            const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        // Add contact click handlers to relevant buttons
+        document.querySelectorAll('.cta-button').forEach(button => {
+            if (button.textContent.includes('İşbirliği') || button.textContent.includes('Konuşalım')) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleContactClick();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
