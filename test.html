@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="https://yusufertek.com.tr/uçak2.png.jpeg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yusuf Ertek - Modern Portfolio</title>
+
+    <!-- Open Graph etiketleri -->
+    <meta property="og:title" content="YUSUF ERTEK">
+    <meta property="og:description" content="THE LENG">
+    <meta property="og:image" content="https://yusufertek.com.tr/uçak2.png.jpeg">
+    <meta property="og:url" content="yusufertek.com.tr">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter kartı -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="YUSUF ERTEK">
+    <meta name="twitter:description" content="THE LENG">
+    <meta name="twitter:image" content="https://yusufertek.com.tr/uçak2.png.jpeg">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --dark-gradient: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8b8;
+            --accent-color: #00d4ff;
+            --success-color: #00ff88;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--dark-gradient);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Particles */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+        }
+
+        .particle:nth-child(1) { width: 4px; height: 4px; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 6px; height: 6px; left: 20%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 3px; height: 3px; left: 30%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 5px; height: 5px; left: 40%; animation-delay: 6s; }
+        .particle:nth-child(5) { width: 4px; height: 4px; left: 50%; animation-delay: 8s; }
+        .particle:nth-child(6) { width: 7px; height: 7px; left: 60%; animation-delay: 10s; }
+        .particle:nth-child(7) { width: 3px; height: 3px; left: 70%; animation-delay: 12s; }
+        .particle:nth-child(8) { width: 5px; height: 5px; left: 80%; animation-delay: 14s; }
+        .particle:nth-child(9) { width: 4px; height: 4px; left: 90%; animation-delay: 16s; }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            margin-bottom: 40px;
+            animation: slideInDown 1s ease-out;
+        }
+
+        .profile-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 0;
+            overflow: hidden;
+            position: relative;
+            transform: translateY(0);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .profile-image-container {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.320, 1);
+            filter: brightness(0.8) contrast(1.1);
+        }
+
+        .profile-card:hover .profile-image {
+            transform: scale(1.1) rotate(2deg);
+            filter: brightness(1) contrast(1.2);
+        }
+
+        .profile-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: 30px 25px 20px;
+        }
+
+        .profile-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin: 0;
+            background: linear-gradient(45deg, #fff, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textGlow 3s ease-in-out infinite alternate;
+        }
+
+        /* Links Container */
+        .links-container {
+            animation: slideInUp 1s ease-out 0.3s both;
+        }
+
+        .link-group {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            animation: fadeInScale 0.8s ease-out;
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            padding: 20px 25px;
+            text-decoration: none;
+            color: var(--text-primary);
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .link-item:last-child {
+            border-bottom: none;
+        }
+
+        .link-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .link-item:hover::before {
+            left: 100%;
+        }
+
+        .link-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(10px) scale(1.02);
+            box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        .link-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 20px;
+            border-radius: 12px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+            object-fit: cover;
+        }
+
+        .link-item:hover .link-icon {
+            transform: rotate(360deg) scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .link-content {
+            flex: 1;
+        }
+
+        .link-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+            transition: color 0.3s ease;
+        }
+
+        .link-item:hover .link-title {
+            color: var(--accent-color);
+        }
+
+        .link-action {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .link-item:hover .link-action {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        /* WhatsApp Message Bar */
+        .whatsapp-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            animation: slideInUp 1s ease-out 1s both;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .whatsapp-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 20px;
+            padding: 15px 20px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .whatsapp-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .whatsapp-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .whatsapp-button {
+            background: var(--success-color);
+            border: none;
+            border-radius: 20px;
+            padding: 15px 25px;
+            margin-left: 10px;
+            color: #000;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .whatsapp-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .whatsapp-button:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        .whatsapp-button:hover {
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.4);
+        }
+
+        .whatsapp-button:active {
+            animation: pulse 0.3s ease;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.1; }
+            90% { opacity: 0.1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
+            100% { text-shadow: 0 0 20px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.3); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1.05) rotate(5deg); }
+            50% { transform: scale(1.15) rotate(5deg); }
+            100% { transform: scale(1.05) rotate(5deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .profile-name {
+                font-size: 1.8rem;
+                letter-spacing: 2px;
+            }
+
+            .profile-image-container {
+                height: 200px;
+            }
+
+            .link-item {
+                padding: 18px 20px;
+            }
+
+            .link-icon {
+                width: 35px;
+                height: 35px;
+                margin-right: 15px;
+            }
+
+            .link-title {
+                font-size: 1rem;
+            }
+
+            .whatsapp-bar {
+                width: 95%;
+                padding: 6px;
+            }
+
+            .whatsapp-input {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+
+            .whatsapp-button {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-name {
+                font-size: 1.5rem;
+                letter-spacing: 1px;
+            }
+
+            .link-item {
+                padding: 15px 18px;
+            }
+
+            .link-icon {
+                width: 30px;
+                height: 30px;
+                margin-right: 12px;
+            }
+
+            .link-title {
+                font-size: 0.95rem;
+            }
+
+            .link-action {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Scroll animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="profile-card">
+                <div class="profile-image-container">
+                    <img src="uçak1.png.jpeg" alt="Yusuf Ertek" class="profile-image">
+                    <div class="profile-overlay">
+                        <h1 class="profile-name">YUSUF ERTEK</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Media Links -->
+        <div class="links-container">
+            <div class="link-group animate-on-scroll">
+                <a href="https://x.com/myusufrtek" class="link-item">
+                    <img src="xlogoo.png" alt="X" class="link-icon">
+                    <div class="link-content">
+                        <div class="link-title">X / myusufrtek</div>
+                    </div>
+                    <div class="link-action">Follow</div>
+                </a>
+
+                <a href="https://www.instagram.com/yusufrtek/" class="link-item">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" class="link-icon">
+                    <div class="link-content">
+                        <div class="link-title">INSTAGRAM / yusufrtek</div>
+                    </div>
+                    <div class="link-action">Follow</div>
+                </a>
+
+                <a href="https://bsky.app/profile/yusufertek.com.tr" class="link-item">
+                    <img src="bluesky.jpg" alt="BLUESKY" class="link-icon">
+                    <div class="link-content">
+                        <div class="link-title">BLUESKY / yusufertek.com.tr</div>
+                    </div>
+                    <div class="link-action">Follow</div>
+                </a>
+
+                <a href="https://www.tiktok.com/@ovvn3r" class="link-item">
+                    <img src="tticon.jpg" alt="TİKTOK" class="link-icon">
+                    <div class="link-content">
+                        <div class="link-title">TİKTOK / ovvn3r</div>
+                    </div>
+                    <div class="link-action">Follow</div>
+                </a>
+            </div>
+
+            <!-- Website Links -->
+            <div class="link-group animate-on-scroll">
+                <a href="https://theleng.site" class="link-item">
+                    <img src="sitelogo.jpg" alt="The Leng" class="link-icon">
+                    <div class="link-content">
+                        <div class="link-title">THE LENG</div>
+                    </div>
+                    <div class="link-action">Visit</div>
+                </a>
+
+                <a href="https://sadecekuran.com.tr" class="link-item">
+                    <img src="logokuran4.jpeg" alt="Sadece Kuran" class="link-icon">
+                    <div class="link-content">
+                        <div class="link-title">SADECE KURAN</div>
+                    </div>
+                    <div class="link-action">Visit</div>
+                </a>
+            </div>
+
+            <!-- Contact Links -->
+            <div class="link-group animate-on-scroll">
+                <a href="mailto:info@yusufertek.com.tr" class="link-item">
+                    <img src="gmail.png" alt="Email" class="link-icon">
+                    <div class="link-content">
+                        <div class="link-title">BANA ULAŞ - E-POSTA</div>
+                    </div>
+                    <div class="link-action">Mail</div>
+                </a>
+
+                <a href="https://wa.me/6282245924114?text=Merhaba%20Yusuf!" class="link-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968841.png" alt="WhatsApp" class="link-icon">
+                    <div class="link-content">
+                        <div class="link-title">BANA ULAŞ - WHATSAPP</div>
+                    </div>
+                    <div class="link-action">Mesaj</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Message Bar -->
+    <div class="whatsapp-bar">
+        <input type="text" id="whatsappMessage" class="whatsapp-input" placeholder="Mesajınızı yazın...">
+        <button class="whatsapp-button" onclick="sendWhatsApp()">Gönder</button>
+    </div>
+
+    <script>
+        // WhatsApp functionality
+        function sendWhatsApp() {
+            const message = document.getElementById("whatsappMessage").value;
+            if (message.trim() === "") {
+                alert("Lütfen bir mesaj yazın!");
+                return;
+            }
+            const formattedMessage = `*${encodeURIComponent(message)}*`;
+            const whatsappUrl = `https://wa.me/6282245924114?text=${formattedMessage}`;
+            window.open(whatsappUrl, "_blank");
+            document.getElementById("whatsappMessage").value = "";
+        }
+
+        // Enter key support for WhatsApp input
+        document.getElementById("whatsappMessage").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendWhatsApp();
+            }
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all elements with animate-on-scroll class
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Add staggered animation delays
+        document.querySelectorAll('.animate-on-scroll').forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.2}s`;
+        });
+
+        // Smooth scrolling for better UX
+        document.documentElement.style.scrollBehavior = 'smooth';
+
+        // Add loading animation
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
