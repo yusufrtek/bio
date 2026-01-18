@@ -1171,11 +1171,12 @@
       resetAllStyles();
     }
 
-    setMapTheme(currentTheme);
-
     let geoLayer = null;
     let countries = [];
     let allBounds = null;
+
+    // Initialize map theme AFTER countries is declared
+    setMapTheme(currentTheme);
 
     // GAME STATE
     const MODE = { TYPE: "type", CLICK: "click", CHOICE: "choice", HARD: "hard" };
