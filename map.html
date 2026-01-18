@@ -1,82 +1,641 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Ücretsiz Harita</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Tur Haritası</title>
 
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-  />
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
   <style>
-    body, html { margin: 0; height: 100%; }
-    .app { display: flex; height: 100%; }
-    #map { flex: 1; }
-    .sidebar {
-      width: 300px;
-      background: #fff;
-      padding: 10px;
-      overflow-y: auto;
-      border-left: 1px solid #ddd;
+    :root{
+      --bg: #0b0f19;
+      --panel: rgba(255,255,255,.9);
+      --panel2: rgba(255,255,255,.75);
+      --border: rgba(0,0,0,.08);
+      --shadow: 0 18px 50px rgba(0,0,0,.25);
+      --radius: 18px;
+      --radius2: 14px;
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+      --safe-left: env(safe-area-inset-left);
+      --safe-right: env(safe-area-inset-right);
     }
-    .item {
-      padding: 8px;
-      margin-bottom: 6px;
-      border: 1px solid #eee;
-      border-radius: 8px;
+
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); }
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: #111;
+      overflow: hidden;
+    }
+
+    /* Layout */
+    .app{
+      position: relative;
+      height: 100%;
+      width: 100%;
+    }
+    #map{
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Top bar */
+    .topbar{
+      position: absolute;
+      top: calc(12px + var(--safe-top));
+      left: calc(12px + var(--safe-left));
+      right: calc(12px + var(--safe-right));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    .chip{
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      min-width: 0;
+    }
+    .logo{
+      width: 34px; height: 34px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(0,0,0,.9), rgba(0,0,0,.55));
+      display:grid; place-items:center; color:#fff; font-weight:800;
+      letter-spacing: .5px;
+      flex: 0 0 auto;
+    }
+    .brand .title{
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: min(52vw, 360px);
+    }
+    .brand .subtitle{
+      font-size: 12px;
+      opacity: .75;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: min(52vw, 360px);
+    }
+    .btn{
+      pointer-events:auto;
+      width: 42px; height: 42px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      display:grid; place-items:center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .15s ease;
     }
-    .item:hover { background: #f3f3f3; }
+    .btn:active{ transform: scale(.98); }
+
+    /* Drawer */
+    .drawer{
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(420px, 92vw);
+      padding: calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+      transform: translateX(110%);
+      transition: transform .25s ease;
+      z-index: 1200;
+      pointer-events: none;
+    }
+    .drawer.open{
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    .panel{
+      height: 100%;
+      border-radius: var(--radius);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
+      display:flex;
+      flex-direction: column;
+    }
+
+    .panelHeader{
+      padding: 14px 14px 12px 14px;
+      border-bottom: 1px solid rgba(0,0,0,.07);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .panelHeader h2{
+      margin: 0;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .panelHeader .close{
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.8);
+      cursor: pointer;
+      display:grid; place-items:center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .searchWrap{
+      padding: 12px 14px 12px 14px;
+      border-bottom: 1px solid rgba(0,0,0,.07);
+      background: rgba(255,255,255,.55);
+    }
+    .search{
+      display:flex; align-items:center; gap:10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.85);
+    }
+    .search input{
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+      background: transparent;
+    }
+
+    .metaRow{
+      padding: 10px 14px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content: space-between;
+      font-size: 12px;
+      opacity: .85;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.8);
+      border: 1px solid rgba(0,0,0,.08);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .list{
+      padding: 12px 12px 14px 12px;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1 1 auto;
+    }
+
+    .card{
+      padding: 12px;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .12s ease, background .12s ease;
+      margin-bottom: 10px;
+    }
+    .card:hover{ background: rgba(255,255,255,.95); }
+    .card:active{ transform: scale(.99); }
+    .card .row{
+      display:flex; align-items:center; justify-content: space-between; gap: 10px;
+    }
+    .badge{
+      width: 34px; height: 34px; border-radius: 12px;
+      background: rgba(0,0,0,.92);
+      color: #fff;
+      display:grid; place-items:center;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+    .card .name{
+      font-weight: 900;
+      font-size: 14px;
+      margin: 0;
+      line-height: 1.15;
+    }
+    .card .desc{
+      font-size: 12px;
+      opacity: .75;
+      margin-top: 4px;
+    }
+    .card.active{
+      outline: 2px solid rgba(0,0,0,.85);
+      outline-offset: 2px;
+    }
+
+    /* Backdrop */
+    .backdrop{
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+      z-index: 1100;
+    }
+    .backdrop.show{
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Mobile bottom hint */
+    .hint{
+      position:absolute;
+      left: calc(12px + var(--safe-left));
+      bottom: calc(12px + var(--safe-bottom));
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--panel2);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      font-size: 12px;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    /* Leaflet marker (numbered) */
+    .num-pin{
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display:grid;
+      place-items:center;
+      background: rgba(0,0,0,.92);
+      color: #fff;
+      font-weight: 900;
+      border: 2px solid rgba(255,255,255,.95);
+      box-shadow: 0 10px 26px rgba(0,0,0,.28);
+    }
+    .num-pin::after{
+      content:"";
+      position:absolute;
+      width: 12px;
+      height: 12px;
+      background: rgba(0,0,0,.92);
+      transform: translateY(18px) rotate(45deg);
+      border-right: 2px solid rgba(255,255,255,.95);
+      border-bottom: 2px solid rgba(255,255,255,.95);
+      border-radius: 2px;
+      box-shadow: 0 10px 20px rgba(0,0,0,.18);
+    }
+
+    /* Make Leaflet controls a bit nicer (no custom colors, just spacing) */
+    .leaflet-control-zoom a{
+      border-radius: 10px !important;
+      overflow: hidden;
+    }
+
+    @media (min-width: 980px){
+      /* Desktop: drawer can be open by default if you want */
+      .hint{ display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .drawer, .backdrop, .btn, .card{ transition: none !important; }
+    }
   </style>
 </head>
+
 <body>
+  <div class="app">
+    <div id="map"></div>
 
-<div class="app">
-  <div id="map"></div>
-  <div class="sidebar" id="list"></div>
-</div>
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="chip brand" aria-label="Başlık">
+        <div class="logo">TR</div>
+        <div style="min-width:0">
+          <div class="title" id="brandTitle">Ankara Tur Rotası</div>
+          <div class="subtitle" id="brandSub">Menüyü açıp durak seç</div>
+        </div>
+      </div>
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+      <button class="btn" id="openMenuBtn" aria-label="Menüyü aç/kapat" title="Menü">
+        <!-- simple icon -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
 
-<script>
-  // Noktalar
-  const places = [
-    { name: "Anıtkabir", lat: 39.9251, lng: 32.8369 },
-    { name: "Kızılay", lat: 39.9208, lng: 32.8541 },
-    { name: "ODTÜ", lat: 39.8990, lng: 32.7817 }
-  ];
+    <!-- Bottom hint -->
+    <div class="hint" id="hint">📍 Sağ üstten menüyü aç → durağa dokun</div>
 
-  // Harita
-  const map = L.map('map').setView([39.9208, 32.8541], 12);
+    <!-- Backdrop -->
+    <div class="backdrop" id="backdrop" aria-hidden="true"></div>
 
-  // Ücretsiz harita katmanı
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+    <!-- Drawer -->
+    <div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Konum Menüsü">
+      <div class="panel">
+        <div class="panelHeader">
+          <h2>Duraklar</h2>
+          <button class="close" id="closeBtn" aria-label="Kapat" title="Kapat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
 
-  const markers = [];
+        <div class="searchWrap">
+          <div class="search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M21 21l-4.3-4.3m1.8-5.2a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input id="searchInput" placeholder="Durak ara (örn. Kızılay)" autocomplete="off" />
+          </div>
+        </div>
 
-  places.forEach((p, i) => {
-    const marker = L.marker([p.lat, p.lng])
-      .addTo(map)
-      .bindPopup(p.name);
+        <div class="metaRow">
+          <div id="countText">0 durak</div>
+          <div style="display:flex; gap:8px;">
+            <div class="pill" id="fitBtn" title="Rotayı sığdır">Rotayı Sığdır</div>
+            <div class="pill" id="toggleRouteBtn" title="Rotayı gizle/göster">Rota</div>
+          </div>
+        </div>
 
-    markers.push(marker);
+        <div class="list" id="list"></div>
+      </div>
+    </div>
+  </div>
 
-    // Menü
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerText = p.name;
-    div.onclick = () => {
-      map.setView([p.lat, p.lng], 15);
-      marker.openPopup();
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    /***********************
+     * 1) TUR VERİN (DÜZENLE)
+     ***********************/
+    const TOUR = {
+      title: "Ankara Tur Rotası",
+      subtitle: "Menüyü açıp durak seç",
+      // Durakları buradan çoğalt: (id benzersiz olsun)
+      stops: [
+        { id: "1", name: "Anıtkabir", desc: "Ankara - Anıttepe", lat: 39.9251, lng: 32.8369 },
+        { id: "2", name: "Kızılay Meydanı", desc: "Ankara - Çankaya", lat: 39.9208, lng: 32.8541 },
+        { id: "3", name: "ODTÜ", desc: "Ankara - Üniversite", lat: 39.8990, lng: 32.7817 },
+        { id: "4", name: "Kuğulu Park", desc: "Tunalı Hilmi", lat: 39.9078, lng: 32.8630 },
+        { id: "5", name: "Hamamönü", desc: "Altındağ", lat: 39.9344, lng: 32.8577 },
+      ],
+      // başlangıç zoom/center (boş bırakırsan otomatik rota sığdırılır)
+      initialView: { lat: 39.9208, lng: 32.8541, zoom: 12 }
     };
-    document.getElementById("list").appendChild(div);
-  });
-</script>
 
+    /***********************
+     * 2) UI
+     ***********************/
+    const drawer = document.getElementById("drawer");
+    const backdrop = document.getElementById("backdrop");
+    const openMenuBtn = document.getElementById("openMenuBtn");
+    const closeBtn = document.getElementById("closeBtn");
+    const listEl = document.getElementById("list");
+    const searchInput = document.getElementById("searchInput");
+    const countText = document.getElementById("countText");
+    const fitBtn = document.getElementById("fitBtn");
+    const toggleRouteBtn = document.getElementById("toggleRouteBtn");
+    const brandTitle = document.getElementById("brandTitle");
+    const brandSub = document.getElementById("brandSub");
+
+    brandTitle.textContent = TOUR.title;
+    brandSub.textContent = TOUR.subtitle;
+
+    function openDrawer(){
+      drawer.classList.add("open");
+      backdrop.classList.add("show");
+      // Focus search for quick use
+      setTimeout(() => searchInput.focus(), 120);
+    }
+    function closeDrawer(){
+      drawer.classList.remove("open");
+      backdrop.classList.remove("show");
+      searchInput.blur();
+    }
+    function toggleDrawer(){
+      if (drawer.classList.contains("open")) closeDrawer();
+      else openDrawer();
+    }
+
+    openMenuBtn.addEventListener("click", toggleDrawer);
+    closeBtn.addEventListener("click", closeDrawer);
+    backdrop.addEventListener("click", closeDrawer);
+
+    // ESC closes on desktop
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeDrawer();
+    });
+
+    /***********************
+     * 3) MAP
+     ***********************/
+    const map = L.map("map", {
+      zoomControl: true,
+      attributionControl: true
+    });
+
+    // OSM tiles (free)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    // Numbered marker icon
+    function numberedIcon(n){
+      return L.divIcon({
+        className: "",
+        html: `<div class="num-pin" aria-label="Durak ${n}">${n}</div>`,
+        iconSize: [34, 46],
+        iconAnchor: [17, 46],
+        popupAnchor: [0, -40]
+      });
+    }
+
+    const markersById = new Map();
+    let activeId = null;
+
+    // Route polyline
+    const routeLatLngs = TOUR.stops.map(s => [s.lat, s.lng]);
+    let routeLine = L.polyline(routeLatLngs, { weight: 5, opacity: 0.9 }).addTo(map);
+    let routeVisible = true;
+
+    // Add markers
+    TOUR.stops.forEach((s, idx) => {
+      const marker = L.marker([s.lat, s.lng], { icon: numberedIcon(idx+1) })
+        .addTo(map)
+        .bindPopup(`<div style="font-weight:900">${escapeHtml(s.name)}</div><div style="opacity:.75;font-size:12px;margin-top:4px">${escapeHtml(s.desc||"")}</div>`, {
+          closeButton: true,
+          autoPan: true
+        });
+
+      marker.on("click", () => {
+        focusStop(s.id, true, false);
+      });
+
+      markersById.set(s.id, marker);
+    });
+
+    // Initial view
+    if (TOUR.initialView && typeof TOUR.initialView.lat === "number"){
+      map.setView([TOUR.initialView.lat, TOUR.initialView.lng], TOUR.initialView.zoom ?? 12);
+    } else {
+      fitRoute();
+    }
+
+    // Fit route button
+    function fitRoute(){
+      if (!routeLine) return;
+      map.fitBounds(routeLine.getBounds().pad(0.18));
+    }
+    fitBtn.addEventListener("click", () => fitRoute());
+
+    // Toggle route visibility
+    toggleRouteBtn.addEventListener("click", () => {
+      routeVisible = !routeVisible;
+      if (routeVisible) routeLine.addTo(map);
+      else routeLine.removeFrom(map);
+      toggleRouteBtn.textContent = routeVisible ? "Rota" : "Rota (Kapalı)";
+    });
+
+    /***********************
+     * 4) LIST + SEARCH
+     ***********************/
+    function renderList(filterText = ""){
+      const q = filterText.trim().toLowerCase();
+      listEl.innerHTML = "";
+
+      const filtered = TOUR.stops.filter(s => {
+        if (!q) return true;
+        return (s.name + " " + (s.desc||"")).toLowerCase().includes(q);
+      });
+
+      countText.textContent = `${filtered.length} durak`;
+
+      filtered.forEach((s, i) => {
+        // Find original index for numbering
+        const originalIndex = TOUR.stops.findIndex(x => x.id === s.id);
+
+        const card = document.createElement("div");
+        card.className = "card" + (s.id === activeId ? " active" : "");
+        card.setAttribute("role", "button");
+        card.setAttribute("tabindex", "0");
+        card.innerHTML = `
+          <div class="row">
+            <div style="display:flex; gap:10px; align-items:center; min-width:0">
+              <div class="badge">${originalIndex + 1}</div>
+              <div style="min-width:0">
+                <div class="name">${escapeHtml(s.name)}</div>
+                <div class="desc">${escapeHtml(s.desc || "")}</div>
+              </div>
+            </div>
+            <div style="opacity:.7; flex:0 0 auto" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        `;
+
+        function onSelect(){
+          focusStop(s.id, true, true);
+        }
+
+        card.addEventListener("click", onSelect);
+        card.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(); }
+        });
+
+        listEl.appendChild(card);
+      });
+    }
+
+    renderList();
+
+    let searchTimer = null;
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => renderList(searchInput.value), 70);
+    });
+
+    /***********************
+     * 5) FOCUS BEHAVIOR
+     ***********************/
+    function focusStop(id, openPopup, autoCloseOnMobile){
+      const stop = TOUR.stops.find(s => s.id === id);
+      const marker = markersById.get(id);
+      if (!stop || !marker) return;
+
+      activeId = id;
+      renderList(searchInput.value);
+
+      // Move map
+      map.setView([stop.lat, stop.lng], Math.max(map.getZoom(), 15), { animate: true });
+
+      if (openPopup) marker.openPopup();
+
+      // Close drawer on small screens after selecting
+      const isMobile = window.matchMedia("(max-width: 980px)").matches;
+      if (autoCloseOnMobile && isMobile) closeDrawer();
+    }
+
+    /***********************
+     * 6) HELPERS
+     ***********************/
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[s]));
+    }
+
+    // Optional: open drawer by default on desktop
+    if (window.matchMedia("(min-width: 980px)").matches) {
+      // comment out if you don't want it
+      openDrawer();
+    }
+
+    // Deep link: #stop=3
+    function applyHash(){
+      const h = location.hash.replace("#", "");
+      const params = new URLSearchParams(h);
+      const sid = params.get("stop");
+      if (sid && markersById.has(sid)) {
+        focusStop(sid, true, false);
+      }
+    }
+    window.addEventListener("hashchange", applyHash);
+    applyHash();
+  </script>
 </body>
 </html>
