@@ -818,6 +818,12 @@
       
       <input type="text" class="name-input" id="playerNameInput" placeholder="Your nickname..." maxlength="20">
       
+      <button class="secondary-btn no-anim" id="googleLoginBtn" style="margin-top: 0; margin-bottom: 16px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+      <button class="secondary-btn no-anim" id="googleLogoutBtn" style="margin-top: 0; margin-bottom: 16px; width: 100%; display: none;">Sign Out</button>
+      
       <button class="main-btn no-anim" id="createRoomBtn" style="margin-bottom: 12px;">Create Room</button>
       <button class="secondary-btn no-anim" id="joinRoomBtn">Join Room</button>
     </div>
@@ -933,6 +939,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getDatabase, ref, set, get, push, onValue, update, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
     // Firebase Config
     const firebaseConfig = {
@@ -949,6 +956,9 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
 
     // DOM Elements
     const $ = id => document.getElementById(id);
@@ -981,11 +991,69 @@
     let currentPlayerId = null;
     let playerName = "";
     let isHost = false;
+    let uid = null;
     let gameTimer = null;
     let votingTimer = null;
     let capturedPhoto = null;
     let hasVoted = false;
     let roomListener = null;
+
+    // Google Login
+    async function loginWithGoogle() {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Popup failed, trying redirect:", error);
+        // iOS popup sorunu icin redirect kullan
+        signInWithRedirect(auth, provider);
+      }
+    }
+
+    // Google Logout
+    async function logout() {
+      if (currentRoomId) {
+        await leaveRoom();
+      }
+      try {
+        await signOut(auth);
+        showToast("Signed out", "success");
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    }
+
+    // Check redirect result on page load
+    getRedirectResult(auth).then((result) => {
+      if (result && result.user) {
+        showToast("Signed in!", "success");
+      }
+    }).catch((error) => {
+      console.error("Redirect result error:", error);
+    });
+
+    // Auth state listener
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        uid = user.uid;
+        currentPlayerId = uid;
+        
+        // Auto-fill name input
+        if (user.displayName) {
+          $("playerNameInput").value = user.displayName.slice(0, 20);
+        }
+        
+        // Toggle buttons
+        $("googleLoginBtn").style.display = "none";
+        $("googleLogoutBtn").style.display = "block";
+      } else {
+        uid = null;
+        currentPlayerId = null;
+        
+        // Toggle buttons
+        $("googleLoginBtn").style.display = "flex";
+        $("googleLogoutBtn").style.display = "none";
+      }
+    });
 
     // Generate Room Code
     function generateRoomCode() {
@@ -1026,7 +1094,15 @@
 
     // Create Room
     async function createRoom() {
-      playerName = $("playerNameInput").value.trim() || "Player";
+      // Check if logged in
+      if (!currentPlayerId) {
+        showToast("Sign in with Google first!", "error");
+        return;
+      }
+
+      const inputName = $("playerNameInput").value.trim();
+      playerName = inputName || (auth.currentUser?.displayName?.slice(0, 20)) || "Player";
+      
       if (!playerName) {
         showToast("Enter your name!", "error");
         return;
@@ -1036,7 +1112,6 @@
       $("loadingText").textContent = "Creating room...";
 
       const roomCode = generateRoomCode();
-      currentPlayerId = generatePlayerId();
       currentRoomId = roomCode;
       isHost = true;
 
@@ -1076,18 +1151,24 @@
 
     // Join Room
     async function joinRoom() {
+      // Check if logged in
+      if (!currentPlayerId) {
+        showToast("Sign in with Google first!", "error");
+        return;
+      }
+
       const roomCode = $("roomCodeInput").value.trim().toUpperCase();
       if (!roomCode || roomCode.length !== 6) {
         showToast("Enter valid room code!", "error");
         return;
       }
 
-      playerName = $("playerNameInput").value.trim() || "Player";
+      const inputName = $("playerNameInput").value.trim();
+      playerName = inputName || (auth.currentUser?.displayName?.slice(0, 20)) || "Player";
 
       showScreen(loadingScreen);
       $("loadingText").textContent = "Joining room...";
 
-      currentPlayerId = generatePlayerId();
       currentRoomId = roomCode;
       isHost = false;
 
@@ -1590,6 +1671,9 @@
     $("onlineMenuBackBtn").addEventListener("click", () => {
       showScreen(welcomeScreen);
     });
+
+    $("googleLoginBtn").addEventListener("click", loginWithGoogle);
+    $("googleLogoutBtn").addEventListener("click", logout);
 
     $("createRoomBtn").addEventListener("click", createRoom);
 
