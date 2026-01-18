@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ücretsiz Harita</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+
+  <style>
+    body, html { margin: 0; height: 100%; }
+    .app { display: flex; height: 100%; }
+    #map { flex: 1; }
+    .sidebar {
+      width: 300px;
+      background: #fff;
+      padding: 10px;
+      overflow-y: auto;
+      border-left: 1px solid #ddd;
+    }
+    .item {
+      padding: 8px;
+      margin-bottom: 6px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .item:hover { background: #f3f3f3; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div id="map"></div>
+  <div class="sidebar" id="list"></div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+  // Noktalar
+  const places = [
+    { name: "Anıtkabir", lat: 39.9251, lng: 32.8369 },
+    { name: "Kızılay", lat: 39.9208, lng: 32.8541 },
+    { name: "ODTÜ", lat: 39.8990, lng: 32.7817 }
+  ];
+
+  // Harita
+  const map = L.map('map').setView([39.9208, 32.8541], 12);
+
+  // Ücretsiz harita katmanı
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  const markers = [];
+
+  places.forEach((p, i) => {
+    const marker = L.marker([p.lat, p.lng])
+      .addTo(map)
+      .bindPopup(p.name);
+
+    markers.push(marker);
+
+    // Menü
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerText = p.name;
+    div.onclick = () => {
+      map.setView([p.lat, p.lng], 15);
+      marker.openPopup();
+    };
+    document.getElementById("list").appendChild(div);
+  });
+</script>
+
+</body>
+</html>
