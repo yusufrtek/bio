@@ -856,7 +856,7 @@
       background: rgba(239, 68, 68, 0.1);
     }
 
-    /* MOBILE: Panel on top of buttons, buttons on right side stacked */
+    /* MOBILE: Buttons independent from question panel, positioned above panel on right side */
     @media (max-width: 767px) {
       .bottom-panel {
         position: relative;
@@ -868,16 +868,15 @@
       }
 
       .question-box {
-        padding-right: 70px;
+        padding: 14px;
       }
 
       .action-buttons {
         position: absolute;
-        top: 0;
+        bottom: calc(100% + 10px);
         right: 0;
         flex-direction: column;
         gap: 8px;
-        padding: 12px;
       }
 
       .icon-btn {
