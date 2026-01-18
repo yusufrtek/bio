@@ -3,26 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Firebase Takım + Sayı Demo</title>
+  <title>Firebase Demo: Username + Takıma Katıl</title>
   <style>
-    body { font-family: system-ui, Arial; max-width: 900px; margin: 24px auto; padding: 0 12px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    body { font-family: system-ui, Arial; max-width: 1000px; margin: 24px auto; padding: 0 12px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
     input, select, button { padding: 10px; font-size: 14px; }
     button { cursor: pointer; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 14px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; margin-top: 14px; }
     .muted { color: #666; }
-    .teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-    .teamTitle { display:flex; justify-content:space-between; align-items:center; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
     ul { margin: 8px 0 0; padding-left: 18px; }
-    code { background: #f4f4f4; padding: 2px 6px; border-radius: 6px; }
+    .pill { display:inline-block; padding: 3px 8px; border: 1px solid #ddd; border-radius: 999px; font-size: 12px; }
   </style>
 </head>
 <body>
 
-  <h1>Firebase Demo: Takım Kurma + Sayı Ekleme (Sıralı)</h1>
-  <p class="muted">
-    Bu sayfa Firestore'a yazar/okur. Herkes aynı sayfayı açarsa anlık güncellenir.
-  </p>
+  <h1>Firebase Demo: Username + Takım Kur / Katıl</h1>
+  <p class="muted">Aynı sayfayı başka cihazda aç; anlık güncellenir.</p>
+
+  <div class="card">
+    <h2>0) Kullanıcı adı</h2>
+    <div class="row">
+      <input id="username" placeholder="Username (örn: Yusuf)" />
+      <button id="saveUsernameBtn">Kaydet</button>
+      <span class="pill" id="meInfo">Henüz ayarlanmadı</span>
+    </div>
+    <p class="muted">Username tarayıcında (localStorage) saklanır.</p>
+  </div>
 
   <div class="card">
     <h2>1) Takım oluştur</h2>
@@ -30,44 +37,38 @@
       <input id="teamName" placeholder="Takım adı (örn: Mavi)" />
       <button id="createTeamBtn">Takım Oluştur</button>
     </div>
-    <p class="muted">Oluşturulan takım Firestore'a <code>teams</code> koleksiyonuna kaydolur.</p>
   </div>
 
   <div class="card">
-    <h2>2) Takıma sayı ekle</h2>
+    <h2>2) Takıma katıl</h2>
     <div class="row">
       <select id="teamSelect"></select>
-      <input id="numberInput" type="number" placeholder="Sayı (örn: 42)" />
-      <button id="addNumberBtn">Sayı Ekle</button>
+      <button id="joinTeamBtn">Seçili Takıma Katıl</button>
+      <span class="pill" id="teamInfo">Takım yok</span>
     </div>
-    <p class="muted">Sayılar <code>teams/{teamId}/numbers</code> alt koleksiyonuna kaydolur.</p>
+    <p class="muted">Katılınca takımın altına <b>members</b> koleksiyonuna yazılır.</p>
   </div>
 
   <div class="card">
-    <h2>3) Takımlar ve sıralı sayıları (anlık)</h2>
-    <div id="teamsContainer" class="teams"></div>
+    <h2>3) Takımlar (üyeler + sayılar)</h2>
+    <div id="teamsContainer" class="grid"></div>
   </div>
 
   <script type="module">
-    // --- Firebase imports (senin verdiğin yapıya uygun) ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    // Analytics şart değil; demo için kullanmıyoruz.
-    // import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
-
-    // Firestore imports
     import {
       getFirestore,
       collection,
       addDoc,
       doc,
       setDoc,
-      serverTimestamp,
+      getDoc,
       onSnapshot,
       query,
-      orderBy
+      orderBy,
+      serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-    // --- Senin config'in ---
     const firebaseConfig = {
       apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
       authDomain: "maps-52b00.firebaseapp.com",
@@ -81,61 +82,99 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- UI refs ---
+    // ---------- UI ----------
+    const usernameEl = document.getElementById("username");
+    const saveUsernameBtn = document.getElementById("saveUsernameBtn");
+    const meInfo = document.getElementById("meInfo");
+
     const teamNameEl = document.getElementById("teamName");
     const createTeamBtn = document.getElementById("createTeamBtn");
+
     const teamSelect = document.getElementById("teamSelect");
-    const numberInput = document.getElementById("numberInput");
-    const addNumberBtn = document.getElementById("addNumberBtn");
+    const joinTeamBtn = document.getElementById("joinTeamBtn");
+    const teamInfo = document.getElementById("teamInfo");
+
     const teamsContainer = document.getElementById("teamsContainer");
 
-    // Takımlar state'i (id -> {name})
-    const teamsMap = new Map();
+    // ---------- Local identity (demo) ----------
+    // Gerçek projede Firebase Auth kullanacağız. Şimdilik basit:
+    const myId = getOrCreateLocalId(); // benzersiz kullanıcı id
+    let myName = localStorage.getItem("demo_username") || "";
+    let myTeamId = localStorage.getItem("demo_teamId") || "";
 
-    // 1) Takım oluştur
+    function getOrCreateLocalId() {
+      let id = localStorage.getItem("demo_userId");
+      if (!id) {
+        id = "u_" + crypto.randomUUID();
+        localStorage.setItem("demo_userId", id);
+      }
+      return id;
+    }
+
+    function refreshMeUI() {
+      usernameEl.value = myName;
+      meInfo.textContent = myName ? `Sen: ${myName}` : "Henüz ayarlanmadı";
+      teamInfo.textContent = myTeamId ? `Takım: ${myTeamId}` : "Takım yok";
+    }
+    refreshMeUI();
+
+    saveUsernameBtn.addEventListener("click", () => {
+      const val = usernameEl.value.trim();
+      if (!val) return alert("Username boş olamaz.");
+      myName = val;
+      localStorage.setItem("demo_username", myName);
+      refreshMeUI();
+    });
+
+    // ---------- Teams state ----------
+    const teamsMap = new Map(); // teamId -> {name}
+    const membersByTeam = new Map(); // teamId -> [{id,name}]
+    const numbersByTeam = new Map(); // teamId -> [numbers]
+
+    // 1) Team create
     createTeamBtn.addEventListener("click", async () => {
       const name = teamNameEl.value.trim();
       if (!name) return alert("Takım adı yaz.");
 
-      // Aynı isimli takım oluşturmayı basitçe engelleyelim:
-      // (Gerçekte daha sağlam kontrol yapılır)
+      // basit duplicate kontrol
       for (const [, t] of teamsMap) {
-        if (t.name.toLowerCase() === name.toLowerCase()) {
+        if ((t.name || "").toLowerCase() === name.toLowerCase()) {
           return alert("Bu isimde takım zaten var.");
         }
       }
 
-      // teams koleksiyonuna yeni takım
-      const teamRef = await addDoc(collection(db, "teams"), {
+      await addDoc(collection(db, "teams"), {
         name,
-        createdAt: serverTimestamp(),
+        createdAt: serverTimestamp()
       });
 
       teamNameEl.value = "";
-      // UI anlık dinlemede zaten güncellenecek
     });
 
-    // 2) Takıma sayı ekle
-    addNumberBtn.addEventListener("click", async () => {
+    // 2) Join team
+    joinTeamBtn.addEventListener("click", async () => {
+      if (!myName) return alert("Önce username kaydet.");
       const teamId = teamSelect.value;
-      if (!teamId) return alert("Önce bir takım seç.");
-      const n = Number(numberInput.value);
-      if (!Number.isFinite(n)) return alert("Geçerli bir sayı gir.");
+      if (!teamId) return alert("Takım yok / seçilmedi.");
 
-      await addDoc(collection(db, "teams", teamId, "numbers"), {
-        value: n,
-        createdAt: serverTimestamp(),
-      });
+      // teams/{teamId}/members/{myId}
+      await setDoc(doc(db, "teams", teamId, "members", myId), {
+        id: myId,
+        name: myName,
+        joinedAt: serverTimestamp()
+      }, { merge: true });
 
-      numberInput.value = "";
+      myTeamId = teamId;
+      localStorage.setItem("demo_teamId", myTeamId);
+      refreshMeUI();
     });
 
-    // --- Takımları anlık dinle ---
+    // ---------- Real-time: teams ----------
     onSnapshot(collection(db, "teams"), (snap) => {
       teamsMap.clear();
       snap.forEach((d) => teamsMap.set(d.id, d.data()));
 
-      // Select'i doldur
+      // select doldur
       teamSelect.innerHTML = "";
       if (teamsMap.size === 0) {
         const opt = document.createElement("option");
@@ -143,101 +182,118 @@
         opt.textContent = "Önce takım oluştur";
         teamSelect.appendChild(opt);
       } else {
-        for (const [id, team] of teamsMap) {
+        for (const [id, t] of teamsMap) {
           const opt = document.createElement("option");
           opt.value = id;
-          opt.textContent = team.name;
+          opt.textContent = t.name || id;
+          if (id === myTeamId) opt.selected = true;
           teamSelect.appendChild(opt);
         }
       }
 
-      // Kartları çiz (numbers dinleyicileri de team bazlı kurulacak)
       renderTeams();
+      ensureSubs();
     });
 
-    // teamId -> unsubscribe
-    const numbersUnsubs = new Map();
-    // teamId -> array of numbers
-    const teamNumbers = new Map();
+    // ---------- Subscriptions per team ----------
+    const memberUnsubs = new Map();
+    const numberUnsubs = new Map();
 
-    function renderTeams() {
-      teamsContainer.innerHTML = "";
-
-      // Eski dinleyicileri kaldır (takımlar değiştiyse)
-      for (const [teamId, unsub] of numbersUnsubs) {
-        if (!teamsMap.has(teamId)) {
-          unsub();
-          numbersUnsubs.delete(teamId);
-          teamNumbers.delete(teamId);
-        }
+    function ensureSubs() {
+      // kaldırılması gerekenleri kaldır
+      for (const [teamId, unsub] of memberUnsubs) {
+        if (!teamsMap.has(teamId)) { unsub(); memberUnsubs.delete(teamId); membersByTeam.delete(teamId); }
+      }
+      for (const [teamId, unsub] of numberUnsubs) {
+        if (!teamsMap.has(teamId)) { unsub(); numberUnsubs.delete(teamId); numbersByTeam.delete(teamId); }
       }
 
-      // Her takım için kart + numbers realtime dinleme
-      for (const [teamId, team] of teamsMap) {
-        // kart
-        const card = document.createElement("div");
-        card.className = "card";
+      // yeni takımlara subscribe
+      for (const [teamId] of teamsMap) {
+        if (!memberUnsubs.has(teamId)) {
+          const qMembers = query(collection(db, "teams", teamId, "members"), orderBy("joinedAt", "asc"));
+          memberUnsubs.set(teamId, onSnapshot(qMembers, (snap) => {
+            const arr = [];
+            snap.forEach((d) => arr.push(d.data()));
+            membersByTeam.set(teamId, arr);
+            renderTeams();
+          }));
+        }
 
-        const header = document.createElement("div");
-        header.className = "teamTitle";
-
-        const title = document.createElement("h3");
-        title.textContent = team.name;
-
-        const count = document.createElement("span");
-        count.className = "muted";
-        count.textContent = "Yükleniyor...";
-
-        header.appendChild(title);
-        header.appendChild(count);
-
-        const list = document.createElement("ul");
-
-        card.appendChild(header);
-        card.appendChild(list);
-        teamsContainer.appendChild(card);
-
-        // numbers dinleyicisi yoksa kur
-        if (!numbersUnsubs.has(teamId)) {
-          const q = query(
-            collection(db, "teams", teamId, "numbers"),
-            // createdAt ile çekiyoruz, sonra JS'te value'ya göre sıralıyoruz
-            orderBy("createdAt", "desc")
-          );
-
-          const unsub = onSnapshot(q, (snap) => {
+        if (!numberUnsubs.has(teamId)) {
+          const qNums = query(collection(db, "teams", teamId, "numbers"), orderBy("createdAt", "desc"));
+          numberUnsubs.set(teamId, onSnapshot(qNums, (snap) => {
             const nums = [];
             snap.forEach((d) => {
               const data = d.data();
               if (typeof data.value === "number") nums.push(data.value);
             });
-
-            // Büyükten küçüğe sırala
             nums.sort((a, b) => b - a);
-
-            teamNumbers.set(teamId, nums);
-
-            // Kartı güncelle
-            count.textContent = `Toplam: ${nums.length}`;
-            list.innerHTML = "";
-            if (nums.length === 0) {
-              const li = document.createElement("li");
-              li.textContent = "Henüz sayı yok";
-              list.appendChild(li);
-            } else {
-              for (const v of nums) {
-                const li = document.createElement("li");
-                li.textContent = String(v);
-                list.appendChild(li);
-              }
-            }
-          });
-
-          numbersUnsubs.set(teamId, unsub);
+            numbersByTeam.set(teamId, nums);
+            renderTeams();
+          }));
         }
       }
     }
-  </script>
 
+    // ---------- Render ----------
+    function renderTeams() {
+      teamsContainer.innerHTML = "";
+
+      for (const [teamId, t] of teamsMap) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const h = document.createElement("h3");
+        h.textContent = `${t.name || "Takım"} (${teamId})`;
+        card.appendChild(h);
+
+        // members
+        const members = membersByTeam.get(teamId) || [];
+        const mTitle = document.createElement("div");
+        mTitle.className = "muted";
+        mTitle.textContent = `Üyeler (${members.length})`;
+        card.appendChild(mTitle);
+
+        const mList = document.createElement("ul");
+        if (members.length === 0) {
+          const li = document.createElement("li");
+          li.textContent = "Henüz üye yok";
+          mList.appendChild(li);
+        } else {
+          for (const m of members) {
+            const li = document.createElement("li");
+            li.textContent = `${m.name}${m.id === myId ? " (sen)" : ""}`;
+            mList.appendChild(li);
+          }
+        }
+        card.appendChild(mList);
+
+        // numbers
+        const nums = numbersByTeam.get(teamId) || [];
+        const nTitle = document.createElement("div");
+        nTitle.className = "muted";
+        nTitle.style.marginTop = "10px";
+        nTitle.textContent = `Sayılar (büyükten küçüğe) — toplam ${nums.length}`;
+        card.appendChild(nTitle);
+
+        const nList = document.createElement("ul");
+        if (nums.length === 0) {
+          const li = document.createElement("li");
+          li.textContent = "Henüz sayı yok";
+          nList.appendChild(li);
+        } else {
+          for (const v of nums) {
+            const li = document.createElement("li");
+            li.textContent = String(v);
+            nList.appendChild(li);
+          }
+        }
+        card.appendChild(nList);
+
+        teamsContainer.appendChild(card);
+      }
+    }
+  </script>
 </body>
 </html>
