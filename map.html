@@ -1,591 +1,1128 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-  <title>Ülke Oyunu</title>
-
-  <!-- Leaflet -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f172a">
+  <title>🌍 Dünya Kaşifi - Ülke Oyunu</title>
+  
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <style>
-    :root{
-      --panel: rgba(255,255,255,.92);
-      --panel2: rgba(255,255,255,.78);
-      --border: rgba(0,0,0,.10);
-      --shadow: 0 24px 80px rgba(0,0,0,.35);
-      --radius: 20px;
-      --radius2: 16px;
-      --safe-top: env(safe-area-inset-top);
-      --safe-bottom: env(safe-area-inset-bottom);
-      --safe-left: env(safe-area-inset-left);
-      --safe-right: env(safe-area-inset-right);
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --secondary: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.95);
+      --bg-card-light: rgba(51, 65, 85, 0.8);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(148, 163, 184, 0.2);
+      --glow: 0 0 40px rgba(59, 130, 246, 0.3);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
     }
 
-    *{ box-sizing: border-box; }
-    html, body { height:100%; margin:0; }
-    body{
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
       overflow: hidden;
-      background: #0b0f19;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
     }
-    #map{ position: fixed; inset: 0; }
 
-    /* Overlay base */
-    .ui{
+    /* MAP */
+    #map {
       position: fixed;
       inset: 0;
+      z-index: 1;
+    }
+
+    /* PARTICLES BACKGROUND */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
       pointer-events: none;
-      z-index: 9999;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
-      gap: 10px;
+      overflow: hidden;
     }
 
-    /* HUD top */
-    .hud{
-      pointer-events: auto;
-      width: min(900px, 100%);
-      justify-self: center;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(59, 130, 246, 0.6);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* START SCREEN */
+    .start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      padding: calc(20px + var(--safe-top)) calc(16px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(16px + var(--safe-left));
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
-    .chip{
-      background: var(--panel);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 999px;
-      padding: 10px 12px;
+    .start-screen.hidden {
+      display: none;
+    }
+
+    /* LOGO ANIMATION */
+    .logo-container {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .logo-globe {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
       display: flex;
       align-items: center;
-      gap: 10px;
-      min-width: 0;
+      justify-content: center;
+      font-size: 56px;
+      animation: pulse-glow 2s infinite ease-in-out;
+      box-shadow: var(--glow), inset 0 0 30px rgba(255,255,255,0.1);
     }
 
-    .brand{
-      display:flex; align-items:center; gap:10px; min-width:0;
-    }
-    .logo{
-      width: 36px; height: 36px;
-      border-radius: 14px;
-      background: rgba(0,0,0,.92);
-      color: #fff;
-      display:grid; place-items:center;
-      font-weight: 1000;
-      flex: 0 0 auto;
-      letter-spacing: .5px;
-    }
-    .brandText{
-      min-width:0;
-      display:flex;
-      flex-direction: column;
-    }
-    .title{
-      font-weight: 1000;
-      font-size: 14px;
-      line-height: 1.15;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .sub{
-      font-size: 12px;
-      opacity: .75;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    @keyframes pulse-glow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(59, 130, 246, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(59, 130, 246, 0.6); }
     }
 
-    .stats{
-      display:flex; gap:10px; align-items:center; justify-content:flex-end;
+    .logo-ring {
+      position: absolute;
+      inset: -10px;
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      border-radius: 50%;
+      animation: spin 10s linear infinite;
+    }
+
+    .logo-ring::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* TITLE */
+    .game-title {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .game-title h1 {
+      font-size: clamp(28px, 8vw, 42px);
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+    }
+
+    .game-title p {
+      color: var(--text-muted);
+      font-size: clamp(14px, 4vw, 16px);
+      margin-top: 8px;
+      max-width: 300px;
+    }
+
+    /* STATS PREVIEW */
+    .stats-preview {
+      display: flex;
+      gap: 16px;
+      margin: 24px 0;
       flex-wrap: wrap;
-    }
-    .stat{
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 10px 12px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      font-weight: 1000;
-      font-size: 13px;
-      white-space: nowrap;
+      justify-content: center;
     }
 
-    /* Bottom action bar */
-    .bar{
-      pointer-events: auto;
-      width: min(900px, 100%);
-      justify-self: center;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: end;
-    }
-
-    .prompt{
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 12px;
-      display:flex;
+    .stat-item {
+      display: flex;
       flex-direction: column;
-      gap: 8px;
-      min-width: 0;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      min-width: 80px;
     }
 
-    .promptTitle{
-      font-weight: 1000;
-      font-size: 14px;
-      opacity: .9;
-    }
-    .promptText{
-      font-size: 14px;
-      font-weight: 1000;
-      line-height: 1.25;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .hint{
-      font-size: 12px;
-      opacity: .7;
-      line-height: 1.25;
+    .stat-item .icon {
+      font-size: 24px;
+      margin-bottom: 4px;
     }
 
-    .controls{
-      display:flex;
-      gap: 10px;
-      justify-content: flex-end;
-      flex-wrap: wrap;
+    .stat-item .value {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
     }
 
-    input{
+    .stat-item .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* MODE SELECTOR */
+    .mode-selector {
       width: 100%;
-      padding: 12px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,.14);
-      background: rgba(255,255,255,.95);
-      outline: none;
-      font-size: 15px;
-    }
-    .row{
-      display:flex; gap:10px; align-items:center;
-      flex-wrap: wrap;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    button{
-      border: 1px solid rgba(0,0,0,.12);
-      border-radius: 14px;
-      padding: 12px 12px;
-      background: rgba(0,0,0,.92);
-      color: #fff;
-      font-weight: 1000;
+    .mode-card {
+      position: relative;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
       cursor: pointer;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform .12s ease;
-    }
-    button.secondary{
-      background: rgba(255,255,255,.9);
-      color: #111;
-    }
-    button:active{ transform: scale(.99); }
-
-    /* Multiple choice grid */
-    .choices{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 2px;
-    }
-    .choiceBtn{
-      background: rgba(255,255,255,.92);
-      color: #111;
-      border: 1px solid rgba(0,0,0,.10);
-      box-shadow: 0 14px 40px rgba(0,0,0,.10);
-      text-align: left;
-      min-height: 48px;
-      border-radius: 14px;
-      padding: 12px;
-      font-weight: 1000;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
     }
 
-    /* Toast */
-    .toast{
-      pointer-events: none;
-      justify-self: center;
-      width: min(900px, 100%);
-      display:flex;
-      justify-content:center;
-    }
-    .toast > div{
-      background: rgba(0,0,0,.82);
-      color:#fff;
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 13px;
+    .mode-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
       opacity: 0;
-      transform: translateY(-6px);
-      transition: opacity .2s ease, transform .2s ease;
+      transition: opacity 0.3s;
     }
-    .toast.show > div{ opacity: 1; transform: translateY(0); }
 
-    /* Fullscreen screens */
-    .screen{
+    .mode-card:hover::before,
+    .mode-card:active::before {
+      opacity: 1;
+    }
+
+    .mode-card:active {
+      transform: scale(0.98);
+    }
+
+    .mode-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .mode-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .mode-card:nth-child(1) .mode-icon { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .mode-card:nth-child(2) .mode-icon { background: linear-gradient(135deg, #10b981, #059669); }
+    .mode-card:nth-child(3) .mode-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .mode-card:nth-child(4) .mode-icon { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+    .mode-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .mode-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--primary);
+      border-radius: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mode-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      padding-left: 56px;
+    }
+
+    .mode-difficulty {
+      display: flex;
+      gap: 4px;
+      padding-left: 56px;
+      margin-top: 8px;
+    }
+
+    .difficulty-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+
+    .difficulty-dot.active {
+      background: var(--primary);
+    }
+
+    .mode-card:nth-child(2) .difficulty-dot.active { background: #10b981; }
+    .mode-card:nth-child(3) .difficulty-dot.active { background: #f59e0b; }
+    .mode-card:nth-child(4) .difficulty-dot.active { background: #ef4444; }
+
+    /* FOOTER */
+    .start-footer {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .start-footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    /* GAME OVER SCREEN */
+    .game-over-screen {
       position: fixed;
       inset: 0;
-      z-index: 10000;
-      display: grid;
-      place-items: center;
-      padding: 16px;
-      background:
-        radial-gradient(1200px 800px at 20% 10%, rgba(0,0,0,.20), transparent),
-        radial-gradient(900px 600px at 80% 35%, rgba(0,0,0,.16), transparent),
-        rgba(0,0,0,.45);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-    }
-    .card{
-      width: min(940px, 100%);
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      padding: 16px;
-      overflow: hidden;
-    }
-    .hero{
-      display:flex;
-      gap: 12px;
-      align-items:center;
-      margin-bottom: 10px;
-    }
-    .hero .bigLogo{
-      width: 54px; height: 54px;
-      border-radius: 20px;
-      background: rgba(0,0,0,.92);
-      color:#fff;
-      display:grid; place-items:center;
-      font-weight: 1000;
-      font-size: 18px;
-      flex: 0 0 auto;
-    }
-    .hero h1{
-      margin: 0;
-      font-size: 20px;
-      font-weight: 1000;
-      line-height: 1.2;
-    }
-    .hero p{
-      margin: 6px 0 0;
-      opacity: .8;
-      line-height: 1.35;
-      font-size: 13px;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(20px + var(--safe-top)) calc(16px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(16px + var(--safe-left));
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    .modes{
-      display:grid;
-      grid-template-columns: 1fr;
+    .game-over-screen.visible {
+      display: flex;
+    }
+
+    .result-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 32px 24px;
+      background: var(--bg-card);
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .result-emoji {
+      font-size: 72px;
+      margin-bottom: 16px;
+      animation: bounce 1s ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .result-title {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .result-subtitle {
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .result-stat {
+      padding: 16px;
+      background: var(--bg-card-light);
+      border-radius: 16px;
+    }
+
+    .result-stat .value {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .result-stat .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .result-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 16px 24px;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* GAME UI */
+    .game-ui {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      padding: calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+      pointer-events: none;
+    }
+
+    .game-ui.visible {
+      display: flex;
+    }
+
+    .game-ui > * {
+      pointer-events: auto;
+    }
+
+    /* TOP BAR */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .game-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .game-mode-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .game-mode-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .game-mode-name {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .game-mode-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .stat-chip.timer {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .stat-chip.timer.warning {
+      animation: timer-pulse 0.5s infinite;
+    }
+
+    @keyframes timer-pulse {
+      0%, 100% { background: rgba(239, 68, 68, 0.2); }
+      50% { background: rgba(239, 68, 68, 0.4); }
+    }
+
+    .stat-chip .icon {
+      font-size: 16px;
+    }
+
+    /* SPACER */
+    .spacer {
+      flex: 1;
+      pointer-events: none;
+    }
+
+    /* BOTTOM PANEL */
+    .bottom-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .question-card {
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .question-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .question-text {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .question-hint {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* INPUT ROW */
+    .input-row {
+      display: none;
       gap: 10px;
       margin-top: 12px;
     }
-    .modeBtn{
-      text-align: left;
-      border-radius: var(--radius2);
-      padding: 14px;
-      background: rgba(255,255,255,.9);
-      color:#111;
-      border: 1px solid rgba(0,0,0,.10);
-      box-shadow: 0 14px 40px rgba(0,0,0,.12);
+
+    .input-row.visible {
+      display: flex;
     }
-    .modeBtn strong{
-      display:block;
+
+    .input-row input {
+      flex: 1;
+      padding: 14px 16px;
+      background: var(--bg-card-light);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .input-row input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .input-row input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-row button {
+      padding: 14px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 14px;
       font-size: 15px;
-      font-weight: 1000;
-      margin-bottom: 6px;
-    }
-    .modeBtn span{
-      display:block;
-      font-size: 12px;
-      opacity: .78;
-      line-height: 1.35;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
     }
 
-    .small{
-      font-size: 12px;
-      opacity: .75;
-      line-height: 1.35;
+    /* CHOICES GRID */
+    .choices-grid {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
     }
 
-    @media (min-width: 900px){
-      .modes{ grid-template-columns: 1fr 1fr; }
+    .choices-grid.visible {
+      display: grid;
     }
-    @media (prefers-reduced-motion: reduce){
-      *{ transition: none !important; }
+
+    .choice-btn {
+      padding: 16px;
+      background: var(--bg-card-light);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .choice-btn:active {
+      transform: scale(0.98);
+      background: rgba(59, 130, 246, 0.2);
+    }
+
+    .choice-btn.correct {
+      background: rgba(16, 185, 129, 0.3);
+      border-color: #10b981;
+    }
+
+    .choice-btn.wrong {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: #ef4444;
+    }
+
+    /* ACTION BUTTONS */
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.2s;
+    }
+
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+
+    .action-btn.danger {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      top: calc(80px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      padding: 12px 24px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1001;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      background: rgba(16, 185, 129, 0.9);
+    }
+
+    .toast.error {
+      background: rgba(239, 68, 68, 0.9);
+    }
+
+    /* CONFETTI */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: var(--primary);
+      z-index: 1002;
+      pointer-events: none;
+    }
+
+    /* LEAFLET OVERRIDES */
+    .leaflet-control-zoom {
+      border: none !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+    }
+
+    .leaflet-control-zoom a {
+      background: var(--bg-card) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border) !important;
+    }
+
+    .leaflet-control-zoom a:first-child {
+      border-radius: 12px 12px 0 0 !important;
+    }
+
+    .leaflet-control-zoom a:last-child {
+      border-radius: 0 0 12px 12px !important;
+    }
+
+    /* Hide Leaflet attribution on mobile */
+    @media (max-width: 600px) {
+      .leaflet-control-attribution {
+        display: none;
+      }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 400px) {
+      .mode-desc {
+        padding-left: 0;
+        margin-top: 8px;
+      }
+      
+      .mode-difficulty {
+        padding-left: 0;
+      }
+      
+      .stats-bar {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .stat-chip {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
     }
   </style>
 </head>
-
 <body>
+  <!-- MAP -->
   <div id="map"></div>
 
+  <!-- PARTICLES -->
+  <div class="particles" id="particles"></div>
+
   <!-- START SCREEN -->
-  <div class="screen" id="startScreen">
-    <div class="card">
-      <div class="hero">
-        <div class="bigLogo">MAP</div>
-        <div>
-          <h1>Ülke Oyunu</h1>
-          <p>2 dakika içinde olabildiğince çok doğru yap. Doğru = 1 puan. Yanlışta ülke kırmızı yanar. “Geç” ile soruyu atlayıp devam edebilirsin.</p>
+  <div class="start-screen" id="startScreen">
+    <div class="logo-container">
+      <div class="logo-ring"></div>
+      <div class="logo-globe">🌍</div>
+    </div>
+
+    <div class="game-title">
+      <h1>Dünya Kaşifi</h1>
+      <p>Dünya haritasında ülkeleri keşfet ve coğrafya bilgini test et!</p>
+    </div>
+
+    <div class="stats-preview">
+      <div class="stat-item">
+        <span class="icon">⏱️</span>
+        <span class="value">2:00</span>
+        <span class="label">Süre</span>
+      </div>
+      <div class="stat-item">
+        <span class="icon">🎯</span>
+        <span class="value">195</span>
+        <span class="label">Ülke</span>
+      </div>
+      <div class="stat-item">
+        <span class="icon">🏆</span>
+        <span class="value" id="highScoreDisplay">0</span>
+        <span class="label">En İyi</span>
+      </div>
+    </div>
+
+    <div class="mode-selector">
+      <div class="mode-card" data-mode="type">
+        <div class="mode-header">
+          <div class="mode-icon">✏️</div>
+          <div>
+            <div class="mode-title">Öğretici Mod</div>
+            <span class="mode-badge">Başlangıç</span>
+          </div>
+        </div>
+        <p class="mode-desc">Ülke haritada gösterilir, sen ismini yazarsın. Coğrafya öğrenmek için ideal!</p>
+        <div class="mode-difficulty">
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot"></span>
+          <span class="difficulty-dot"></span>
+          <span class="difficulty-dot"></span>
         </div>
       </div>
 
-      <div class="modes">
-        <button class="modeBtn" id="modeType">
-          <strong>Mod 1 — Yaz (Öğretici)</strong>
-          <span>Haritada ülke seçili ve vurgulu gelir. Sen ülkenin adını yazarsın. Doğruysa yeşil olur.</span>
-        </button>
-
-        <button class="modeBtn" id="modeClick">
-          <strong>Mod 2 — Seç (Gerçek Bulma)</strong>
-          <span>Ülke adı yazılı gelir. Harita hedefi asla göstermez: zoom yok, vurgu yok. Sen bulup dokunursun.</span>
-        </button>
-
-        <button class="modeBtn" id="modeChoice">
-          <strong>Mod 3 — 4 Şık</strong>
-          <span>Haritada ülke vurgulu gelir; altta 4 seçenek çıkar. Doğru şıkkı seç.</span>
-        </button>
-
-        <button class="modeBtn" id="modeHard">
-          <strong>Mod 4 — Zor (Seç + Ceza)</strong>
-          <span>Mod 2 gibi: hedef asla belli olmaz. Yanlış tıkta -1 puan (minimum 0). Hız ve dikkat modu.</span>
-        </button>
+      <div class="mode-card" data-mode="click">
+        <div class="mode-header">
+          <div class="mode-icon">👆</div>
+          <div>
+            <div class="mode-title">Bul ve Tıkla</div>
+            <span class="mode-badge">Orta</span>
+          </div>
+        </div>
+        <p class="mode-desc">Ülke adı verilir, sen haritada bulup tıklarsın. Gerçek coğrafya testi!</p>
+        <div class="mode-difficulty">
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot"></span>
+          <span class="difficulty-dot"></span>
+        </div>
       </div>
 
-      <div class="small" style="margin-top:10px;">
-        Gerekli dosya: <b>countries.geojson</b> (index.html ile aynı klasörde). Kod şunu okur: <code>./countries.geojson</code>
+      <div class="mode-card" data-mode="choice">
+        <div class="mode-header">
+          <div class="mode-icon">🎲</div>
+          <div>
+            <div class="mode-title">4 Şıklı Test</div>
+            <span class="mode-badge">Eğlenceli</span>
+          </div>
+        </div>
+        <p class="mode-desc">Ülke gösterilir, 4 seçenek arasından doğru olanı seç. Hızlı ve eğlenceli!</p>
+        <div class="mode-difficulty">
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot"></span>
+        </div>
+      </div>
+
+      <div class="mode-card" data-mode="hard">
+        <div class="mode-header">
+          <div class="mode-icon">💀</div>
+          <div>
+            <div class="mode-title">Cehennem Modu</div>
+            <span class="mode-badge">Zor</span>
+          </div>
+        </div>
+        <p class="mode-desc">Bul ve tıkla + yanlış cevap -1 puan! Sadece gerçek coğrafya ustaları için.</p>
+        <div class="mode-difficulty">
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot active"></span>
+          <span class="difficulty-dot active"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="start-footer">
+      <p>Gerekli: <strong>countries.geojson</strong> dosyası aynı klasörde olmalı</p>
+    </div>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div class="game-over-screen" id="gameOverScreen">
+    <div class="result-card">
+      <div class="result-emoji" id="resultEmoji">🎉</div>
+      <h2 class="result-title" id="resultTitle">Oyun Bitti!</h2>
+      <p class="result-subtitle" id="resultSubtitle">Harika bir performans gösterdin!</p>
+      
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="value" id="finalScore">0</div>
+          <div class="label">Puan</div>
+        </div>
+        <div class="result-stat">
+          <div class="value" id="finalQuestions">0</div>
+          <div class="label">Soru</div>
+        </div>
+      </div>
+
+      <div class="result-buttons">
+        <button class="btn btn-primary" id="playAgainBtn">🔄 Tekrar Oyna</button>
+        <button class="btn btn-secondary" id="backToMenuBtn">🏠 Ana Menü</button>
       </div>
     </div>
   </div>
 
-  <!-- GAME OVER -->
-  <div class="screen" id="overScreen" style="display:none;">
-    <div class="card">
-      <div class="hero">
-        <div class="bigLogo">GG</div>
-        <div>
-          <h1>Oyun Bitti</h1>
-          <p id="overText">Skorun: 0</p>
+  <!-- GAME UI -->
+  <div class="game-ui" id="gameUI">
+    <div class="top-bar">
+      <div class="game-info">
+        <div class="game-mode-icon" id="gameModeIcon">✏️</div>
+        <div class="game-mode-text">
+          <span class="game-mode-name" id="gameModeName">Öğretici Mod</span>
+          <span class="game-mode-sub" id="gameModeSub">Yaz ve öğren</span>
         </div>
       </div>
 
-      <div class="row" style="margin-top:10px;">
-        <button id="playAgain">Tekrar Oyna</button>
-        <button class="secondary" id="backToMenu">Mod Seçimine Dön</button>
+      <div class="stats-bar">
+        <div class="stat-chip timer" id="timerChip">
+          <span class="icon">⏱️</span>
+          <span id="timerDisplay">02:00</span>
+        </div>
+        <div class="stat-chip">
+          <span class="icon">⭐</span>
+          <span id="scoreDisplay">0</span>
+        </div>
+        <div class="stat-chip">
+          <span class="icon">📝</span>
+          <span id="questionDisplay">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="bottom-panel">
+      <div class="question-card">
+        <div class="question-label" id="questionLabel">Soru</div>
+        <div class="question-text" id="questionText">Hazırlanıyor...</div>
+        <div class="question-hint" id="questionHint">Bir saniye...</div>
+
+        <div class="input-row" id="inputRow">
+          <input type="text" id="answerInput" placeholder="Ülke adını yaz..." autocomplete="off" autocorrect="off" autocapitalize="off">
+          <button id="submitBtn">Gönder</button>
+        </div>
+
+        <div class="choices-grid" id="choicesGrid"></div>
       </div>
 
-      <div class="small" style="margin-top:10px;">
-        İstersen sonraki adım: kıta filtreleri, combo, en iyi skor (localStorage), “Türkiye = Turkey” gibi eş anlamlılar.
+      <div class="action-buttons">
+        <button class="action-btn" id="skipBtn">⏭️ Geç</button>
+        <button class="action-btn" id="fitBtn">🗺️ Harita</button>
+        <button class="action-btn danger" id="quitBtn">🚪 Çık</button>
       </div>
     </div>
   </div>
 
-  <!-- HUD / IN-GAME UI -->
-  <div class="ui" id="gameUI" style="display:none;">
-    <div class="hud">
-      <div class="chip brand">
-        <div class="logo">TR</div>
-        <div class="brandText">
-          <div class="title" id="modeTitle">Mod</div>
-          <div class="sub" id="modeSub">Hazırlanıyor…</div>
-        </div>
-      </div>
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
 
-      <div class="stats">
-        <div class="stat" id="timer">02:00</div>
-        <div class="stat" id="score">Puan: 0</div>
-        <div class="stat" id="qcount">Soru: 0</div>
-      </div>
-    </div>
-
-    <div></div>
-
-    <div class="bar">
-      <div class="prompt" id="promptBox">
-        <div class="promptTitle" id="promptTitle">Soru</div>
-        <div class="promptText" id="promptText">—</div>
-        <div class="hint" id="promptHint">—</div>
-
-        <!-- Typing -->
-        <div class="row" id="typeRow" style="display:none;">
-          <input id="answer" placeholder="Ülke adını yaz…" autocomplete="off"/>
-          <button id="checkBtn">Kontrol</button>
-        </div>
-
-        <!-- Choices -->
-        <div class="choices" id="choiceGrid" style="display:none;"></div>
-      </div>
-
-      <div class="controls">
-        <button class="secondary" id="skipBtn">Geç</button>
-        <button class="secondary" id="fitBtn">Haritayı Sığdır</button>
-        <button class="secondary" id="quitBtn">Çık</button>
-      </div>
-    </div>
-
-    <div class="toast" id="toast"><div id="toastText"></div></div>
-  </div>
-
-  <!-- Leaflet JS -->
+  <!-- LEAFLET JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    /***********************
-     * 0) AYAR
-     ***********************/
+    // ========== CONFIG ==========
     const GEOJSON_URL = "./countries.geojson";
-
-    // GeoJSON properties field candidates
-    const NAME_FIELDS = ["ADMIN","NAME","NAME_EN","NAME_LONG","SOVEREIGNT","FORMAL_EN","BRK_NAME","NAME_TR","NAME_TUR"];
-
-    // Oyun
+    const NAME_FIELDS = ["ADMIN", "NAME", "NAME_EN", "NAME_LONG", "SOVEREIGNT", "FORMAL_EN", "BRK_NAME", "NAME_TR", "NAME_TUR"];
     const GAME_SECONDS = 120;
 
-    /***********************
-     * 1) DOM
-     ***********************/
-    const $ = (id) => document.getElementById(id);
+    // ========== DOM ==========
+    const $ = id => document.getElementById(id);
 
     const startScreen = $("startScreen");
-    const overScreen = $("overScreen");
-    const overText = $("overText");
-
+    const gameOverScreen = $("gameOverScreen");
     const gameUI = $("gameUI");
-    const modeTitle = $("modeTitle");
-    const modeSub = $("modeSub");
 
-    const timerEl = $("timer");
-    const scoreEl = $("score");
-    const qcountEl = $("qcount");
+    const gameModeIcon = $("gameModeIcon");
+    const gameModeName = $("gameModeName");
+    const gameModeSub = $("gameModeSub");
 
-    const promptTitle = $("promptTitle");
-    const promptText = $("promptText");
-    const promptHint = $("promptHint");
+    const timerChip = $("timerChip");
+    const timerDisplay = $("timerDisplay");
+    const scoreDisplay = $("scoreDisplay");
+    const questionDisplay = $("questionDisplay");
 
-    const typeRow = $("typeRow");
-    const answerEl = $("answer");
-    const checkBtn = $("checkBtn");
+    const questionLabel = $("questionLabel");
+    const questionText = $("questionText");
+    const questionHint = $("questionHint");
 
-    const choiceGrid = $("choiceGrid");
+    const inputRow = $("inputRow");
+    const answerInput = $("answerInput");
+    const submitBtn = $("submitBtn");
+
+    const choicesGrid = $("choicesGrid");
 
     const skipBtn = $("skipBtn");
     const fitBtn = $("fitBtn");
     const quitBtn = $("quitBtn");
 
-    const toastEl = $("toast");
-    const toastText = $("toastText");
+    const playAgainBtn = $("playAgainBtn");
+    const backToMenuBtn = $("backToMenuBtn");
 
-    const playAgainBtn = $("playAgain");
-    const backToMenuBtn = $("backToMenu");
+    const resultEmoji = $("resultEmoji");
+    const resultTitle = $("resultTitle");
+    const resultSubtitle = $("resultSubtitle");
+    const finalScore = $("finalScore");
+    const finalQuestions = $("finalQuestions");
 
-    const modeTypeBtn = $("modeType");
-    const modeClickBtn = $("modeClick");
-    const modeChoiceBtn = $("modeChoice");
-    const modeHardBtn = $("modeHard");
+    const toast = $("toast");
+    const highScoreDisplay = $("highScoreDisplay");
 
-    /***********************
-     * 2) HARITA
-     ***********************/
-    const map = L.map("map", { zoomControl: true, worldCopyJump: true }).setView([20, 0], 2);
+    // ========== MAP ==========
+    const map = L.map("map", {
+      zoomControl: true,
+      worldCopyJump: true,
+      minZoom: 2,
+      maxZoom: 18
+    }).setView([20, 0], 2);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
       maxZoom: 19,
-      attribution: "© OpenStreetMap"
+      attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
 
     let geoLayer = null;
-    let countries = []; // { layer, names[], primaryName, correct, asked }
+    let countries = [];
     let allBounds = null;
 
-    /***********************
-     * 3) GAME STATE
-     ***********************/
+    // ========== GAME STATE ==========
     const MODE = { TYPE: "type", CLICK: "click", CHOICE: "choice", HARD: "hard" };
     let currentMode = null;
-
     let running = false;
     let timeLeft = GAME_SECONDS;
     let timerHandle = null;
-
     let score = 0;
     let qcount = 0;
+    let currentCountry = null;
+    let highScore = parseInt(localStorage.getItem("highScore") || "0");
 
-    let currentCountry = null; // answer country
+    highScoreDisplay.textContent = highScore;
 
-    /***********************
-     * 4) STYLES
-     ***********************/
-    function styleDefault(){
-      return {
-        color: "rgba(0,0,0,.30)",
+    // ========== STYLES ==========
+    const styles = {
+      default: {
+        color: "rgba(100, 116, 139, 0.5)",
         weight: 1,
-        fillColor: "rgba(0,0,0,.06)",
-        fillOpacity: 0.20
-      };
-    }
-    function applyDefault(c){ c.layer.setStyle(styleDefault()); }
-    function applyCorrect(c){
-      c.layer.setStyle({
-        color: "rgba(0,0,0,.45)",
-        weight: 1,
-        fillColor: "rgba(0,128,0,.55)",
-        fillOpacity: 0.65
-      });
-    }
-    function applyFocus(c){
-      c.layer.setStyle({
-        color: "rgba(0,0,0,.30)",     // sınır kalınlaşmasın
-        weight: 1,                   // sınır kalınlaşmasın
-        fillColor: "rgba(0,0,0,.10)", // hafif
-        fillOpacity: 0.36
-      });
-    }
-    function flashWrong(layer){
-      const prev = { ...styleDefault() };
-      layer.setStyle({
-        color: "rgba(0,0,0,.45)",
-        weight: 1,
-        fillColor: "rgba(200,0,0,.65)",
-        fillOpacity: 0.72
-      });
-      setTimeout(() => layer.setStyle(prev), 420);
-    }
-    function resetAllNonCorrect(){
-      countries.forEach(c => c.correct ? applyCorrect(c) : applyDefault(c));
+        fillColor: "rgba(100, 116, 139, 0.15)",
+        fillOpacity: 0.3
+      },
+      focus: {
+        color: "rgba(59, 130, 246, 0.8)",
+        weight: 2,
+        fillColor: "rgba(59, 130, 246, 0.4)",
+        fillOpacity: 0.5
+      },
+      correct: {
+        color: "rgba(16, 185, 129, 0.8)",
+        weight: 2,
+        fillColor: "rgba(16, 185, 129, 0.5)",
+        fillOpacity: 0.6
+      },
+      wrong: {
+        color: "rgba(239, 68, 68, 0.8)",
+        weight: 2,
+        fillColor: "rgba(239, 68, 68, 0.5)",
+        fillOpacity: 0.6
+      }
+    };
+
+    function applyStyle(c, style) {
+      c.layer.setStyle(styles[style]);
     }
 
-    /***********************
-     * 5) HELPERS
-     ***********************/
-    function toast(msg){
-      toastText.textContent = msg;
-      toastEl.classList.add("show");
-      setTimeout(() => toastEl.classList.remove("show"), 850);
+    function flashWrong(layer) {
+      layer.setStyle(styles.wrong);
+      setTimeout(() => layer.setStyle(styles.default), 400);
     }
-    function normalizeText(s){
+
+    function resetAllStyles() {
+      countries.forEach(c => applyStyle(c, c.correct ? "correct" : "default"));
+    }
+
+    // ========== HELPERS ==========
+    function showToast(msg, type = "") {
+      toast.textContent = msg;
+      toast.className = "toast visible " + type;
+      setTimeout(() => toast.className = "toast", 1500);
+    }
+
+    function normalizeText(s) {
       return String(s || "")
         .trim()
         .toLocaleLowerCase("tr-TR")
@@ -593,9 +1130,10 @@
         .replace(/ı/g, "i")
         .replace(/\s+/g, " ");
     }
-    function getNames(props){
+
+    function getNames(props) {
       const names = [];
-      for (const k of NAME_FIELDS){
+      for (const k of NAME_FIELDS) {
         if (props && props[k]) names.push(String(props[k]));
       }
       const seen = new Set();
@@ -606,66 +1144,74 @@
         return true;
       });
     }
-    function formatTime(sec){
+
+    function formatTime(sec) {
       const m = Math.floor(sec / 60);
       const s = sec % 60;
-      return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-    }
-    function updateHUD(){
-      timerEl.textContent = formatTime(timeLeft);
-      scoreEl.textContent = `Puan: ${score}`;
-      qcountEl.textContent = `Soru: ${qcount}`;
-    }
-    function fitWorld(){
-      if (allBounds) map.fitBounds(allBounds.pad(0.12));
-    }
-    function endGame(){
-      running = false;
-      if (timerHandle) clearInterval(timerHandle);
-      timerHandle = null;
-
-      gameUI.style.display = "none";
-      overScreen.style.display = "grid";
-      overText.textContent = `Skorun: ${score}  —  Toplam soru: ${qcount}`;
-      toastEl.classList.remove("show");
-    }
-    function quitToMenu(){
-      running = false;
-      if (timerHandle) clearInterval(timerHandle);
-      timerHandle = null;
-
-      gameUI.style.display = "none";
-      overScreen.style.display = "none";
-      startScreen.style.display = "grid";
-
-      countries.forEach(c => { c.correct = false; c.asked = false; applyDefault(c); });
-      currentCountry = null;
-
-      score = 0; qcount = 0;
-      timeLeft = GAME_SECONDS;
-      updateHUD();
-      fitWorld();
-      renderChoices([]); // clear
-    }
-    function startTimer(){
-      timeLeft = GAME_SECONDS;
-      updateHUD();
-      if (timerHandle) clearInterval(timerHandle);
-      timerHandle = setInterval(() => {
-        if (!running) return;
-        timeLeft -= 1;
-        if (timeLeft < 0) timeLeft = 0;
-        updateHUD();
-        if (timeLeft === 0) endGame();
-      }, 1000);
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     }
 
-    /***********************
-     * 6) QUESTION GEN
-     ***********************/
-    function pickNextCountry(){
+    function updateHUD() {
+      timerDisplay.textContent = formatTime(timeLeft);
+      scoreDisplay.textContent = score;
+      questionDisplay.textContent = qcount;
+
+      if (timeLeft <= 10) {
+        timerChip.classList.add("warning");
+      } else {
+        timerChip.classList.remove("warning");
+      }
+    }
+
+    function fitWorld() {
+      if (allBounds) map.fitBounds(allBounds.pad(0.1));
+    }
+
+    function getDisplayName(c) {
+      return c.primaryName || c.names[0] || "Unknown";
+    }
+
+    // ========== PARTICLES ==========
+    function createParticles() {
+      const container = $("particles");
+      for (let i = 0; i < 30; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        p.style.left = Math.random() * 100 + "%";
+        p.style.animationDelay = Math.random() * 15 + "s";
+        p.style.animationDuration = (10 + Math.random() * 10) + "s";
+        container.appendChild(p);
+      }
+    }
+
+    // ========== CONFETTI ==========
+    function createConfetti() {
+      const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+      for (let i = 0; i < 50; i++) {
+        const conf = document.createElement("div");
+        conf.className = "confetti";
+        conf.style.left = Math.random() * 100 + "vw";
+        conf.style.top = "-10px";
+        conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.transform = `rotate(${Math.random() * 360}deg)`;
+        document.body.appendChild(conf);
+
+        const anim = conf.animate([
+          { top: "-10px", opacity: 1 },
+          { top: "100vh", opacity: 0 }
+        ], {
+          duration: 2000 + Math.random() * 2000,
+          easing: "cubic-bezier(0.4, 0, 0.2, 1)"
+        });
+
+        anim.onfinish = () => conf.remove();
+      }
+    }
+
+    // ========== GAME LOGIC ==========
+    function pickNextCountry() {
       let pool = countries.filter(c => !c.asked);
-      if (pool.length === 0){
+      if (pool.length === 0) {
         countries.forEach(c => c.asked = false);
         pool = countries.slice();
       }
@@ -674,288 +1220,315 @@
       return next;
     }
 
-    function renderChoices(options){
-      choiceGrid.innerHTML = "";
-      if (!options.length) return;
+    function renderChoices(options) {
+      choicesGrid.innerHTML = "";
       options.forEach(opt => {
-        const b = document.createElement("button");
-        b.className = "choiceBtn";
-        b.textContent = opt.label;
-        b.addEventListener("click", () => opt.onPick());
-        choiceGrid.appendChild(b);
+        const btn = document.createElement("button");
+        btn.className = "choice-btn";
+        btn.textContent = opt.label;
+        btn.addEventListener("click", () => opt.onPick(btn));
+        choicesGrid.appendChild(btn);
       });
     }
 
-    function getDisplayName(c){
-      return c.primaryName || c.names[0] || "Unknown";
-    }
-
-    function newQuestion(){
+    function newQuestion() {
       if (!running || !countries.length) return;
 
       currentCountry = pickNextCountry();
-      qcount += 1;
+      qcount++;
       updateHUD();
 
-      // reset visuals
-      resetAllNonCorrect();
+      resetAllStyles();
 
-      // UI resets
-      typeRow.style.display = "none";
-      choiceGrid.style.display = "none";
-      renderChoices([]);
-      answerEl.value = "";
+      inputRow.classList.remove("visible");
+      choicesGrid.classList.remove("visible");
+      choicesGrid.innerHTML = "";
+      answerInput.value = "";
 
-      // MODE LOGIC
-      if (currentMode === MODE.TYPE){
-        // show & teach: highlight + zoom
-        applyFocus(currentCountry);
-        map.fitBounds(currentCountry.layer.getBounds().pad(0.25), { animate: true });
+      const name = getDisplayName(currentCountry);
 
-        promptTitle.textContent = "Ülke adını yaz";
-        promptText.textContent = "Bu ülke hangi ülke?";
-        promptHint.textContent = "Doğru yazınca yeşile döner.";
-        typeRow.style.display = "flex";
-        answerEl.focus();
+      if (currentMode === MODE.TYPE) {
+        applyStyle(currentCountry, "focus");
+        map.fitBounds(currentCountry.layer.getBounds().pad(0.3), { animate: true });
 
-      } else if (currentMode === MODE.CLICK || currentMode === MODE.HARD){
-        // IMPORTANT: NO zoom, NO highlight, NO hints on map
-        // map stays wherever the user is
-        const name = getDisplayName(currentCountry);
+        questionLabel.textContent = "Bu ülke hangisi?";
+        questionText.textContent = "Haritadaki ülkenin adını yaz";
+        questionHint.textContent = "Doğru yazarsan yeşile döner!";
+        inputRow.classList.add("visible");
+        setTimeout(() => answerInput.focus(), 100);
 
-        promptTitle.textContent = (currentMode === MODE.HARD) ? "Haritada ülkeyi seç (Ceza Modu)" : "Haritada ülkeyi seç";
-        promptText.textContent = name;
-        promptHint.textContent = (currentMode === MODE.HARD)
-          ? "Yanlış tık: -1 puan (min 0). Hedef asla belli olmaz."
-          : "Hedef asla belli olmaz: zoom yok, vurgu yok.";
+      } else if (currentMode === MODE.CLICK || currentMode === MODE.HARD) {
+        questionLabel.textContent = "Haritada bul ve tıkla";
+        questionText.textContent = name;
+        questionHint.textContent = currentMode === MODE.HARD
+          ? "⚠️ Yanlış tıklama -1 puan!"
+          : "Hedef gösterilmiyor, kendin bul!";
 
-      } else if (currentMode === MODE.CHOICE){
-        // highlight + zoom, answer by 4 options
-        applyFocus(currentCountry);
-        map.fitBounds(currentCountry.layer.getBounds().pad(0.25), { animate: true });
+      } else if (currentMode === MODE.CHOICE) {
+        applyStyle(currentCountry, "focus");
+        map.fitBounds(currentCountry.layer.getBounds().pad(0.3), { animate: true });
 
-        const correctName = getDisplayName(currentCountry);
+        questionLabel.textContent = "Bu ülke hangisi?";
+        questionText.textContent = "4 seçenekten birini seç";
+        questionHint.textContent = "Vurgulu ülkenin adını bul!";
 
-        // pick 3 random wrong names
         const pool = countries.filter(c => c !== currentCountry);
         const wrongs = [];
-        while (wrongs.length < 3 && pool.length){
-          const pick = pool[Math.floor(Math.random() * pool.length)];
-          const n = getDisplayName(pick);
-          if (n && !wrongs.includes(n) && n !== correctName) wrongs.push(n);
+        while (wrongs.length < 3 && pool.length) {
+          const idx = Math.floor(Math.random() * pool.length);
+          wrongs.push(pool.splice(idx, 1)[0]);
         }
 
-        const labels = [correctName, ...wrongs].slice(0,4);
-        shuffleInPlace(labels);
+        const options = [
+          { label: name, onPick: (btn) => handleChoiceAnswer(true, btn) },
+          ...wrongs.map(w => ({
+            label: getDisplayName(w),
+            onPick: (btn) => handleChoiceAnswer(false, btn)
+          }))
+        ].sort(() => Math.random() - 0.5);
 
-        promptTitle.textContent = "4 Şık";
-        promptText.textContent = "Bu ülkenin adı hangisi?";
-        promptHint.textContent = "Doğru şıkkı seç.";
-        choiceGrid.style.display = "grid";
-
-        renderChoices(labels.map(lbl => ({
-          label: lbl,
-          onPick: () => {
-            if (!running) return;
-            if (normalizeText(lbl) === normalizeText(correctName)){
-              score += 1;
-              currentCountry.correct = true;
-              applyCorrect(currentCountry);
-              toast("Doğru ✅");
-              updateHUD();
-              setTimeout(newQuestion, 520);
-            } else {
-              flashWrong(currentCountry.layer);
-              toast("Yanlış ❌");
-            }
-          }
-        })));
+        renderChoices(options);
+        choicesGrid.classList.add("visible");
       }
     }
 
-    /***********************
-     * 7) ANSWER LOGIC
-     ***********************/
-    function acceptTypedAnswer(){
-      if (!running || currentMode !== MODE.TYPE || !currentCountry) return;
+    function handleChoiceAnswer(isCorrect, btn) {
+      if (!running) return;
 
-      const typed = normalizeText(answerEl.value);
-      if (!typed){
-        toast("Bir ülke adı yaz.");
-        return;
-      }
-      const ok = currentCountry.names.some(n => normalizeText(n) === typed);
-      if (ok){
-        score += 1;
+      if (isCorrect) {
+        btn.classList.add("correct");
+        score++;
         currentCountry.correct = true;
-        applyCorrect(currentCountry);
-        toast("Doğru ✅");
-        updateHUD();
-        setTimeout(newQuestion, 520);
+        applyStyle(currentCountry, "correct");
+        showToast("✅ Doğru!", "success");
+        setTimeout(newQuestion, 600);
       } else {
-        flashWrong(currentCountry.layer);
-        toast("Yanlış ❌");
+        btn.classList.add("wrong");
+        showToast("❌ Yanlış!", "error");
+        setTimeout(() => btn.classList.remove("wrong"), 400);
       }
+      updateHUD();
     }
 
-    function handleMapClickOnCountry(clickedCountry){
+    function checkTypedAnswer() {
       if (!running || !currentCountry) return;
-      if (currentMode !== MODE.CLICK && currentMode !== MODE.HARD) return;
 
-      if (clickedCountry === currentCountry){
-        score += 1;
+      const typed = normalizeText(answerInput.value);
+      const match = currentCountry.names.some(n => normalizeText(n) === typed);
+
+      if (match) {
+        score++;
         currentCountry.correct = true;
-        applyCorrect(currentCountry);
-        toast("Doğru ✅");
+        applyStyle(currentCountry, "correct");
+        showToast("✅ Doğru!", "success");
         updateHUD();
-        setTimeout(newQuestion, 520);
+        setTimeout(newQuestion, 600);
       } else {
-        flashWrong(clickedCountry.layer);
-        if (currentMode === MODE.HARD){
-          score = Math.max(0, score - 1);
-          updateHUD();
-          toast("Yanlış ❌ (-1)");
-        } else {
-          toast("Yanlış ❌");
-        }
+        showToast("❌ Yanlış, tekrar dene!", "error");
+        answerInput.select();
       }
     }
 
-    /***********************
-     * 8) START / MENU
-     ***********************/
-    function startGame(mode){
-      currentMode = mode;
+    function handleMapClick(c) {
+      if (!running) return;
+      if (currentMode !== MODE.CLICK && currentMode !== MODE.HARD) return;
+      if (!currentCountry) return;
 
-      // reset
-      countries.forEach(c => { c.correct = false; c.asked = false; applyDefault(c); });
+      if (c === currentCountry) {
+        score++;
+        c.correct = true;
+        applyStyle(c, "correct");
+        showToast("✅ Doğru!", "success");
+        updateHUD();
+        setTimeout(newQuestion, 600);
+      } else {
+        if (currentMode === MODE.HARD) {
+          score = Math.max(0, score - 1);
+          showToast("❌ -1 Puan!", "error");
+        } else {
+          showToast("❌ Yanlış ülke!", "error");
+        }
+        flashWrong(c.layer);
+        updateHUD();
+      }
+    }
+
+    function skipQuestion() {
+      if (!running || !currentCountry) return;
+      showToast("⏭️ Geçildi");
+      newQuestion();
+    }
+
+    function startTimer() {
+      timeLeft = GAME_SECONDS;
+      updateHUD();
+      if (timerHandle) clearInterval(timerHandle);
+      timerHandle = setInterval(() => {
+        if (!running) return;
+        timeLeft--;
+        if (timeLeft < 0) timeLeft = 0;
+        updateHUD();
+        if (timeLeft === 0) endGame();
+      }, 1000);
+    }
+
+    function endGame() {
+      running = false;
+      if (timerHandle) clearInterval(timerHandle);
+      timerHandle = null;
+
+      gameUI.classList.remove("visible");
+      gameOverScreen.classList.add("visible");
+
+      finalScore.textContent = score;
+      finalQuestions.textContent = qcount;
+
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", highScore);
+        highScoreDisplay.textContent = highScore;
+        resultEmoji.textContent = "🏆";
+        resultTitle.textContent = "Yeni Rekor!";
+        resultSubtitle.textContent = "Tebrikler, en iyi skorunu geçtin!";
+        createConfetti();
+      } else if (score >= 15) {
+        resultEmoji.textContent = "🎉";
+        resultTitle.textContent = "Harika!";
+        resultSubtitle.textContent = "Coğrafya bilgin muhteşem!";
+      } else if (score >= 10) {
+        resultEmoji.textContent = "👏";
+        resultTitle.textContent = "İyi İş!";
+        resultSubtitle.textContent = "Güzel bir performans gösterdin!";
+      } else if (score >= 5) {
+        resultEmoji.textContent = "💪";
+        resultTitle.textContent = "Fena Değil!";
+        resultSubtitle.textContent = "Biraz daha pratikle daha iyi olursun!";
+      } else {
+        resultEmoji.textContent = "📚";
+        resultTitle.textContent = "Öğrenmeye Devam!";
+        resultSubtitle.textContent = "Her oyun yeni bir şeyler öğretir!";
+      }
+    }
+
+    function quitToMenu() {
+      running = false;
+      if (timerHandle) clearInterval(timerHandle);
+      timerHandle = null;
+
+      gameUI.classList.remove("visible");
+      gameOverScreen.classList.remove("visible");
+      startScreen.classList.remove("hidden");
+
+      countries.forEach(c => {
+        c.correct = false;
+        c.asked = false;
+        applyStyle(c, "default");
+      });
+
       currentCountry = null;
       score = 0;
       qcount = 0;
+      timeLeft = GAME_SECONDS;
       updateHUD();
-
-      // UI
-      startScreen.style.display = "none";
-      overScreen.style.display = "none";
-      gameUI.style.display = "grid";
-      toastEl.classList.remove("show");
-
-      // Mode header
-      if (mode === MODE.TYPE){
-        modeTitle.textContent = "Mod 1 — Yaz";
-        modeSub.textContent = "Ülke vurgulu gelir; adını yazarsın.";
-      } else if (mode === MODE.CLICK){
-        modeTitle.textContent = "Mod 2 — Seç";
-        modeSub.textContent = "Hedef asla belli olmaz (zoom/vurgu yok).";
-      } else if (mode === MODE.CHOICE){
-        modeTitle.textContent = "Mod 3 — 4 Şık";
-        modeSub.textContent = "Ülke vurgulu; doğru şıkkı seç.";
-      } else if (mode === MODE.HARD){
-        modeTitle.textContent = "Mod 4 — Zor";
-        modeSub.textContent = "Bul ve seç; yanlışta -1 puan.";
-      }
-
-      // show/hide inputs
-      typeRow.style.display = "none";
-      choiceGrid.style.display = "none";
-      renderChoices([]);
-
-      running = true;
-      startTimer();
-      newQuestion();
+      fitWorld();
     }
 
-    modeTypeBtn.addEventListener("click", () => startGame(MODE.TYPE));
-    modeClickBtn.addEventListener("click", () => startGame(MODE.CLICK));
-    modeChoiceBtn.addEventListener("click", () => startGame(MODE.CHOICE));
-    modeHardBtn.addEventListener("click", () => startGame(MODE.HARD));
+    function startGame(mode) {
+      currentMode = mode;
+      running = true;
+      score = 0;
+      qcount = 0;
+      currentCountry = null;
 
-    playAgainBtn.addEventListener("click", () => {
-      if (!currentMode) currentMode = MODE.TYPE;
-      startGame(currentMode);
-    });
-    backToMenuBtn.addEventListener("click", () => quitToMenu());
+      countries.forEach(c => {
+        c.correct = false;
+        c.asked = false;
+        applyStyle(c, "default");
+      });
 
-    checkBtn.addEventListener("click", acceptTypedAnswer);
-    answerEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") acceptTypedAnswer();
-    });
+      startScreen.classList.add("hidden");
+      gameOverScreen.classList.remove("visible");
+      gameUI.classList.add("visible");
 
-    skipBtn.addEventListener("click", () => {
-      if (!running) return;
-      toast("Geçildi → Yeni soru");
-      newQuestion();
-    });
+      const modeInfo = {
+        [MODE.TYPE]: { icon: "✏️", name: "Öğretici Mod", sub: "Yaz ve öğren" },
+        [MODE.CLICK]: { icon: "👆", name: "Bul ve Tıkla", sub: "Haritada bul" },
+        [MODE.CHOICE]: { icon: "🎲", name: "4 Şıklı Test", sub: "Seçenekleri değerlendir" },
+        [MODE.HARD]: { icon: "💀", name: "Cehennem Modu", sub: "Dikkatli ol!" }
+      };
 
-    fitBtn.addEventListener("click", () => fitWorld());
+      const info = modeInfo[mode];
+      gameModeIcon.textContent = info.icon;
+      gameModeName.textContent = info.name;
+      gameModeSub.textContent = info.sub;
 
-    quitBtn.addEventListener("click", () => {
-      toast("Çıkıldı");
-      setTimeout(quitToMenu, 250);
-    });
+      fitWorld();
+      startTimer();
+      setTimeout(newQuestion, 500);
+    }
 
-    /***********************
-     * 9) GEOJSON LOAD
-     ***********************/
-    fetch(GEOJSON_URL)
-      .then(r => {
-        if (!r.ok) throw new Error("GeoJSON yüklenemedi: " + r.status);
-        return r.json();
-      })
-      .then(geo => {
-        geoLayer = L.geoJSON(geo, {
-          style: styleDefault(),
+    // ========== LOAD GEOJSON ==========
+    async function loadGeoJSON() {
+      try {
+        const res = await fetch(GEOJSON_URL);
+        if (!res.ok) throw new Error("GeoJSON yüklenemedi");
+        const data = await res.json();
+
+        geoLayer = L.geoJSON(data, {
+          style: () => styles.default,
           onEachFeature: (feature, layer) => {
             const names = getNames(feature.properties);
-            const primaryName = names[0] || null;
+            if (!names.length) return;
 
-            const item = { layer, feature, names, primaryName, correct: false, asked: false };
-            countries.push(item);
+            const countryObj = {
+              layer,
+              names,
+              primaryName: names[0],
+              correct: false,
+              asked: false
+            };
 
-            // IMPORTANT: Mod 2/4'te hover ipucu olmasın
-            layer.on("mouseover", () => {
-              if (currentMode === MODE.TYPE || currentMode === MODE.CHOICE){
-                layer.setStyle({ fillOpacity: 0.32 });
-              }
-            });
-            layer.on("mouseout", () => {
-              const c = item;
-              if (c.correct) applyCorrect(c);
-              else if ((currentMode === MODE.TYPE || currentMode === MODE.CHOICE) && currentCountry && c === currentCountry) applyFocus(c);
-              else applyDefault(c);
-            });
+            countries.push(countryObj);
 
-            layer.on("click", () => handleMapClickOnCountry(item));
+            layer.on("click", () => handleMapClick(countryObj));
           }
         }).addTo(map);
 
         allBounds = geoLayer.getBounds();
         fitWorld();
 
-        const unnamed = countries.filter(c => !c.names.length).length;
-        if (unnamed > 0){
-          console.warn("Bazı ülkelerde isim alanı bulunamadı. NAME_FIELDS listesini dosyana göre güncelleyebilirsin.");
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert(
-          "countries.geojson bulunamadı veya yüklenemedi.\n\n" +
-          "index.html ile aynı klasörde 'countries.geojson' olduğundan emin ol.\n" +
-          "Ayrıca fetch için local server ile çalıştırman gerekebilir."
-        );
-      });
+        // Update country count
+        document.querySelector(".stat-item:nth-child(2) .value").textContent = countries.length;
 
-    /***********************
-     * 10) UTILS
-     ***********************/
-    function shuffleInPlace(arr){
-      for (let i = arr.length - 1; i > 0; i--){
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+      } catch (err) {
+        console.error(err);
+        showToast("❌ GeoJSON yüklenemedi!", "error");
       }
-      return arr;
     }
+
+    // ========== EVENT LISTENERS ==========
+    document.querySelectorAll(".mode-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const mode = card.dataset.mode;
+        startGame(mode);
+      });
+    });
+
+    submitBtn.addEventListener("click", checkTypedAnswer);
+    answerInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") checkTypedAnswer();
+    });
+
+    skipBtn.addEventListener("click", skipQuestion);
+    fitBtn.addEventListener("click", fitWorld);
+    quitBtn.addEventListener("click", quitToMenu);
+
+    playAgainBtn.addEventListener("click", () => startGame(currentMode));
+    backToMenuBtn.addEventListener("click", quitToMenu);
+
+    // ========== INIT ==========
+    createParticles();
+    loadGeoJSON();
   </script>
 </body>
 </html>
