@@ -1,0 +1,3139 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>Geo Master</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --text: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-muted: rgba(255, 255, 255, 0.4);
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-hover: rgba(255, 255, 255, 0.15);
+      --success: #22c55e;
+      --error: #ef4444;
+      --primary: #3b82f6;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* MAP */
+    #map {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* GLASS EFFECT */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+    }
+
+    /* SCREENS */
+    .screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .screen.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .screen-content {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* WELCOME SCREEN */
+    .welcome-title {
+      font-size: clamp(48px, 14vw, 72px);
+      font-weight: 700;
+      letter-spacing: -3px;
+      margin-bottom: 8px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+    }
+
+    .welcome-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 56px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 48px;
+      margin-bottom: 56px;
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 600;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 6px;
+    }
+
+    .main-btn {
+      width: 100%;
+      padding: 20px 32px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
+      font-family: inherit;
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+    }
+
+    .main-btn:active {
+      transform: scale(0.97);
+    }
+
+    .main-btn.no-anim {
+      opacity: 1;
+      animation: none;
+    }
+
+    .secondary-btn {
+      margin-top: 16px;
+      padding: 16px 28px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1s forwards;
+    }
+
+    .secondary-btn:active {
+      background: var(--glass-hover);
+      transform: scale(0.97);
+    }
+
+    .secondary-btn.no-anim {
+      opacity: 1;
+      animation: none;
+    }
+
+    .online-btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 20px 32px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: var(--text);
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
+      font-family: inherit;
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+    }
+
+    .online-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* BACK BTN */
+    .back-btn {
+      position: absolute;
+      top: calc(24px + var(--safe-top));
+      left: 24px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .back-btn:active {
+      background: var(--glass-hover);
+      transform: scale(0.95);
+    }
+
+    .section-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 28px;
+    }
+
+    /* GAME TYPE SCREEN */
+    .type-options {
+      width: 100%;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .type-btn {
+      flex: 1;
+      padding: 24px 16px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .type-btn:active {
+      transform: scale(0.96);
+    }
+
+    .type-btn.selected {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: var(--glass-hover);
+    }
+
+    .type-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .type-name {
+      font-size: 15px;
+      font-weight: 600;
+      display: block;
+    }
+
+    .type-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* COUNTRY SELECT SCREEN */
+    .country-search {
+      width: 100%;
+      padding: 16px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.3s;
+      margin-bottom: 16px;
+    }
+
+    .country-search:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .country-search::placeholder {
+      color: var(--text-muted);
+    }
+
+    .country-list {
+      width: 100%;
+      max-height: 320px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 8px;
+    }
+
+    .country-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .country-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .country-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    .country-item {
+      padding: 16px 18px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      text-align: left;
+    }
+
+    .country-item:active {
+      background: var(--glass-hover);
+      transform: scale(0.98);
+    }
+
+    .country-flag {
+      font-size: 24px;
+    }
+
+    .country-name {
+      flex: 1;
+    }
+
+    .country-code {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* MODE SCREEN */
+    .mode-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .mode-item {
+      width: 100%;
+      padding: 22px 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: left;
+    }
+
+    .mode-item:active {
+      background: var(--glass-hover);
+      transform: scale(0.98);
+    }
+
+    .mode-item.selected {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: var(--glass-hover);
+    }
+
+    .mode-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .mode-name {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .mode-difficulty {
+      display: flex;
+      gap: 5px;
+    }
+
+    .diff-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      transition: background 0.3s;
+    }
+
+    .diff-dot.active {
+      background: var(--text);
+    }
+
+    .mode-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* TIME SCREEN */
+    .time-options {
+      width: 100%;
+      display: flex;
+      gap: 14px;
+    }
+
+    .time-btn {
+      flex: 1;
+      padding: 28px 16px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .time-btn:active {
+      transform: scale(0.96);
+    }
+
+    .time-btn.selected {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: var(--glass-hover);
+    }
+
+    .time-value {
+      font-size: 36px;
+      font-weight: 600;
+      display: block;
+    }
+
+    .time-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 6px;
+      display: block;
+    }
+
+    .continue-btn {
+      width: 100%;
+      margin-top: 36px;
+      padding: 20px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .continue-btn:active {
+      transform: scale(0.97);
+    }
+
+    .continue-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* COUNTDOWN SCREEN */
+    .countdown-number {
+      font-size: clamp(140px, 40vw, 220px);
+      font-weight: 700;
+      opacity: 0;
+      transform: scale(0.5);
+      animation: countPop 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes countPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+      60% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .countdown-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-top: 20px;
+    }
+
+    /* LOADING SCREEN */
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--glass-border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 24px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    .loading-subtext {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* SETTINGS SCREEN */
+    .settings-section {
+      width: 100%;
+      margin-bottom: 36px;
+    }
+
+    .settings-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .theme-btn {
+      padding: 18px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      font-family: inherit;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .theme-btn:active {
+      background: var(--glass-hover);
+    }
+
+    .theme-btn.selected {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: var(--glass-hover);
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 18px;
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 14px;
+      color: var(--error);
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+
+    .reset-btn:active {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* GAME UI */
+    .game-ui {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .game-ui.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .game-ui > * {
+      pointer-events: auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .timer-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .timer-display {
+      padding: 14px 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      font-size: 20px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      transition: all 0.3s;
+    }
+
+    .timer-display.warning {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: rgba(239, 68, 68, 0.5);
+      animation: pulse 0.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .score-display {
+      padding: 14px 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .spacer {
+      flex: 1;
+      pointer-events: none;
+    }
+
+    /* BOTTOM PANEL - RESPONSIVE */
+    .bottom-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .main-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .question-box {
+      padding: 16px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      flex: 1;
+    }
+
+    .question-label {
+      display: none;
+    }
+
+    .question-text {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .question-hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: none;
+    }
+
+    .input-container {
+      display: none;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .input-container.visible {
+      display: flex;
+    }
+
+    .input-container input {
+      flex: 1;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .input-container input:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .input-container input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .submit-btn {
+      padding: 14px 24px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.96);
+    }
+
+    .choices-container {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .choices-container.visible {
+      display: grid;
+    }
+
+    .choice-btn {
+      padding: 14px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .choice-btn:active {
+      background: var(--glass-hover);
+    }
+
+    .choice-btn.correct {
+      background: rgba(34, 197, 94, 0.3);
+      border-color: rgba(34, 197, 94, 0.5);
+    }
+
+    .choice-btn.wrong {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    /* ACTION BUTTONS - ICON ONLY */
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .icon-btn:active {
+      background: var(--glass-hover);
+      transform: scale(0.95);
+    }
+
+    .icon-btn.quit {
+      border-color: rgba(239, 68, 68, 0.3);
+      color: var(--error);
+    }
+
+    .icon-btn.quit:active {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* MOBILE: Buttons independent from question panel, positioned above panel on right side */
+    @media (max-width: 767px) {
+      .bottom-panel {
+        position: relative;
+      }
+
+      .main-panel {
+        flex-direction: column;
+        position: relative;
+      }
+
+      .question-box {
+        padding: 14px;
+      }
+
+      .action-buttons {
+        position: absolute;
+        bottom: calc(100% + 10px);
+        right: 0;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .icon-btn {
+        width: 44px;
+        height: 44px;
+      }
+    }
+
+    /* DESKTOP: Buttons beside question */
+    @media (min-width: 768px) {
+      .screen-content {
+        max-width: 450px;
+      }
+
+      .bottom-panel {
+        max-width: 700px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      .main-panel {
+        flex-direction: row;
+        align-items: stretch;
+      }
+
+      .question-box {
+        min-width: 0;
+        padding: 24px;
+      }
+
+      .question-text {
+        font-size: 26px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .icon-btn {
+        width: 56px;
+        height: 56px;
+      }
+    }
+
+    /* RESULT SCREEN */
+    .result-icon {
+      font-size: 72px;
+      margin-bottom: 20px;
+    }
+
+    .result-title {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .result-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+    }
+
+    .result-stats {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+
+    .result-stat {
+      text-align: center;
+    }
+
+    .result-stat .value {
+      font-size: 42px;
+      font-weight: 700;
+    }
+
+    .result-stat .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 6px;
+    }
+
+    .result-buttons {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      top: calc(100px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      padding: 14px 28px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    .toast.error {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .toast.info {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    /* LEAFLET OVERRIDES - HIDE ZOOM CONTROL */
+    .leaflet-control-zoom {
+      display: none !important;
+    }
+
+    .leaflet-control-attribution {
+      display: none;
+    }
+
+    /* SVG ICONS */
+    .icon {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ONLINE MODE STYLES */
+    .online-input {
+      width: 100%;
+      padding: 16px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.3s;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .online-input:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .online-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .room-code-display {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 8px;
+      color: var(--primary);
+      margin-bottom: 24px;
+      padding: 20px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+    }
+
+    .players-list {
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .player-item {
+      padding: 14px 18px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+    }
+
+    .player-item.host {
+      border-color: rgba(59, 130, 246, 0.5);
+    }
+
+    .player-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .player-name {
+      flex: 1;
+    }
+
+    .player-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      background: rgba(59, 130, 246, 0.2);
+      border-radius: 20px;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      margin: 24px 0;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--glass-border);
+    }
+
+    /* PHOTO MODE UI */
+    .photo-ui {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .photo-ui.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .photo-ui > * {
+      pointer-events: auto;
+    }
+
+    .capture-btn {
+      position: fixed;
+      bottom: calc(40px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--text);
+      border: 4px solid var(--glass-border);
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .capture-btn:active {
+      transform: translateX(-50%) scale(0.9);
+    }
+
+    .capture-btn::before {
+      content: "";
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 3px solid var(--bg);
+    }
+
+    .capture-btn.captured {
+      background: var(--success);
+    }
+
+    .photo-status {
+      position: fixed;
+      top: calc(100px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    /* VOTING SCREEN */
+    .photos-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .photo-card {
+      position: relative;
+      aspect-ratio: 16/9;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid var(--glass-border);
+      transition: all 0.3s;
+    }
+
+    .photo-card:active {
+      transform: scale(0.98);
+    }
+
+    .photo-card.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-card .player-name-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 8px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.8));
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .photo-card .vote-count {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 10px;
+      background: var(--primary);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* WINNER SCREEN */
+    .winner-photo {
+      width: 100%;
+      max-width: 350px;
+      aspect-ratio: 16/9;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      border: 3px solid gold;
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+    }
+
+    .winner-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .winner-name {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .winner-votes {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+    }
+
+    .waiting-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 16px;
+    }
+
+    .waiting-dots::after {
+      content: '';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- WELCOME SCREEN -->
+  <div class="screen visible" id="welcomeScreen">
+    <div class="screen-content">
+      <h1 class="welcome-title">Geo Master</h1>
+      <p class="welcome-subtitle">Test your world geography knowledge</p>
+      
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-value" id="countryCount">195</div>
+          <div class="stat-label">Countries</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="highScoreDisplay">0</div>
+          <div class="stat-label">Best Score</div>
+        </div>
+      </div>
+
+      <button class="main-btn" id="startBtn">Start Game</button>
+      <button class="online-btn" id="onlineBtn">Online Mode</button>
+      <button class="secondary-btn" id="settingsBtn">Settings</button>
+    </div>
+  </div>
+
+  <!-- ONLINE LOBBY SCREEN -->
+  <div class="screen" id="onlineLobbyScreen">
+    <button class="back-btn" id="onlineLobbyBackBtn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-content">
+      <div class="section-title">Online Mode</div>
+      
+      <input type="text" class="online-input" id="playerNameInput" placeholder="Enter your name" maxlength="20">
+      
+      <button class="main-btn no-anim" id="createRoomBtn">Create Room</button>
+      
+      <div class="or-divider">or</div>
+      
+      <input type="text" class="online-input" id="roomCodeInput" placeholder="Enter room code" maxlength="6" style="text-transform: uppercase;">
+      <button class="continue-btn" id="joinRoomBtn">Join Room</button>
+    </div>
+  </div>
+
+  <!-- WAITING ROOM SCREEN -->
+  <div class="screen" id="waitingRoomScreen">
+    <button class="back-btn" id="waitingRoomBackBtn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-content">
+      <div class="section-title">Room Code</div>
+      <div class="room-code-display" id="roomCodeDisplay">XXXXXX</div>
+      
+      <div class="section-title">Players</div>
+      <div class="players-list" id="playersList"></div>
+      
+      <button class="main-btn no-anim" id="startOnlineGameBtn" style="display: none;">Start Game</button>
+      <p class="waiting-text" id="waitingText">Waiting for host to start<span class="waiting-dots"></span></p>
+    </div>
+  </div>
+
+  <!-- PHOTO GAME UI -->
+  <div class="photo-ui" id="photoUI">
+    <div class="top-bar">
+      <div class="timer-box">
+        <div class="timer-display" id="photoTimerDisplay">01:00</div>
+      </div>
+      <div class="score-display" id="photoStatus">Find best view!</div>
+    </div>
+    
+    <div class="spacer"></div>
+    
+    <button class="capture-btn" id="captureBtn" title="Capture Photo"></button>
+  </div>
+
+  <!-- VOTING SCREEN -->
+  <div class="screen" id="votingScreen">
+    <div class="screen-content" style="max-width: 500px;">
+      <div class="section-title">Vote for the best photo!</div>
+      <div class="timer-display" id="voteTimerDisplay" style="margin-bottom: 24px;">00:10</div>
+      <div class="photos-grid" id="photosGrid"></div>
+      <p class="waiting-text" id="voteWaitingText" style="display: none;">Waiting for others to vote<span class="waiting-dots"></span></p>
+    </div>
+  </div>
+
+  <!-- WINNER SCREEN -->
+  <div class="screen" id="winnerScreen">
+    <div class="screen-content">
+      <div class="result-icon">&#127942;</div>
+      <div class="section-title">Winner</div>
+      <div class="winner-photo" id="winnerPhoto">
+        <img src="" alt="Winning photo" id="winnerPhotoImg">
+      </div>
+      <div class="winner-name" id="winnerName">Player Name</div>
+      <div class="winner-votes" id="winnerVotes">X votes</div>
+      
+      <div class="result-buttons">
+        <button class="main-btn no-anim" id="playAgainOnlineBtn" style="display: none;">Play Again</button>
+        <button class="secondary-btn no-anim" id="onlineMenuBtn">Back to Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME TYPE SCREEN -->
+  <div class="screen" id="gameTypeScreen">
+    <button class="back-btn" id="gameTypeBackBtn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-content">
+      <div class="section-title">What do you want to learn?</div>
+      <div class="type-options">
+        <button class="type-btn" data-type="countries">
+          <span class="type-icon">🌍</span>
+          <span class="type-name">Countries</span>
+          <span class="type-desc">World nations</span>
+        </button>
+        <button class="type-btn" data-type="cities">
+          <span class="type-icon">🏙️</span>
+          <span class="type-name">Cities</span>
+          <span class="type-desc">Select a country</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTRY SELECT SCREEN (for cities mode) -->
+  <div class="screen" id="countrySelectScreen">
+    <button class="back-btn" id="countrySelectBackBtn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-content">
+      <div class="section-title">Select Country</div>
+      <input type="text" class="country-search" id="countrySearchInput" placeholder="Search country..." autocomplete="off">
+      <div class="country-list" id="countryList"></div>
+    </div>
+  </div>
+
+  <!-- LOADING SCREEN -->
+  <div class="screen" id="loadingScreen">
+    <div class="screen-content">
+      <div class="loading-spinner"></div>
+      <div class="loading-text" id="loadingText">Loading cities...</div>
+      <div class="loading-subtext" id="loadingSubtext">This may take a moment</div>
+    </div>
+  </div>
+
+  <!-- MODE SCREEN -->
+  <div class="screen" id="modeScreen">
+    <button class="back-btn" id="modeBackBtn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-content">
+      <div class="section-title">Select Mode</div>
+      <div class="mode-list">
+        <div class="mode-item" data-mode="type">
+          <div class="mode-header">
+            <span class="mode-name">Learn</span>
+            <div class="mode-difficulty">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot"></span>
+              <span class="diff-dot"></span>
+              <span class="diff-dot"></span>
+            </div>
+          </div>
+          <p class="mode-desc" id="modeDescType">Region is shown on map. Type its name to learn.</p>
+        </div>
+        <div class="mode-item" data-mode="click">
+          <div class="mode-header">
+            <span class="mode-name">Find & Click</span>
+            <div class="mode-difficulty">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot"></span>
+              <span class="diff-dot"></span>
+            </div>
+          </div>
+          <p class="mode-desc" id="modeDescClick">Find the region on map and click it.</p>
+        </div>
+        <div class="mode-item" data-mode="choice">
+          <div class="mode-header">
+            <span class="mode-name">Quiz</span>
+            <div class="mode-difficulty">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot"></span>
+            </div>
+          </div>
+          <p class="mode-desc" id="modeDescChoice">Region shown, pick correct name from 4 choices.</p>
+        </div>
+        <div class="mode-item" data-mode="hard">
+          <div class="mode-header">
+            <span class="mode-name">Expert</span>
+            <div class="mode-difficulty">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+            </div>
+          </div>
+          <p class="mode-desc" id="modeDescHard">Find & click with penalty. Wrong click = -1 point.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIME SCREEN -->
+  <div class="screen" id="timeScreen">
+    <button class="back-btn" id="timeBackBtn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-content">
+      <div class="section-title">Select Duration</div>
+      <div class="time-options">
+        <button class="time-btn" data-time="60">
+          <span class="time-value">1</span>
+          <span class="time-label">Min</span>
+        </button>
+        <button class="time-btn selected" data-time="120">
+          <span class="time-value">2</span>
+          <span class="time-label">Min</span>
+        </button>
+        <button class="time-btn" data-time="180">
+          <span class="time-value">3</span>
+          <span class="time-label">Min</span>
+        </button>
+      </div>
+      <button class="continue-btn" id="startGameBtn">Continue</button>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN SCREEN -->
+  <div class="screen" id="countdownScreen">
+    <div class="screen-content">
+      <div class="countdown-number" id="countdownNumber">3</div>
+      <div class="countdown-text">Get Ready</div>
+    </div>
+  </div>
+
+  <!-- SETTINGS SCREEN -->
+  <div class="screen" id="settingsScreen">
+    <button class="back-btn" id="settingsBackBtn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-content">
+      <div class="section-title">Settings</div>
+      
+      <div class="settings-section">
+        <div class="settings-label">Map Theme</div>
+        <div class="theme-grid">
+          <button class="theme-btn" data-theme="dark">Dark</button>
+          <button class="theme-btn" data-theme="light">Light</button>
+          <button class="theme-btn selected" data-theme="satellite">Satellite</button>
+          <button class="theme-btn" data-theme="terrain">Terrain</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Data</div>
+        <button class="reset-btn" id="resetScoresBtn">Reset All Scores</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME UI -->
+  <div class="game-ui" id="gameUI">
+    <div class="top-bar">
+      <div class="timer-box">
+        <div class="timer-display" id="timerDisplay">02:00</div>
+      </div>
+      <div class="score-display" id="scoreDisplay">Score: 0</div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="bottom-panel">
+      <div class="main-panel">
+        <div class="question-box">
+          <div class="question-label" id="questionLabel">Question</div>
+          <div class="question-text" id="questionText">Loading...</div>
+          <div class="question-hint" id="questionHint">Please wait</div>
+
+          <div class="input-container" id="inputContainer">
+            <input type="text" id="answerInput" placeholder="Type name..." autocomplete="off" autocorrect="off" autocapitalize="off">
+            <button class="submit-btn" id="submitBtn">Go</button>
+          </div>
+
+          <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="icon-btn" id="skipBtn" title="Skip">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8V4zM19 5v14"/></svg>
+          </button>
+          <button class="icon-btn" id="fitBtn" title="Reset View">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+          <button class="icon-btn quit" id="quitBtn" title="Quit">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="screen" id="resultScreen">
+    <div class="screen-content">
+      <div class="result-icon" id="resultIcon">&#127942;</div>
+      <h2 class="result-title" id="resultTitle">Game Over</h2>
+      <p class="result-subtitle" id="resultSubtitle">Great performance!</p>
+
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="value" id="finalScore">0</div>
+          <div class="label">Score</div>
+        </div>
+        <div class="result-stat">
+          <div class="value" id="finalQuestions">0</div>
+          <div class="label">Questions</div>
+        </div>
+      </div>
+
+      <div class="result-buttons">
+        <button class="main-btn no-anim" id="playAgainBtn">Play Again</button>
+        <button class="secondary-btn no-anim" id="menuBtn">Main Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      projectId: "maps-52b00",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
+      measurementId: "G-YHHXDYCCG7",
+      databaseURL: "https://maps-52b00-default-rtdb.firebaseio.com"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // CONFIG
+    const GEOJSON_URL = "./countries.geojson";
+    const NAME_FIELDS = ["ADMIN", "NAME", "NAME_EN", "NAME_LONG", "SOVEREIGNT", "FORMAL_EN", "BRK_NAME", "NAME_TR", "NAME_TUR"];
+    const OVERPASS_API = "https://overpass-api.de/api/interpreter";
+
+    // AVAILABLE COUNTRIES FOR CITIES MODE
+    const CITY_COUNTRIES = [
+      { code: "TR", name: "Turkey", flag: "🇹🇷" },
+      { code: "DE", name: "Germany", flag: "🇩🇪" },
+      { code: "FR", name: "France", flag: "🇫🇷" },
+      { code: "IT", name: "Italy", flag: "🇮🇹" },
+      { code: "ES", name: "Spain", flag: "🇪🇸" },
+      { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
+      { code: "NL", name: "Netherlands", flag: "🇳🇱" },
+      { code: "BE", name: "Belgium", flag: "🇧🇪" },
+      { code: "AT", name: "Austria", flag: "🇦🇹" },
+      { code: "CH", name: "Switzerland", flag: "🇨🇭" },
+      { code: "PL", name: "Poland", flag: "🇵🇱" },
+      { code: "CZ", name: "Czech Republic", flag: "🇨🇿" },
+      { code: "PT", name: "Portugal", flag: "🇵🇹" },
+      { code: "GR", name: "Greece", flag: "🇬🇷" },
+      { code: "SE", name: "Sweden", flag: "🇸🇪" },
+      { code: "NO", name: "Norway", flag: "🇳🇴" },
+      { code: "DK", name: "Denmark", flag: "🇩🇰" },
+      { code: "FI", name: "Finland", flag: "🇫🇮" },
+      { code: "IE", name: "Ireland", flag: "🇮🇪" },
+      { code: "HU", name: "Hungary", flag: "🇭🇺" },
+      { code: "RO", name: "Romania", flag: "🇷🇴" },
+      { code: "BG", name: "Bulgaria", flag: "🇧🇬" },
+      { code: "HR", name: "Croatia", flag: "🇭🇷" },
+      { code: "SK", name: "Slovakia", flag: "🇸🇰" },
+      { code: "SI", name: "Slovenia", flag: "🇸🇮" },
+      { code: "RS", name: "Serbia", flag: "🇷🇸" },
+      { code: "UA", name: "Ukraine", flag: "🇺🇦" },
+      { code: "RU", name: "Russia", flag: "🇷🇺" },
+      { code: "US", name: "United States", flag: "🇺🇸" },
+      { code: "CA", name: "Canada", flag: "🇨🇦" },
+      { code: "MX", name: "Mexico", flag: "🇲🇽" },
+      { code: "BR", name: "Brazil", flag: "🇧🇷" },
+      { code: "AR", name: "Argentina", flag: "🇦🇷" },
+      { code: "JP", name: "Japan", flag: "🇯🇵" },
+      { code: "KR", name: "South Korea", flag: "🇰🇷" },
+      { code: "CN", name: "China", flag: "🇨🇳" },
+      { code: "IN", name: "India", flag: "🇮🇳" },
+      { code: "AU", name: "Australia", flag: "🇦🇺" },
+      { code: "NZ", name: "New Zealand", flag: "🇳🇿" },
+      { code: "ZA", name: "South Africa", flag: "🇿🇦" },
+      { code: "EG", name: "Egypt", flag: "🇪🇬" },
+      { code: "MA", name: "Morocco", flag: "🇲🇦" },
+      { code: "SA", name: "Saudi Arabia", flag: "🇸🇦" },
+      { code: "AE", name: "UAE", flag: "🇦🇪" },
+      { code: "IL", name: "Israel", flag: "🇮🇱" }
+    ];
+
+    // MAP THEMES
+    const MAP_THEMES = {
+      dark: "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+      light: "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
+      satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      terrain: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
+    };
+
+    // THEME-BASED STYLES
+    const THEME_STYLES = {
+      dark: {
+        default: { color: "rgba(255,255,255,0.15)", weight: 1, fillColor: "rgba(255,255,255,0.03)", fillOpacity: 1 },
+        focus: { color: "rgba(255,255,255,0.7)", weight: 2, fillColor: "rgba(255,255,255,0.15)", fillOpacity: 1 },
+        correct: { color: "rgba(34,197,94,0.8)", weight: 2, fillColor: "rgba(34,197,94,0.3)", fillOpacity: 1 },
+        wrong: { color: "rgba(239,68,68,0.8)", weight: 2, fillColor: "rgba(239,68,68,0.3)", fillOpacity: 1 }
+      },
+      light: {
+        default: { color: "rgba(0,0,0,0.2)", weight: 1, fillColor: "rgba(0,0,0,0.05)", fillOpacity: 1 },
+        focus: { color: "rgba(0,0,0,0.6)", weight: 2, fillColor: "rgba(0,0,0,0.1)", fillOpacity: 1 },
+        correct: { color: "rgba(34,197,94,0.9)", weight: 2, fillColor: "rgba(34,197,94,0.35)", fillOpacity: 1 },
+        wrong: { color: "rgba(239,68,68,0.9)", weight: 2, fillColor: "rgba(239,68,68,0.35)", fillOpacity: 1 }
+      },
+      satellite: {
+        default: { color: "rgba(255,255,255,0.5)", weight: 1.5, fillColor: "rgba(255,255,255,0.08)", fillOpacity: 1 },
+        focus: { color: "#ffffff", weight: 3, fillColor: "rgba(255,255,255,0.25)", fillOpacity: 1 },
+        correct: { color: "#22c55e", weight: 3, fillColor: "rgba(34,197,94,0.4)", fillOpacity: 1 },
+        wrong: { color: "#ef4444", weight: 3, fillColor: "rgba(239,68,68,0.4)", fillOpacity: 1 }
+      },
+      terrain: {
+        default: { color: "rgba(100,100,100,0.3)", weight: 1, fillColor: "rgba(100,100,100,0.08)", fillOpacity: 1 },
+        focus: { color: "rgba(50,50,50,0.8)", weight: 2, fillColor: "rgba(50,50,50,0.15)", fillOpacity: 1 },
+        correct: { color: "rgba(34,197,94,0.9)", weight: 2, fillColor: "rgba(34,197,94,0.3)", fillOpacity: 1 },
+        wrong: { color: "rgba(239,68,68,0.9)", weight: 2, fillColor: "rgba(239,68,68,0.3)", fillOpacity: 1 }
+      }
+    };
+
+    // DOM
+    const $ = id => document.getElementById(id);
+
+    const welcomeScreen = $("welcomeScreen");
+    const gameTypeScreen = $("gameTypeScreen");
+    const countrySelectScreen = $("countrySelectScreen");
+    const loadingScreen = $("loadingScreen");
+    const modeScreen = $("modeScreen");
+    const timeScreen = $("timeScreen");
+    const countdownScreen = $("countdownScreen");
+    const settingsScreen = $("settingsScreen");
+    const gameUI = $("gameUI");
+    const resultScreen = $("resultScreen");
+    const mapEl = $("map");
+
+    // Online screens
+    const onlineLobbyScreen = $("onlineLobbyScreen");
+    const waitingRoomScreen = $("waitingRoomScreen");
+    const photoUI = $("photoUI");
+    const votingScreen = $("votingScreen");
+    const winnerScreen = $("winnerScreen");
+
+    const timerDisplay = $("timerDisplay");
+    const scoreDisplay = $("scoreDisplay");
+    const questionLabel = $("questionLabel");
+    const questionText = $("questionText");
+    const questionHint = $("questionHint");
+    const inputContainer = $("inputContainer");
+    const answerInput = $("answerInput");
+    const submitBtn = $("submitBtn");
+    const choicesContainer = $("choicesContainer");
+    const toast = $("toast");
+
+    // MAP - Zoom control disabled
+    const map = L.map("map", {
+      zoomControl: false,
+      worldCopyJump: true,
+      minZoom: 2,
+      maxZoom: 18
+    }).setView([20, 0], 2);
+
+    let currentTileLayer = null;
+    let currentTheme = localStorage.getItem("mapTheme") || "satellite";
+
+    function getStyles() {
+      return THEME_STYLES[currentTheme] || THEME_STYLES.satellite;
+    }
+
+    function setMapTheme(theme) {
+      currentTheme = theme;
+      localStorage.setItem("mapTheme", theme);
+      
+      if (currentTileLayer) {
+        map.removeLayer(currentTileLayer);
+      }
+      
+      currentTileLayer = L.tileLayer(MAP_THEMES[theme], {
+        maxZoom: 19,
+        attribution: ''
+      }).addTo(map);
+
+      document.querySelectorAll(".theme-btn").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.theme === theme);
+      });
+
+      resetAllStyles();
+    }
+
+    let geoLayer = null;
+    let regions = [];
+    let allBounds = null;
+
+    // Initialize map theme AFTER regions is declared
+    setMapTheme(currentTheme);
+
+    // GAME STATE
+    const MODE = { TYPE: "type", CLICK: "click", CHOICE: "choice", HARD: "hard" };
+    const GAME_TYPE = { COUNTRIES: "countries", CITIES: "cities" };
+    
+    let selectedGameType = GAME_TYPE.COUNTRIES;
+    let selectedCountryCode = null;
+    let selectedCountryName = null;
+    let selectedMode = null;
+    let selectedTime = 120;
+    let currentMode = null;
+    let running = false;
+    let timeLeft = 120;
+    let timerHandle = null;
+    let score = 0;
+    let qcount = 0;
+    let currentRegion = null;
+    let highScore = parseInt(localStorage.getItem("highScore") || "0");
+
+    // Cities cache
+    const citiesCache = {};
+
+    // ONLINE MODE STATE
+    let currentRoomCode = null;
+    let currentPlayerId = null;
+    let currentPlayerName = null;
+    let isHost = false;
+    let roomRef = null;
+    let playersRef = null;
+    let gameStateRef = null;
+    let onlineTimerHandle = null;
+    let capturedPhotoData = null;
+    let hasVoted = false;
+
+    $("highScoreDisplay").textContent = highScore;
+
+    function applyStyle(r, style) {
+      if (r && r.layer) {
+        r.layer.setStyle(getStyles()[style]);
+      }
+    }
+
+    function flashWrong(layer) {
+      layer.setStyle(getStyles().wrong);
+      setTimeout(() => layer.setStyle(getStyles().default), 400);
+    }
+
+    function resetAllStyles() {
+      regions.forEach(r => applyStyle(r, r.correct ? "correct" : "default"));
+    }
+
+    // HELPERS
+    function showToast(msg, type = "") {
+      toast.textContent = msg;
+      toast.className = "toast visible " + type;
+      setTimeout(() => toast.className = "toast", 1500);
+    }
+
+    function normalizeText(s) {
+      return String(s || "")
+        .trim()
+        .toLocaleLowerCase("tr-TR")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/ı/g, "i")
+        .replace(/\s+/g, " ");
+    }
+
+    function getNames(props) {
+      const names = [];
+      for (const k of NAME_FIELDS) {
+        if (props && props[k]) names.push(String(props[k]));
+      }
+      const seen = new Set();
+      return names.filter(n => {
+        const x = normalizeText(n);
+        if (!x || seen.has(x)) return false;
+        seen.add(x);
+        return true;
+      });
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function updateHUD() {
+      timerDisplay.textContent = formatTime(timeLeft);
+      scoreDisplay.textContent = `Score: ${score}`;
+
+      if (timeLeft <= 10) {
+        timerDisplay.classList.add("warning");
+      } else {
+        timerDisplay.classList.remove("warning");
+      }
+    }
+
+    function fitWorld() {
+      if (allBounds) map.fitBounds(allBounds.pad(0.1));
+    }
+
+    function getDisplayName(r) {
+      return r.primaryName || r.names[0] || "Unknown";
+    }
+
+    // SCREEN NAVIGATION
+    function showScreen(screen) {
+      [welcomeScreen, gameTypeScreen, countrySelectScreen, loadingScreen, modeScreen, timeScreen, countdownScreen, settingsScreen, resultScreen, onlineLobbyScreen, waitingRoomScreen, votingScreen, winnerScreen].forEach(s => {
+        s.classList.remove("visible");
+      });
+      if (screen) screen.classList.add("visible");
+    }
+
+    // ==================== ONLINE MODE FUNCTIONS ====================
+
+    function generateRoomCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
+    function generatePlayerId() {
+      return 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+async function createRoom() {
+  const playerName = $("playerNameInput").value.trim();
+  if (!playerName) {
+  showToast("Please enter your name", "error");
+  return;
+  }
+  
+  currentPlayerName = playerName;
+  currentPlayerId = generatePlayerId();
+  currentRoomCode = generateRoomCode();
+  isHost = true;
+  
+  showToast("Creating room...", "info");
+  
+  try {
+  roomRef = database.ref('rooms/' + currentRoomCode);
+  
+  await roomRef.set({
+  code: currentRoomCode,
+  host: currentPlayerId,
+  status: 'waiting',
+  createdAt: firebase.database.ServerValue.TIMESTAMP,
+  players: {
+  [currentPlayerId]: {
+  name: currentPlayerName,
+  isHost: true,
+  joinedAt: firebase.database.ServerValue.TIMESTAMP
+  }
+  }
+  });
+  
+  $("roomCodeDisplay").textContent = currentRoomCode;
+  $("startOnlineGameBtn").style.display = "block";
+  $("waitingText").style.display = "none";
+  
+  showScreen(waitingRoomScreen);
+  setupRoomListeners();
+  showToast("Room created: " + currentRoomCode, "success");
+  } catch (error) {
+  console.error("Firebase error:", error);
+  showToast("Failed to create room: " + error.message, "error");
+  }
+  }
+
+async function joinRoom() {
+  const playerName = $("playerNameInput").value.trim();
+  const roomCode = $("roomCodeInput").value.trim().toUpperCase();
+  
+  if (!playerName) {
+  showToast("Please enter your name", "error");
+  return;
+  }
+  
+  if (!roomCode || roomCode.length !== 6) {
+  showToast("Please enter a valid room code", "error");
+  return;
+  }
+  
+  showToast("Joining room...", "info");
+  
+  try {
+  currentPlayerName = playerName;
+  currentPlayerId = generatePlayerId();
+  currentRoomCode = roomCode;
+  isHost = false;
+  
+  roomRef = database.ref('rooms/' + currentRoomCode);
+  
+  const snapshot = await roomRef.once('value');
+  if (!snapshot.exists()) {
+  showToast("Room not found", "error");
+  return;
+  }
+  
+  const roomData = snapshot.val();
+  if (roomData.status !== 'waiting') {
+  showToast("Game already started", "error");
+  return;
+  }
+  
+  await roomRef.child('players/' + currentPlayerId).set({
+  name: currentPlayerName,
+  isHost: false,
+  joinedAt: firebase.database.ServerValue.TIMESTAMP
+  });
+  
+  $("roomCodeDisplay").textContent = currentRoomCode;
+  $("startOnlineGameBtn").style.display = "none";
+  $("waitingText").style.display = "block";
+  
+  showScreen(waitingRoomScreen);
+  setupRoomListeners();
+  showToast("Joined room: " + currentRoomCode, "success");
+  } catch (error) {
+  console.error("Firebase error:", error);
+  showToast("Failed to join room: " + error.message, "error");
+  }
+  }
+
+      if (!roomCode || roomCode.length !== 6) {
+        showToast("Please enter a valid room code", "error");
+        return;
+      }
+
+      currentPlayerName = playerName;
+      currentPlayerId = generatePlayerId();
+      currentRoomCode = roomCode;
+      isHost = false;
+
+      roomRef = database.ref('rooms/' + currentRoomCode);
+      
+      const snapshot = await roomRef.once('value');
+      if (!snapshot.exists()) {
+        showToast("Room not found", "error");
+        return;
+      }
+
+      const roomData = snapshot.val();
+      if (roomData.status !== 'waiting') {
+        showToast("Game already started", "error");
+        return;
+      }
+
+      await roomRef.child('players').child(currentPlayerId).set({
+        name: currentPlayerName,
+        isHost: false,
+        joinedAt: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      $("roomCodeDisplay").textContent = currentRoomCode;
+      $("startOnlineGameBtn").style.display = "none";
+      $("waitingText").style.display = "block";
+      
+      showScreen(waitingRoomScreen);
+      setupRoomListeners();
+    }
+
+    function setupRoomListeners() {
+      playersRef = roomRef.child('players');
+      gameStateRef = roomRef.child('gameState');
+
+      playersRef.on('value', (snapshot) => {
+        const players = snapshot.val() || {};
+        renderPlayersList(players);
+      });
+
+      roomRef.child('status').on('value', (snapshot) => {
+        const status = snapshot.val();
+        if (status === 'playing') {
+          startOnlineGame();
+        } else if (status === 'voting') {
+          startVotingPhase();
+        } else if (status === 'results') {
+          showResults();
+        }
+      });
+
+      // Listen for game timer sync
+      gameStateRef.child('timeLeft').on('value', (snapshot) => {
+        const time = snapshot.val();
+        if (time !== null) {
+          $("photoTimerDisplay").textContent = formatTime(time);
+          if (time <= 10) {
+            $("photoTimerDisplay").classList.add("warning");
+          } else {
+            $("photoTimerDisplay").classList.remove("warning");
+          }
+        }
+      });
+
+      // Listen for vote timer
+      gameStateRef.child('voteTimeLeft').on('value', (snapshot) => {
+        const time = snapshot.val();
+        if (time !== null) {
+          $("voteTimerDisplay").textContent = formatTime(time);
+          if (time <= 3) {
+            $("voteTimerDisplay").classList.add("warning");
+          } else {
+            $("voteTimerDisplay").classList.remove("warning");
+          }
+        }
+      });
+    }
+
+    function renderPlayersList(players) {
+      const list = $("playersList");
+      list.innerHTML = "";
+
+      Object.entries(players).forEach(([id, player]) => {
+        const item = document.createElement("div");
+        item.className = "player-item" + (player.isHost ? " host" : "");
+        item.innerHTML = `
+          <div class="player-avatar">${player.name.charAt(0).toUpperCase()}</div>
+          <span class="player-name">${player.name}</span>
+          ${player.isHost ? '<span class="player-badge">Host</span>' : ''}
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    async function startOnlineGameAsHost() {
+      if (!isHost) return;
+      
+      await roomRef.child('status').set('playing');
+      await gameStateRef.set({
+        timeLeft: 60,
+        phase: 'capture',
+        startedAt: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      // Start the timer on host side
+      let timeLeft = 60;
+      onlineTimerHandle = setInterval(async () => {
+        timeLeft--;
+        await gameStateRef.child('timeLeft').set(timeLeft);
+        
+        if (timeLeft <= 0) {
+          clearInterval(onlineTimerHandle);
+          await roomRef.child('status').set('voting');
+        }
+      }, 1000);
+    }
+
+    function startOnlineGame() {
+      showScreen(null);
+      photoUI.classList.add("visible");
+      
+      capturedPhotoData = null;
+      $("captureBtn").classList.remove("captured");
+      $("photoStatus").textContent = "Find the best view!";
+      
+      // Random location for exploration
+      const lat = (Math.random() * 140) - 70;
+      const lng = (Math.random() * 360) - 180;
+      map.setView([lat, lng], 10 + Math.floor(Math.random() * 5));
+    }
+
+    async function capturePhoto() {
+      if (capturedPhotoData) {
+        showToast("Photo already captured!", "error");
+        return;
+      }
+
+      // Capture current map view as image data
+      const mapContainer = document.getElementById('map');
+      
+      try {
+        // Use leaflet-image or html2canvas approach
+        // For simplicity, we'll store map center and zoom
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        
+        capturedPhotoData = {
+          lat: center.lat,
+          lng: center.lng,
+          zoom: zoom,
+          timestamp: Date.now(),
+          // Generate a preview URL using a static map service
+          imageUrl: `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${center.lng},${center.lat},${zoom},0/400x225?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`
+        };
+
+        // Save to Firebase
+        await roomRef.child('photos').child(currentPlayerId).set({
+          playerName: currentPlayerName,
+          ...capturedPhotoData
+        });
+
+        $("captureBtn").classList.add("captured");
+        $("photoStatus").textContent = "Photo captured!";
+        showToast("Photo captured!", "success");
+      } catch (err) {
+        console.error(err);
+        showToast("Failed to capture photo", "error");
+      }
+    }
+
+    async function startVotingPhase() {
+      photoUI.classList.remove("visible");
+      showScreen(votingScreen);
+      hasVoted = false;
+      
+      $("voteWaitingText").style.display = "none";
+
+      // Load all photos
+      const photosSnapshot = await roomRef.child('photos').once('value');
+      const photos = photosSnapshot.val() || {};
+      
+      renderPhotosForVoting(photos);
+
+      // If host, start vote timer
+      if (isHost) {
+        let voteTimeLeft = 10;
+        await gameStateRef.child('voteTimeLeft').set(voteTimeLeft);
+        
+        const voteTimer = setInterval(async () => {
+          voteTimeLeft--;
+          await gameStateRef.child('voteTimeLeft').set(voteTimeLeft);
+          
+          if (voteTimeLeft <= 0) {
+            clearInterval(voteTimer);
+            await roomRef.child('status').set('results');
+          }
+        }, 1000);
+      }
+    }
+
+    function renderPhotosForVoting(photos) {
+      const grid = $("photosGrid");
+      grid.innerHTML = "";
+
+      Object.entries(photos).forEach(([playerId, photo]) => {
+        if (playerId === currentPlayerId) return; // Can't vote for yourself
+
+        const card = document.createElement("div");
+        card.className = "photo-card";
+        card.dataset.playerId = playerId;
+        
+        // Use satellite tile as preview
+        const tileUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${Math.floor(photo.zoom)}/${Math.floor((90 - photo.lat) * (1 << photo.zoom) / 180)}/${Math.floor((photo.lng + 180) * (1 << photo.zoom) / 360)}`;
+        
+        card.innerHTML = `
+          <img src="${tileUrl}" alt="Photo by ${photo.playerName}" onerror="this.src='https://via.placeholder.com/400x225?text=Photo'">
+          <div class="player-name-overlay">${photo.playerName}</div>
+        `;
+        
+        card.addEventListener("click", () => voteForPhoto(playerId, card));
+        grid.appendChild(card);
+      });
+
+      if (grid.children.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-muted); text-align: center; width: 100%;">No photos to vote for</p>';
+      }
+    }
+
+    async function voteForPhoto(playerId, card) {
+      if (hasVoted) {
+        showToast("Already voted!", "error");
+        return;
+      }
+
+      hasVoted = true;
+      
+      document.querySelectorAll(".photo-card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+
+      // Increment vote count in Firebase
+      const voteRef = roomRef.child('votes').child(playerId);
+      await voteRef.transaction((currentVotes) => {
+        return (currentVotes || 0) + 1;
+      });
+
+      $("voteWaitingText").style.display = "block";
+      showToast("Vote submitted!", "success");
+    }
+
+    async function showResults() {
+      showScreen(winnerScreen);
+
+      // Get votes and photos
+      const [votesSnapshot, photosSnapshot] = await Promise.all([
+        roomRef.child('votes').once('value'),
+        roomRef.child('photos').once('value')
+      ]);
+
+      const votes = votesSnapshot.val() || {};
+      const photos = photosSnapshot.val() || {};
+
+      // Find winner
+      let maxVotes = 0;
+      let winnerId = null;
+
+      Object.entries(votes).forEach(([playerId, voteCount]) => {
+        if (voteCount > maxVotes) {
+          maxVotes = voteCount;
+          winnerId = playerId;
+        }
+      });
+
+      // If no votes, pick random
+      if (!winnerId && Object.keys(photos).length > 0) {
+        winnerId = Object.keys(photos)[0];
+      }
+
+      if (winnerId && photos[winnerId]) {
+        const winner = photos[winnerId];
+        const tileUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${Math.floor(winner.zoom)}/${Math.floor((90 - winner.lat) * (1 << winner.zoom) / 180)}/${Math.floor((winner.lng + 180) * (1 << winner.zoom) / 360)}`;
+        
+        $("winnerPhotoImg").src = tileUrl;
+        $("winnerName").textContent = winner.playerName;
+        $("winnerVotes").textContent = `${maxVotes} vote${maxVotes !== 1 ? 's' : ''}`;
+      } else {
+        $("winnerPhotoImg").src = "https://via.placeholder.com/400x225?text=No+Winner";
+        $("winnerName").textContent = "No Winner";
+        $("winnerVotes").textContent = "No votes cast";
+      }
+
+      if (isHost) {
+        $("playAgainOnlineBtn").style.display = "block";
+      } else {
+        $("playAgainOnlineBtn").style.display = "none";
+      }
+    }
+
+    async function playAgainOnline() {
+      if (!isHost) return;
+
+      // Reset game state
+      await roomRef.child('photos').remove();
+      await roomRef.child('votes').remove();
+      await roomRef.child('status').set('waiting');
+      
+      showScreen(waitingRoomScreen);
+    }
+
+    function leaveRoom() {
+      if (roomRef) {
+        if (playersRef) playersRef.off();
+        roomRef.child('status').off();
+        gameStateRef.child('timeLeft').off();
+        gameStateRef.child('voteTimeLeft').off();
+        
+        roomRef.child('players').child(currentPlayerId).remove();
+        
+        if (isHost) {
+          roomRef.remove();
+        }
+      }
+
+      if (onlineTimerHandle) {
+        clearInterval(onlineTimerHandle);
+      }
+
+      currentRoomCode = null;
+      currentPlayerId = null;
+      isHost = false;
+      roomRef = null;
+      photoUI.classList.remove("visible");
+      
+      showScreen(welcomeScreen);
+    }
+
+    // ==================== END ONLINE MODE ====================
+
+    // COUNTRY LIST FOR CITIES MODE
+    function renderCountryList(filter = "") {
+      const list = $("countryList");
+      list.innerHTML = "";
+      
+      const filtered = CITY_COUNTRIES.filter(c => 
+        c.name.toLowerCase().includes(filter.toLowerCase()) ||
+        c.code.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      filtered.forEach(country => {
+        const item = document.createElement("button");
+        item.className = "country-item";
+        item.innerHTML = `
+          <span class="country-flag">${country.flag}</span>
+          <span class="country-name">${country.name}</span>
+          <span class="country-code">${country.code}</span>
+        `;
+        item.addEventListener("click", () => selectCountryForCities(country));
+        list.appendChild(item);
+      });
+    }
+
+    async function selectCountryForCities(country) {
+      selectedCountryCode = country.code;
+      selectedCountryName = country.name;
+      
+      showScreen(loadingScreen);
+      $("loadingText").textContent = `Loading ${country.name} cities...`;
+      $("loadingSubtext").textContent = "Fetching data from OpenStreetMap";
+
+      try {
+        await loadCitiesForCountry(country.code);
+        showScreen(modeScreen);
+        updateModeDescriptions();
+      } catch (err) {
+        console.error(err);
+        showToast("Failed to load cities. Try again.", "error");
+        showScreen(countrySelectScreen);
+      }
+    }
+
+    // LOAD CITIES FROM OVERPASS API
+    const COUNTRY_ADMIN_LEVELS = {
+      TR: "4", DE: "4", FR: "4", IT: "4", ES: "4", GB: "4", NL: "4", BE: "4",
+      AT: "4", CH: "4", PL: "4", CZ: "4", PT: "4", GR: "4", SE: "4", NO: "4",
+      DK: "4", FI: "4", IE: "4", HU: "4", RO: "4", BG: "4", HR: "4", SK: "4",
+      SI: "4", RS: "4", UA: "4", RU: "4", US: "4", CA: "4", MX: "4", BR: "4",
+      AR: "4", JP: "4", KR: "4", CN: "4", IN: "4", AU: "4", NZ: "4", ZA: "4",
+      EG: "4", MA: "4", SA: "4", AE: "4", IL: "4"
+    };
+
+    async function loadCitiesForCountry(countryCode) {
+      if (citiesCache[countryCode]) {
+        setupCitiesLayer(citiesCache[countryCode]);
+        return;
+      }
+
+      const adminLevel = COUNTRY_ADMIN_LEVELS[countryCode] || "4";
+
+      const query = `
+        [out:json][timeout:90];
+        area["ISO3166-1"="${countryCode}"]->.searchArea;
+        (
+          relation["boundary"="administrative"]["admin_level"="${adminLevel}"](area.searchArea);
+        );
+        out body;
+        >;
+        out skel qt;
+      `;
+
+      const response = await fetch(OVERPASS_API, {
+        method: "POST",
+        body: "data=" + encodeURIComponent(query),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      });
+
+      if (!response.ok) throw new Error("Overpass API error");
+
+      const data = await response.json();
+      const geojson = osmToGeoJSON(data);
+      
+      citiesCache[countryCode] = geojson;
+      
+      setupCitiesLayer(geojson);
+    }
+
+    function osmToGeoJSON(osmData) {
+      const nodes = {};
+      const ways = {};
+      const features = [];
+
+      osmData.elements.forEach(el => {
+        if (el.type === "node") {
+          nodes[el.id] = [el.lon, el.lat];
+        }
+      });
+
+      osmData.elements.forEach(el => {
+        if (el.type === "way") {
+          ways[el.id] = el.nodes.map(nid => nodes[nid]).filter(Boolean);
+        }
+      });
+
+      osmData.elements.forEach(el => {
+        if (el.type === "relation" && el.tags) {
+          const name = el.tags.name || el.tags["name:en"] || el.tags["name:tr"];
+          if (!name) return;
+
+          const outerRings = [];
+          const innerRings = [];
+
+          el.members.forEach(member => {
+            if (member.type === "way" && ways[member.ref]) {
+              const coords = ways[member.ref];
+              if (coords.length > 2) {
+                if (member.role === "inner") {
+                  innerRings.push(coords);
+                } else {
+                  outerRings.push(coords);
+                }
+              }
+            }
+          });
+
+          if (outerRings.length > 0) {
+            const mergedOuter = mergeRings(outerRings);
+            
+            mergedOuter.forEach(ring => {
+              const polygon = [ring];
+              innerRings.forEach(inner => {
+                polygon.push(inner);
+              });
+
+              features.push({
+                type: "Feature",
+                properties: {
+                  name: name,
+                  admin_level: el.tags.admin_level
+                },
+                geometry: {
+                  type: "Polygon",
+                  coordinates: polygon
+                }
+              });
+            });
+          }
+        }
+      });
+
+      return {
+        type: "FeatureCollection",
+        features: features
+      };
+    }
+
+    function mergeRings(rings) {
+      if (rings.length === 0) return [];
+      
+      const result = [];
+      const used = new Set();
+
+      for (let i = 0; i < rings.length; i++) {
+        if (used.has(i)) continue;
+
+        let current = [...rings[i]];
+        used.add(i);
+        let merged = true;
+
+        while (merged) {
+          merged = false;
+          for (let j = 0; j < rings.length; j++) {
+            if (used.has(j)) continue;
+
+            const ring = rings[j];
+            const first = current[0];
+            const last = current[current.length - 1];
+            const ringFirst = ring[0];
+            const ringLast = ring[ring.length - 1];
+
+            if (coordsEqual(last, ringFirst)) {
+              current = current.concat(ring.slice(1));
+              used.add(j);
+              merged = true;
+            } else if (coordsEqual(last, ringLast)) {
+              current = current.concat(ring.slice(0, -1).reverse());
+              used.add(j);
+              merged = true;
+            } else if (coordsEqual(first, ringLast)) {
+              current = ring.concat(current.slice(1));
+              used.add(j);
+              merged = true;
+            } else if (coordsEqual(first, ringFirst)) {
+              current = ring.slice().reverse().concat(current.slice(1));
+              used.add(j);
+              merged = true;
+            }
+          }
+        }
+
+        result.push(current);
+      }
+
+      return result;
+    }
+
+    function coordsEqual(a, b) {
+      if (!a || !b) return false;
+      return Math.abs(a[0] - b[0]) < 0.0001 && Math.abs(a[1] - b[1]) < 0.0001;
+    }
+
+    function setupCitiesLayer(geojson) {
+      if (geoLayer) {
+        map.removeLayer(geoLayer);
+      }
+      regions = [];
+
+      geoLayer = L.geoJSON(geojson, {
+        style: () => getStyles().default,
+        onEachFeature: (feature, layer) => {
+          const name = feature.properties.name;
+          if (!name) return;
+
+          const regionObj = {
+            layer,
+            names: [name],
+            primaryName: name,
+            correct: false,
+            asked: false
+          };
+
+          regions.push(regionObj);
+          layer.on("click", () => handleMapClick(regionObj));
+        }
+      }).addTo(map);
+
+      allBounds = geoLayer.getBounds();
+      fitWorld();
+    }
+
+    function updateModeDescriptions() {
+      const isCountries = selectedGameType === GAME_TYPE.COUNTRIES;
+      const regionWord = isCountries ? "Country" : "City";
+      const regionWordLower = isCountries ? "country" : "city";
+
+      $("modeDescType").textContent = `${regionWord} is shown on map. Type its name to learn.`;
+      $("modeDescClick").textContent = `Find the ${regionWordLower} on map and click it.`;
+      $("modeDescChoice").textContent = `${regionWord} shown, pick correct name from 4 choices.`;
+      $("modeDescHard").textContent = `Find & click with penalty. Wrong click = -1 point.`;
+    }
+
+    function startCountdown() {
+      showScreen(countdownScreen);
+      
+      let count = 3;
+      const countdownNumber = $("countdownNumber");
+      countdownNumber.textContent = count;
+      countdownNumber.style.animation = "none";
+      void countdownNumber.offsetWidth;
+      countdownNumber.style.animation = "countPop 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards";
+
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownNumber.textContent = count;
+          countdownNumber.style.animation = "none";
+          void countdownNumber.offsetWidth;
+          countdownNumber.style.animation = "countPop 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards";
+        } else {
+          clearInterval(interval);
+          showScreen(null);
+          startGame();
+        }
+      }, 1000);
+    }
+
+    function pickNextRegion() {
+      let pool = regions.filter(r => !r.asked);
+      if (pool.length === 0) {
+        regions.forEach(r => r.asked = false);
+        pool = regions.slice();
+      }
+      const next = pool[Math.floor(Math.random() * pool.length)];
+      next.asked = true;
+      return next;
+    }
+
+    function renderChoices(options) {
+      choicesContainer.innerHTML = "";
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "choice-btn";
+        btn.textContent = opt.label;
+        btn.addEventListener("click", () => opt.onPick(btn));
+        choicesContainer.appendChild(btn);
+      });
+    }
+
+    function newQuestion() {
+      if (!running || !regions.length) return;
+
+      currentRegion = pickNextRegion();
+      qcount++;
+      updateHUD();
+      resetAllStyles();
+
+      inputContainer.classList.remove("visible");
+      choicesContainer.classList.remove("visible");
+      choicesContainer.innerHTML = "";
+      answerInput.value = "";
+
+      const name = getDisplayName(currentRegion);
+      const regionWord = selectedGameType === GAME_TYPE.COUNTRIES ? "COUNTRY" : "CITY";
+
+      if (currentMode === MODE.TYPE) {
+        applyStyle(currentRegion, "focus");
+        map.fitBounds(currentRegion.layer.getBounds().pad(0.3), { animate: true });
+
+        questionText.textContent = `WHAT ${regionWord} IS THIS?`;
+        inputContainer.classList.add("visible");
+        setTimeout(() => answerInput.focus(), 100);
+
+      } else if (currentMode === MODE.CLICK || currentMode === MODE.HARD) {
+        questionText.textContent = name;
+
+      } else if (currentMode === MODE.CHOICE) {
+        applyStyle(currentRegion, "focus");
+        map.fitBounds(currentRegion.layer.getBounds().pad(0.3), { animate: true });
+
+        questionText.textContent = `WHAT ${regionWord} IS THIS?`;
+
+        const pool = regions.filter(r => r !== currentRegion);
+        const wrongs = [];
+        while (wrongs.length < 3 && pool.length) {
+          const idx = Math.floor(Math.random() * pool.length);
+          wrongs.push(pool.splice(idx, 1)[0]);
+        }
+
+        const options = [
+          { label: name, onPick: (btn) => handleChoiceAnswer(true, btn) },
+          ...wrongs.map(w => ({
+            label: getDisplayName(w),
+            onPick: (btn) => handleChoiceAnswer(false, btn)
+          }))
+        ].sort(() => Math.random() - 0.5);
+
+        renderChoices(options);
+        choicesContainer.classList.add("visible");
+      }
+    }
+
+    function handleChoiceAnswer(isCorrect, btn) {
+      if (!running) return;
+
+      if (isCorrect) {
+        btn.classList.add("correct");
+        score++;
+        currentRegion.correct = true;
+        applyStyle(currentRegion, "correct");
+        showToast("Correct!", "success");
+        setTimeout(newQuestion, 600);
+      } else {
+        btn.classList.add("wrong");
+        showToast("Wrong!", "error");
+        setTimeout(() => btn.classList.remove("wrong"), 400);
+      }
+      updateHUD();
+    }
+
+    function checkTypedAnswer() {
+      if (!running || !currentRegion) return;
+
+      const typed = normalizeText(answerInput.value);
+      const match = currentRegion.names.some(n => normalizeText(n) === typed);
+
+      if (match) {
+        score++;
+        currentRegion.correct = true;
+        applyStyle(currentRegion, "correct");
+        showToast("Correct!", "success");
+        updateHUD();
+        setTimeout(newQuestion, 600);
+      } else {
+        showToast("Wrong, try again!", "error");
+        answerInput.select();
+      }
+    }
+
+    function handleMapClick(r) {
+      if (!running) return;
+      if (currentMode !== MODE.CLICK && currentMode !== MODE.HARD) return;
+      if (!currentRegion) return;
+
+      if (r === currentRegion) {
+        score++;
+        r.correct = true;
+        applyStyle(r, "correct");
+        showToast("Correct!", "success");
+        updateHUD();
+        setTimeout(newQuestion, 600);
+      } else {
+        if (currentMode === MODE.HARD) {
+          score = Math.max(0, score - 1);
+          showToast("-1 Point!", "error");
+        } else {
+          showToast("Wrong!", "error");
+        }
+        flashWrong(r.layer);
+        updateHUD();
+      }
+    }
+
+    function skipQuestion() {
+      if (!running || !currentRegion) return;
+      showToast("Skipped");
+      newQuestion();
+    }
+
+    function startTimer() {
+      timeLeft = selectedTime;
+      updateHUD();
+      if (timerHandle) clearInterval(timerHandle);
+      timerHandle = setInterval(() => {
+        if (!running) return;
+        timeLeft--;
+        if (timeLeft < 0) timeLeft = 0;
+        updateHUD();
+        if (timeLeft === 0) endGame();
+      }, 1000);
+    }
+
+    function endGame() {
+      running = false;
+      if (timerHandle) clearInterval(timerHandle);
+      timerHandle = null;
+
+      gameUI.classList.remove("visible");
+      showScreen(resultScreen);
+
+      $("finalScore").textContent = score;
+      $("finalQuestions").textContent = qcount;
+
+      const scoreKey = selectedGameType === GAME_TYPE.COUNTRIES 
+        ? "highScore" 
+        : `highScore_${selectedCountryCode}`;
+      
+      const currentHighScore = parseInt(localStorage.getItem(scoreKey) || "0");
+
+      if (score > currentHighScore) {
+        localStorage.setItem(scoreKey, score);
+        if (selectedGameType === GAME_TYPE.COUNTRIES) {
+          highScore = score;
+          $("highScoreDisplay").textContent = highScore;
+        }
+        $("resultIcon").innerHTML = "&#127942;";
+        $("resultTitle").textContent = "New Record!";
+        $("resultSubtitle").textContent = "You beat your best score!";
+      } else if (score >= 15) {
+        $("resultIcon").innerHTML = "&#127881;";
+        $("resultTitle").textContent = "Amazing!";
+        $("resultSubtitle").textContent = "Great geography knowledge!";
+      } else if (score >= 10) {
+        $("resultIcon").innerHTML = "&#128079;";
+        $("resultTitle").textContent = "Good Job!";
+        $("resultSubtitle").textContent = "Nice performance!";
+      } else if (score >= 5) {
+        $("resultIcon").innerHTML = "&#128170;";
+        $("resultTitle").textContent = "Not Bad!";
+        $("resultSubtitle").textContent = "Keep practicing!";
+      } else {
+        $("resultIcon").innerHTML = "&#128218;";
+        $("resultTitle").textContent = "Keep Learning!";
+        $("resultSubtitle").textContent = "Every game teaches something new!";
+      }
+    }
+
+    function quitToMenu() {
+      running = false;
+      if (timerHandle) clearInterval(timerHandle);
+      timerHandle = null;
+
+      gameUI.classList.remove("visible");
+      showScreen(welcomeScreen);
+
+      if (selectedGameType === GAME_TYPE.CITIES) {
+        loadGeoJSON();
+      }
+
+      regions.forEach(r => {
+        r.correct = false;
+        r.asked = false;
+        applyStyle(r, "default");
+      });
+
+      currentRegion = null;
+      score = 0;
+      qcount = 0;
+      updateHUD();
+      fitWorld();
+    }
+
+    function startGame() {
+      currentMode = selectedMode;
+      running = true;
+      score = 0;
+      qcount = 0;
+      currentRegion = null;
+
+      regions.forEach(r => {
+        r.correct = false;
+        r.asked = false;
+        applyStyle(r, "default");
+      });
+
+      gameUI.classList.add("visible");
+      fitWorld();
+      startTimer();
+      setTimeout(newQuestion, 500);
+    }
+
+    async function loadGeoJSON() {
+      try {
+        const res = await fetch(GEOJSON_URL);
+        if (!res.ok) throw new Error("GeoJSON load failed");
+        const data = await res.json();
+
+        if (geoLayer) {
+          map.removeLayer(geoLayer);
+        }
+        regions = [];
+
+        geoLayer = L.geoJSON(data, {
+          style: () => getStyles().default,
+          onEachFeature: (feature, layer) => {
+            const names = getNames(feature.properties);
+            if (!names.length) return;
+
+            const regionObj = {
+              layer,
+              names,
+              primaryName: names[0],
+              correct: false,
+              asked: false
+            };
+
+            regions.push(regionObj);
+            layer.on("click", () => handleMapClick(regionObj));
+          }
+        }).addTo(map);
+
+        allBounds = geoLayer.getBounds();
+        fitWorld();
+        $("countryCount").textContent = regions.length;
+
+      } catch (err) {
+        console.error(err);
+        showToast("GeoJSON load failed!", "error");
+      }
+    }
+
+    // EVENT LISTENERS
+    $("startBtn").addEventListener("click", () => {
+      showScreen(gameTypeScreen);
+    });
+
+    $("onlineBtn").addEventListener("click", () => {
+      showScreen(onlineLobbyScreen);
+    });
+
+    $("settingsBtn").addEventListener("click", () => {
+      showScreen(settingsScreen);
+    });
+
+    $("gameTypeBackBtn").addEventListener("click", () => {
+      showScreen(welcomeScreen);
+    });
+
+    // Online mode listeners
+    $("onlineLobbyBackBtn").addEventListener("click", () => {
+      showScreen(welcomeScreen);
+    });
+
+    $("createRoomBtn").addEventListener("click", createRoom);
+    $("joinRoomBtn").addEventListener("click", joinRoom);
+    
+    $("waitingRoomBackBtn").addEventListener("click", leaveRoom);
+    $("startOnlineGameBtn").addEventListener("click", startOnlineGameAsHost);
+    
+    $("captureBtn").addEventListener("click", capturePhoto);
+    
+    $("playAgainOnlineBtn").addEventListener("click", playAgainOnline);
+    $("onlineMenuBtn").addEventListener("click", leaveRoom);
+
+    document.querySelectorAll(".type-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedGameType = btn.dataset.type;
+
+        if (selectedGameType === GAME_TYPE.COUNTRIES) {
+          updateModeDescriptions();
+          showScreen(modeScreen);
+        } else {
+          renderCountryList();
+          showScreen(countrySelectScreen);
+        }
+      });
+    });
+
+    $("countrySelectBackBtn").addEventListener("click", () => {
+      showScreen(gameTypeScreen);
+    });
+
+    $("countrySearchInput").addEventListener("input", (e) => {
+      renderCountryList(e.target.value);
+    });
+
+    $("modeBackBtn").addEventListener("click", () => {
+      if (selectedGameType === GAME_TYPE.CITIES) {
+        loadGeoJSON();
+        showScreen(countrySelectScreen);
+      } else {
+        showScreen(gameTypeScreen);
+      }
+    });
+
+    $("timeBackBtn").addEventListener("click", () => {
+      showScreen(modeScreen);
+    });
+
+    $("settingsBackBtn").addEventListener("click", () => {
+      showScreen(welcomeScreen);
+    });
+
+    document.querySelectorAll(".mode-item").forEach(item => {
+      item.addEventListener("click", () => {
+        document.querySelectorAll(".mode-item").forEach(i => i.classList.remove("selected"));
+        item.classList.add("selected");
+        selectedMode = item.dataset.mode;
+        showScreen(timeScreen);
+      });
+    });
+
+    document.querySelectorAll(".time-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedTime = parseInt(btn.dataset.time);
+      });
+    });
+
+    $("startGameBtn").addEventListener("click", () => {
+      if (!selectedMode) {
+        showToast("Please select a mode", "error");
+        return;
+      }
+      startCountdown();
+    });
+
+    document.querySelectorAll(".theme-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        setMapTheme(btn.dataset.theme);
+      });
+    });
+
+    $("resetScoresBtn").addEventListener("click", () => {
+      if (confirm("Are you sure you want to reset all scores?")) {
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+          if (key.startsWith("highScore")) {
+            localStorage.removeItem(key);
+          }
+        });
+        highScore = 0;
+        $("highScoreDisplay").textContent = 0;
+        showToast("Scores reset", "success");
+      }
+    });
+
+    submitBtn.addEventListener("click", checkTypedAnswer);
+    answerInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") checkTypedAnswer();
+    });
+
+    $("skipBtn").addEventListener("click", skipQuestion);
+    $("fitBtn").addEventListener("click", fitWorld);
+    $("quitBtn").addEventListener("click", quitToMenu);
+
+    $("playAgainBtn").addEventListener("click", () => {
+      showScreen(null);
+      startCountdown();
+    });
+
+    $("menuBtn").addEventListener("click", () => {
+      if (selectedGameType === GAME_TYPE.CITIES) {
+        loadGeoJSON();
+      }
+      showScreen(welcomeScreen);
+    });
+
+    // INIT
+    loadGeoJSON();
+  </script>
+</body>
+</html>
