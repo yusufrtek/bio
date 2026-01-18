@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: system-ui, Arial; max-width: 1100px; margin: 24px auto; padding: 0 12px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    button { padding:10px 12px; cursor:pointer; }
+    .card { border:1px solid #ddd; border-radius:12px; padding:14px; margin-top:14px; }
+    .muted { color:#666; }
+    pre { background:#f4f4f4; padding:10px; border-radius:10px; overflow:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; vertical-align:top; }
+  </style>
+</head>
+<body>
+
+  <h1>Admin Panel</h1>
+  <p class="muted">Google ile giriş yapınca odalar/takımlar/oyuncular görünür.</p>
+
+  <div class="card row">
+    <button id="loginBtn">Google ile Giriş</button>
+    <button id="logoutBtn" disabled>Çıkış</button>
+    <span id="userInfo" class="muted">Giriş yok</span>
+  </div>
+
+  <div class="card" id="noAccess" style="display:none;">
+    <h2>Yetkisiz</h2>
+    <p>Bu paneli görüntüleme yetkin yok.</p>
+  </div>
+
+  <div class="card" id="panel" style="display:none;">
+    <h2>Canlı Veriler</h2>
+
+    <h3>Teams (Takımlar)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Ad</th><th>Üye Sayısı</th></tr></thead>
+      <tbody id="teamsTbody"></tbody>
+    </table>
+
+    <h3 style="margin-top:16px;">Raw JSON (debug)</h3>
+    <pre id="raw"></pre>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+
+    import {
+      getFirestore,
+      collection,
+      onSnapshot,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+    // Firebase config (senin config)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      projectId: "maps-52b00",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
+      measurementId: "G-YHHXDYCCG7"
+    };
+
+    // ❗ Buraya admin emaillerini yaz
+    const ADMIN_EMAILS = [
+      "SENINMAILIN@gmail.com"
+    ];
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userInfo = document.getElementById("userInfo");
+    const panel = document.getElementById("panel");
+    const noAccess = document.getElementById("noAccess");
+    const teamsTbody = document.getElementById("teamsTbody");
+    const raw = document.getElementById("raw");
+
+    let unsubTeams = null;
+
+    loginBtn.addEventListener("click", async () => {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    function stopSubs() {
+      if (unsubTeams) { unsubTeams(); unsubTeams = null; }
+    }
+
+    function startTeamsSub() {
+      // teams koleksiyonunu canlı dinle
+      const q = query(collection(db, "teams"), orderBy("createdAt", "desc"));
+      unsubTeams = onSnapshot(q, (snap) => {
+        const teams = [];
+        snap.forEach((d) => teams.push({ id: d.id, ...d.data() }));
+
+        // tablo
+        teamsTbody.innerHTML = "";
+        for (const t of teams) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${t.id}</td><td>${t.name ?? ""}</td><td>(üyeler burada istenirse ayrıca çekilir)</td>`;
+          teamsTbody.appendChild(tr);
+        }
+
+        raw.textContent = JSON.stringify({ teams }, null, 2);
+      });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      stopSubs();
+
+      if (!user) {
+        loginBtn.disabled = false;
+        logoutBtn.disabled = true;
+        userInfo.textContent = "Giriş yok";
+        panel.style.display = "none";
+        noAccess.style.display = "none";
+        return;
+      }
+
+      loginBtn.disabled = true;
+      logoutBtn.disabled = false;
+      userInfo.textContent = `Giriş: ${user.email}`;
+
+      const isAdmin = ADMIN_EMAILS.includes(user.email);
+
+      if (!isAdmin) {
+        panel.style.display = "none";
+        noAccess.style.display = "block";
+        return;
+      }
+
+      noAccess.style.display = "none";
+      panel.style.display = "block";
+      startTeamsSub();
+    });
+  </script>
+</body>
+</html>
