@@ -1585,6 +1585,18 @@
     }
 
     // LOAD CITIES FROM OVERPASS API
+    // Admin levels by country: TR=4 (provinces), US=4 (states), DE=4 (bundesländer), etc.
+    // We use admin_level=4 for most countries (states/provinces/regions)
+    // Some countries need admin_level=6 for proper city divisions
+    const COUNTRY_ADMIN_LEVELS = {
+      TR: "4", DE: "4", FR: "4", IT: "4", ES: "4", GB: "4", NL: "4", BE: "4",
+      AT: "4", CH: "4", PL: "4", CZ: "4", PT: "4", GR: "4", SE: "4", NO: "4",
+      DK: "4", FI: "4", IE: "4", HU: "4", RO: "4", BG: "4", HR: "4", SK: "4",
+      SI: "4", RS: "4", UA: "4", RU: "4", US: "4", CA: "4", MX: "4", BR: "4",
+      AR: "4", JP: "4", KR: "4", CN: "4", IN: "4", AU: "4", NZ: "4", ZA: "4",
+      EG: "4", MA: "4", SA: "4", AE: "4", IL: "4"
+    };
+
     async function loadCitiesForCountry(countryCode) {
       // Check cache first
       if (citiesCache[countryCode]) {
@@ -1592,11 +1604,16 @@
         return;
       }
 
+      // Get the appropriate admin level for this country (default to 4)
+      const adminLevel = COUNTRY_ADMIN_LEVELS[countryCode] || "4";
+
+      // Query ONLY admin_level=4 (or country-specific level) - NO higher levels (5,6,7,8,9,10...)
+      // This ensures we get only states/provinces/regions, NOT districts/neighborhoods
       const query = `
-        [out:json][timeout:60];
+        [out:json][timeout:90];
         area["ISO3166-1"="${countryCode}"]->.searchArea;
         (
-          relation["boundary"="administrative"]["admin_level"~"^(4|6|8)$"](area.searchArea);
+          relation["boundary"="administrative"]["admin_level"="${adminLevel}"](area.searchArea);
         );
         out body;
         >;
