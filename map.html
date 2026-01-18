@@ -46,7 +46,7 @@
     /* HUD top */
     .hud{
       pointer-events: auto;
-      width: min(860px, 100%);
+      width: min(900px, 100%);
       justify-self: center;
       display: grid;
       grid-template-columns: 1fr auto;
@@ -77,7 +77,7 @@
       background: rgba(0,0,0,.92);
       color: #fff;
       display:grid; place-items:center;
-      font-weight: 900;
+      font-weight: 1000;
       flex: 0 0 auto;
       letter-spacing: .5px;
     }
@@ -87,7 +87,7 @@
       flex-direction: column;
     }
     .title{
-      font-weight: 900;
+      font-weight: 1000;
       font-size: 14px;
       line-height: 1.15;
       white-space: nowrap;
@@ -114,7 +114,7 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      font-weight: 900;
+      font-weight: 1000;
       font-size: 13px;
       white-space: nowrap;
     }
@@ -122,12 +122,12 @@
     /* Bottom action bar */
     .bar{
       pointer-events: auto;
-      width: min(860px, 100%);
+      width: min(900px, 100%);
       justify-self: center;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 10px;
-      align-items: center;
+      align-items: end;
     }
 
     .prompt{
@@ -151,7 +151,7 @@
     }
     .promptText{
       font-size: 14px;
-      font-weight: 900;
+      font-weight: 1000;
       line-height: 1.25;
       white-space: nowrap;
       overflow: hidden;
@@ -202,11 +202,30 @@
     }
     button:active{ transform: scale(.99); }
 
+    /* Multiple choice grid */
+    .choices{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .choiceBtn{
+      background: rgba(255,255,255,.92);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow: 0 14px 40px rgba(0,0,0,.10);
+      text-align: left;
+      min-height: 48px;
+      border-radius: 14px;
+      padding: 12px;
+      font-weight: 1000;
+    }
+
     /* Toast */
     .toast{
       pointer-events: none;
       justify-self: center;
-      width: min(860px, 100%);
+      width: min(900px, 100%);
       display:flex;
       justify-content:center;
     }
@@ -238,7 +257,7 @@
       -webkit-backdrop-filter: blur(2px);
     }
     .card{
-      width: min(900px, 100%);
+      width: min(940px, 100%);
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -276,6 +295,7 @@
       line-height: 1.35;
       font-size: 13px;
     }
+
     .modes{
       display:grid;
       grid-template-columns: 1fr;
@@ -304,23 +324,14 @@
       line-height: 1.35;
     }
 
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
     .small{
       font-size: 12px;
       opacity: .75;
       line-height: 1.35;
     }
 
-    /* Responsive */
-    @media (min-width: 860px){
+    @media (min-width: 900px){
       .modes{ grid-template-columns: 1fr 1fr; }
-      .grid2{ grid-template-columns: 1fr 1fr; }
     }
     @media (prefers-reduced-motion: reduce){
       *{ transition: none !important; }
@@ -344,34 +355,28 @@
 
       <div class="modes">
         <button class="modeBtn" id="modeType">
-          <strong>Mod 1 — Yaz</strong>
-          <span>Haritada ülke seçilir, adı gizlidir. Sen ülkenin adını yazarsın. Doğruysa yeşile döner ve yeni ülkeye geçer.</span>
+          <strong>Mod 1 — Yaz (Öğretici)</strong>
+          <span>Haritada ülke seçili ve vurgulu gelir. Sen ülkenin adını yazarsın. Doğruysa yeşil olur.</span>
         </button>
 
         <button class="modeBtn" id="modeClick">
-          <strong>Mod 2 — Seç</strong>
-          <span>Ülke adı yazılı gelir. Sen haritada doğru ülkeye dokunursun. Doğruysa yeşil, yanlışsa kırmızı olur.</span>
+          <strong>Mod 2 — Seç (Gerçek Bulma)</strong>
+          <span>Ülke adı yazılı gelir. Harita hedefi asla göstermez: zoom yok, vurgu yok. Sen bulup dokunursun.</span>
+        </button>
+
+        <button class="modeBtn" id="modeChoice">
+          <strong>Mod 3 — 4 Şık</strong>
+          <span>Haritada ülke vurgulu gelir; altta 4 seçenek çıkar. Doğru şıkkı seç.</span>
+        </button>
+
+        <button class="modeBtn" id="modeHard">
+          <strong>Mod 4 — Zor (Seç + Ceza)</strong>
+          <span>Mod 2 gibi: hedef asla belli olmaz. Yanlış tıkta -1 puan (minimum 0). Hız ve dikkat modu.</span>
         </button>
       </div>
 
-      <div class="grid2">
-        <div class="card" style="padding:14px;background:rgba(255,255,255,.75)">
-          <div style="font-weight:1000;margin-bottom:6px;">Gerekli dosya</div>
-          <div class="small">
-            Aynı klasöre <b>countries.geojson</b> koymalısın (index.html ile aynı yerde).
-            Kod şu dosyayı okur: <code>./countries.geojson</code>
-          </div>
-        </div>
-        <div class="card" style="padding:14px;background:rgba(255,255,255,.75)">
-          <div style="font-weight:1000;margin-bottom:6px;">Mobil ipucu</div>
-          <div class="small">
-            Çok akıcı olsun diye “110m / low-res” ülkeler GeoJSON kullanman daha iyi (dosya daha küçük).
-          </div>
-        </div>
-      </div>
-
       <div class="small" style="margin-top:10px;">
-        Not: Ülke adını eşleştirirken Türkçe karakter/aksan farklarını normalize ediyoruz (örn. “Türkiye” ~ “Turkiye”).
+        Gerekli dosya: <b>countries.geojson</b> (index.html ile aynı klasörde). Kod şunu okur: <code>./countries.geojson</code>
       </div>
     </div>
   </div>
@@ -393,7 +398,7 @@
       </div>
 
       <div class="small" style="margin-top:10px;">
-        İstersen bir sonraki adımda: zorluk seviyeleri, can sistemi, combo, leaderboard ve “Türkiye = Turkey” gibi eş anlamlılar ekleriz.
+        İstersen sonraki adım: kıta filtreleri, combo, en iyi skor (localStorage), “Türkiye = Turkey” gibi eş anlamlılar.
       </div>
     </div>
   </div>
@@ -424,10 +429,14 @@
         <div class="promptText" id="promptText">—</div>
         <div class="hint" id="promptHint">—</div>
 
+        <!-- Typing -->
         <div class="row" id="typeRow" style="display:none;">
           <input id="answer" placeholder="Ülke adını yaz…" autocomplete="off"/>
           <button id="checkBtn">Kontrol</button>
         </div>
+
+        <!-- Choices -->
+        <div class="choices" id="choiceGrid" style="display:none;"></div>
       </div>
 
       <div class="controls">
@@ -449,8 +458,8 @@
      ***********************/
     const GEOJSON_URL = "./countries.geojson";
 
-    // GeoJSON properties field candidates (dosyana göre biri mutlaka tutar)
-    const NAME_FIELDS = ["ADMIN","NAME","NAME_EN","NAME_LONG","SOVEREIGNT","FORMAL_EN","FORMAL_FR","BRK_NAME","NAME_TR","NAME_TUR"];
+    // GeoJSON properties field candidates
+    const NAME_FIELDS = ["ADMIN","NAME","NAME_EN","NAME_LONG","SOVEREIGNT","FORMAL_EN","BRK_NAME","NAME_TR","NAME_TUR"];
 
     // Oyun
     const GAME_SECONDS = 120;
@@ -480,6 +489,8 @@
     const answerEl = $("answer");
     const checkBtn = $("checkBtn");
 
+    const choiceGrid = $("choiceGrid");
+
     const skipBtn = $("skipBtn");
     const fitBtn = $("fitBtn");
     const quitBtn = $("quitBtn");
@@ -487,31 +498,32 @@
     const toastEl = $("toast");
     const toastText = $("toastText");
 
-    const modeTypeBtn = $("modeType");
-    const modeClickBtn = $("modeClick");
     const playAgainBtn = $("playAgain");
     const backToMenuBtn = $("backToMenu");
+
+    const modeTypeBtn = $("modeType");
+    const modeClickBtn = $("modeClick");
+    const modeChoiceBtn = $("modeChoice");
+    const modeHardBtn = $("modeHard");
 
     /***********************
      * 2) HARITA
      ***********************/
-    const map = L.map("map", {
-      zoomControl: true,
-      worldCopyJump: true
-    }).setView([20, 0], 2);
+    const map = L.map("map", { zoomControl: true, worldCopyJump: true }).setView([20, 0], 2);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: "© OpenStreetMap"
     }).addTo(map);
 
-    // GeoJSON store
     let geoLayer = null;
     let countries = []; // { layer, names[], primaryName, correct, asked }
     let allBounds = null;
 
-    // Game state
-    const MODE = { TYPE: "type", CLICK: "click" };
+    /***********************
+     * 3) GAME STATE
+     ***********************/
+    const MODE = { TYPE: "type", CLICK: "click", CHOICE: "choice", HARD: "hard" };
     let currentMode = null;
 
     let running = false;
@@ -521,68 +533,58 @@
     let score = 0;
     let qcount = 0;
 
-    // Current question
-    let currentCountry = null; // object from countries[]
-    let clickTargetName = null; // in CLICK mode: the name user must find
+    let currentCountry = null; // answer country
 
     /***********************
-     * 3) STYLES
+     * 4) STYLES
      ***********************/
     function styleDefault(){
       return {
-        color: "rgba(0,0,0,.35)",
+        color: "rgba(0,0,0,.30)",
         weight: 1,
         fillColor: "rgba(0,0,0,.06)",
-        fillOpacity: 0.22
+        fillOpacity: 0.20
       };
     }
-    function applyDefault(c){
-      c.layer.setStyle(styleDefault());
+    function applyDefault(c){ c.layer.setStyle(styleDefault()); }
+    function applyCorrect(c){
+      c.layer.setStyle({
+        color: "rgba(0,0,0,.45)",
+        weight: 1,
+        fillColor: "rgba(0,128,0,.55)",
+        fillOpacity: 0.65
+      });
     }
     function applyFocus(c){
       c.layer.setStyle({
-        color: "rgba(0,0,0,.55)",
-        weight: 2,
-        fillColor: "rgba(0,0,0,.10)",
-        fillOpacity: 0.42
-      });
-    }
-    function applyCorrect(c){
-      c.layer.setStyle({
-        color: "rgba(0,0,0,.55)",
-        weight: 2,
-        fillColor: "rgba(0,128,0,.55)",
-        fillOpacity: 0.68
+        color: "rgba(0,0,0,.30)",     // sınır kalınlaşmasın
+        weight: 1,                   // sınır kalınlaşmasın
+        fillColor: "rgba(0,0,0,.10)", // hafif
+        fillOpacity: 0.36
       });
     }
     function flashWrong(layer){
       const prev = { ...styleDefault() };
       layer.setStyle({
-        color: "rgba(0,0,0,.65)",
-        weight: 2,
-        fillColor: "rgba(200,0,0,.60)",
+        color: "rgba(0,0,0,.45)",
+        weight: 1,
+        fillColor: "rgba(200,0,0,.65)",
         fillOpacity: 0.72
       });
       setTimeout(() => layer.setStyle(prev), 420);
     }
-
     function resetAllNonCorrect(){
-      countries.forEach(c => {
-        if (c.correct) applyCorrect(c);
-        else applyDefault(c);
-      });
+      countries.forEach(c => c.correct ? applyCorrect(c) : applyDefault(c));
     }
 
     /***********************
-     * 4) YARDIMCILAR
+     * 5) HELPERS
      ***********************/
     function toast(msg){
       toastText.textContent = msg;
       toastEl.classList.add("show");
       setTimeout(() => toastEl.classList.remove("show"), 850);
     }
-
-    // “Türkiye” ~ “Turkiye” vb.
     function normalizeText(s){
       return String(s || "")
         .trim()
@@ -591,13 +593,11 @@
         .replace(/ı/g, "i")
         .replace(/\s+/g, " ");
     }
-
     function getNames(props){
       const names = [];
       for (const k of NAME_FIELDS){
         if (props && props[k]) names.push(String(props[k]));
       }
-      // Unique
       const seen = new Set();
       return names.filter(n => {
         const x = normalizeText(n);
@@ -606,25 +606,19 @@
         return true;
       });
     }
-
     function formatTime(sec){
       const m = Math.floor(sec / 60);
       const s = sec % 60;
-      const mm = String(m).padStart(2,"0");
-      const ss = String(s).padStart(2,"0");
-      return `${mm}:${ss}`;
+      return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
     }
-
     function updateHUD(){
       timerEl.textContent = formatTime(timeLeft);
       scoreEl.textContent = `Puan: ${score}`;
       qcountEl.textContent = `Soru: ${qcount}`;
     }
-
     function fitWorld(){
       if (allBounds) map.fitBounds(allBounds.pad(0.12));
     }
-
     function endGame(){
       running = false;
       if (timerHandle) clearInterval(timerHandle);
@@ -635,28 +629,24 @@
       overText.textContent = `Skorun: ${score}  —  Toplam soru: ${qcount}`;
       toastEl.classList.remove("show");
     }
-
     function quitToMenu(){
       running = false;
       if (timerHandle) clearInterval(timerHandle);
       timerHandle = null;
 
-      // reset UI
       gameUI.style.display = "none";
       overScreen.style.display = "none";
       startScreen.style.display = "grid";
 
-      // reset map styles
       countries.forEach(c => { c.correct = false; c.asked = false; applyDefault(c); });
       currentCountry = null;
-      clickTargetName = null;
 
       score = 0; qcount = 0;
       timeLeft = GAME_SECONDS;
       updateHUD();
       fitWorld();
+      renderChoices([]); // clear
     }
-
     function startTimer(){
       timeLeft = GAME_SECONDS;
       updateHUD();
@@ -666,17 +656,14 @@
         timeLeft -= 1;
         if (timeLeft < 0) timeLeft = 0;
         updateHUD();
-        if (timeLeft === 0){
-          endGame();
-        }
+        if (timeLeft === 0) endGame();
       }, 1000);
     }
 
     /***********************
-     * 5) SORU ÜRETİMİ
+     * 6) QUESTION GEN
      ***********************/
     function pickNextCountry(){
-      // asked=false olanlardan seç (bitince hepsini sıfırla)
       let pool = countries.filter(c => !c.asked);
       if (pool.length === 0){
         countries.forEach(c => c.asked = false);
@@ -687,49 +674,107 @@
       return next;
     }
 
+    function renderChoices(options){
+      choiceGrid.innerHTML = "";
+      if (!options.length) return;
+      options.forEach(opt => {
+        const b = document.createElement("button");
+        b.className = "choiceBtn";
+        b.textContent = opt.label;
+        b.addEventListener("click", () => opt.onPick());
+        choiceGrid.appendChild(b);
+      });
+    }
+
+    function getDisplayName(c){
+      return c.primaryName || c.names[0] || "Unknown";
+    }
+
     function newQuestion(){
-      if (!running) return;
-      if (!countries.length) return;
+      if (!running || !countries.length) return;
 
       currentCountry = pickNextCountry();
       qcount += 1;
       updateHUD();
 
+      // reset visuals
       resetAllNonCorrect();
-      applyFocus(currentCountry);
 
-      // soruyu hazırla
+      // UI resets
+      typeRow.style.display = "none";
+      choiceGrid.style.display = "none";
+      renderChoices([]);
+      answerEl.value = "";
+
+      // MODE LOGIC
       if (currentMode === MODE.TYPE){
-        // Haritada ülke seçili, adını yaz
-        promptTitle.textContent = "Ülke adını yaz";
-        promptText.textContent = "Bu ülke hangi ülke?";
-        promptHint.textContent = "İpucu yok — doğru yazınca ülke yeşile döner.";
-        typeRow.style.display = "flex";
-        answerEl.value = "";
-        answerEl.focus();
-
-        // ülkeyi ekrana sığdır
+        // show & teach: highlight + zoom
+        applyFocus(currentCountry);
         map.fitBounds(currentCountry.layer.getBounds().pad(0.25), { animate: true });
 
-      } else if (currentMode === MODE.CLICK){
-        // Ülke adı ver, haritada seç
-        const display = currentCountry.primaryName || (currentCountry.names[0] || "Bu ülke");
-        clickTargetName = display;
+        promptTitle.textContent = "Ülke adını yaz";
+        promptText.textContent = "Bu ülke hangi ülke?";
+        promptHint.textContent = "Doğru yazınca yeşile döner.";
+        typeRow.style.display = "flex";
+        answerEl.focus();
 
-        promptTitle.textContent = "Haritada ülkeyi seç";
-        promptText.textContent = clickTargetName;
-        promptHint.textContent = "Haritada doğru ülkeye dokun. Yanlışsa kırmızı yanar.";
-        typeRow.style.display = "none";
+      } else if (currentMode === MODE.CLICK || currentMode === MODE.HARD){
+        // IMPORTANT: NO zoom, NO highlight, NO hints on map
+        // map stays wherever the user is
+        const name = getDisplayName(currentCountry);
 
-        // ekrana genel sığdırma yerine biraz zoom-out gibi his: hedefi göstermeyelim
-        // Yine de oyunu hızlandırmak için hedef bölgeye çok yaklaşmayalım:
-        // Haritayı çok zıplatmasın diye sadece hafif pan/fit:
-        map.fitBounds(currentCountry.layer.getBounds().pad(0.55), { animate: true });
+        promptTitle.textContent = (currentMode === MODE.HARD) ? "Haritada ülkeyi seç (Ceza Modu)" : "Haritada ülkeyi seç";
+        promptText.textContent = name;
+        promptHint.textContent = (currentMode === MODE.HARD)
+          ? "Yanlış tık: -1 puan (min 0). Hedef asla belli olmaz."
+          : "Hedef asla belli olmaz: zoom yok, vurgu yok.";
+
+      } else if (currentMode === MODE.CHOICE){
+        // highlight + zoom, answer by 4 options
+        applyFocus(currentCountry);
+        map.fitBounds(currentCountry.layer.getBounds().pad(0.25), { animate: true });
+
+        const correctName = getDisplayName(currentCountry);
+
+        // pick 3 random wrong names
+        const pool = countries.filter(c => c !== currentCountry);
+        const wrongs = [];
+        while (wrongs.length < 3 && pool.length){
+          const pick = pool[Math.floor(Math.random() * pool.length)];
+          const n = getDisplayName(pick);
+          if (n && !wrongs.includes(n) && n !== correctName) wrongs.push(n);
+        }
+
+        const labels = [correctName, ...wrongs].slice(0,4);
+        shuffleInPlace(labels);
+
+        promptTitle.textContent = "4 Şık";
+        promptText.textContent = "Bu ülkenin adı hangisi?";
+        promptHint.textContent = "Doğru şıkkı seç.";
+        choiceGrid.style.display = "grid";
+
+        renderChoices(labels.map(lbl => ({
+          label: lbl,
+          onPick: () => {
+            if (!running) return;
+            if (normalizeText(lbl) === normalizeText(correctName)){
+              score += 1;
+              currentCountry.correct = true;
+              applyCorrect(currentCountry);
+              toast("Doğru ✅");
+              updateHUD();
+              setTimeout(newQuestion, 520);
+            } else {
+              flashWrong(currentCountry.layer);
+              toast("Yanlış ❌");
+            }
+          }
+        })));
       }
     }
 
     /***********************
-     * 6) DOĞRULAMA
+     * 7) ANSWER LOGIC
      ***********************/
     function acceptTypedAnswer(){
       if (!running || currentMode !== MODE.TYPE || !currentCountry) return;
@@ -739,7 +784,6 @@
         toast("Bir ülke adı yaz.");
         return;
       }
-
       const ok = currentCountry.names.some(n => normalizeText(n) === typed);
       if (ok){
         score += 1;
@@ -755,9 +799,9 @@
     }
 
     function handleMapClickOnCountry(clickedCountry){
-      if (!running || currentMode !== MODE.CLICK || !currentCountry) return;
+      if (!running || !currentCountry) return;
+      if (currentMode !== MODE.CLICK && currentMode !== MODE.HARD) return;
 
-      // doğru olan: currentCountry
       if (clickedCountry === currentCountry){
         score += 1;
         currentCountry.correct = true;
@@ -767,49 +811,71 @@
         setTimeout(newQuestion, 520);
       } else {
         flashWrong(clickedCountry.layer);
-        toast("Yanlış ❌");
+        if (currentMode === MODE.HARD){
+          score = Math.max(0, score - 1);
+          updateHUD();
+          toast("Yanlış ❌ (-1)");
+        } else {
+          toast("Yanlış ❌");
+        }
       }
     }
 
     /***********************
-     * 7) OYUNU BAŞLAT
+     * 8) START / MENU
      ***********************/
     function startGame(mode){
       currentMode = mode;
 
-      // reset scores & states
+      // reset
       countries.forEach(c => { c.correct = false; c.asked = false; applyDefault(c); });
       currentCountry = null;
-      clickTargetName = null;
-
       score = 0;
       qcount = 0;
       updateHUD();
 
-      // show UI
+      // UI
       startScreen.style.display = "none";
       overScreen.style.display = "none";
       gameUI.style.display = "grid";
+      toastEl.classList.remove("show");
 
-      running = true;
-
+      // Mode header
       if (mode === MODE.TYPE){
         modeTitle.textContent = "Mod 1 — Yaz";
-        modeSub.textContent = "Haritada seçili ülkenin adını yaz.";
-        typeRow.style.display = "flex";
-      } else {
+        modeSub.textContent = "Ülke vurgulu gelir; adını yazarsın.";
+      } else if (mode === MODE.CLICK){
         modeTitle.textContent = "Mod 2 — Seç";
-        modeSub.textContent = "Yazılı ülkeyi haritada bul ve dokun.";
-        typeRow.style.display = "none";
+        modeSub.textContent = "Hedef asla belli olmaz (zoom/vurgu yok).";
+      } else if (mode === MODE.CHOICE){
+        modeTitle.textContent = "Mod 3 — 4 Şık";
+        modeSub.textContent = "Ülke vurgulu; doğru şıkkı seç.";
+      } else if (mode === MODE.HARD){
+        modeTitle.textContent = "Mod 4 — Zor";
+        modeSub.textContent = "Bul ve seç; yanlışta -1 puan.";
       }
 
+      // show/hide inputs
+      typeRow.style.display = "none";
+      choiceGrid.style.display = "none";
+      renderChoices([]);
+
+      running = true;
       startTimer();
       newQuestion();
     }
 
-    /***********************
-     * 8) EVENTLER
-     ***********************/
+    modeTypeBtn.addEventListener("click", () => startGame(MODE.TYPE));
+    modeClickBtn.addEventListener("click", () => startGame(MODE.CLICK));
+    modeChoiceBtn.addEventListener("click", () => startGame(MODE.CHOICE));
+    modeHardBtn.addEventListener("click", () => startGame(MODE.HARD));
+
+    playAgainBtn.addEventListener("click", () => {
+      if (!currentMode) currentMode = MODE.TYPE;
+      startGame(currentMode);
+    });
+    backToMenuBtn.addEventListener("click", () => quitToMenu());
+
     checkBtn.addEventListener("click", acceptTypedAnswer);
     answerEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") acceptTypedAnswer();
@@ -828,18 +894,8 @@
       setTimeout(quitToMenu, 250);
     });
 
-    modeTypeBtn.addEventListener("click", () => startGame(MODE.TYPE));
-    modeClickBtn.addEventListener("click", () => startGame(MODE.CLICK));
-
-    playAgainBtn.addEventListener("click", () => {
-      if (!currentMode) currentMode = MODE.TYPE;
-      startGame(currentMode);
-    });
-
-    backToMenuBtn.addEventListener("click", () => quitToMenu());
-
     /***********************
-     * 9) GEOJSON YÜKLE
+     * 9) GEOJSON LOAD
      ***********************/
     fetch(GEOJSON_URL)
       .then(r => {
@@ -853,30 +909,22 @@
             const names = getNames(feature.properties);
             const primaryName = names[0] || null;
 
-            const item = {
-              layer,
-              feature,
-              names,
-              primaryName,
-              correct: false,
-              asked: false
-            };
+            const item = { layer, feature, names, primaryName, correct: false, asked: false };
             countries.push(item);
 
-            // hover
+            // IMPORTANT: Mod 2/4'te hover ipucu olmasın
             layer.on("mouseover", () => {
-              layer.setStyle({ fillOpacity: 0.35 });
+              if (currentMode === MODE.TYPE || currentMode === MODE.CHOICE){
+                layer.setStyle({ fillOpacity: 0.32 });
+              }
             });
             layer.on("mouseout", () => {
-              // geri stil
-              const c = countries.find(x => x.layer === layer);
-              if (!c) return;
+              const c = item;
               if (c.correct) applyCorrect(c);
-              else if (currentCountry && c === currentCountry) applyFocus(c);
+              else if ((currentMode === MODE.TYPE || currentMode === MODE.CHOICE) && currentCountry && c === currentCountry) applyFocus(c);
               else applyDefault(c);
             });
 
-            // click logic (only matters in CLICK mode)
             layer.on("click", () => handleMapClickOnCountry(item));
           }
         }).addTo(map);
@@ -884,16 +932,30 @@
         allBounds = geoLayer.getBounds();
         fitWorld();
 
-        // Start screen stays. Just update message if no names found.
         const unnamed = countries.filter(c => !c.names.length).length;
-        if (unnamed > 0) {
-          console.warn("Bazı ülkelerde isim alanı bulunamadı. NAME_FIELDS alanlarını dosyana göre güncelle.");
+        if (unnamed > 0){
+          console.warn("Bazı ülkelerde isim alanı bulunamadı. NAME_FIELDS listesini dosyana göre güncelleyebilirsin.");
         }
       })
       .catch(err => {
         console.error(err);
-        alert("countries.geojson bulunamadı veya yüklenemedi.\n\nindex.html ile aynı klasörde 'countries.geojson' olduğundan emin ol.\nAyrıca fetch için local server ile çalıştırman gerekebilir.");
+        alert(
+          "countries.geojson bulunamadı veya yüklenemedi.\n\n" +
+          "index.html ile aynı klasörde 'countries.geojson' olduğundan emin ol.\n" +
+          "Ayrıca fetch için local server ile çalıştırman gerekebilir."
+        );
       });
+
+    /***********************
+     * 10) UTILS
+     ***********************/
+    function shuffleInPlace(arr){
+      for (let i = arr.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
   </script>
 </body>
 </html>
