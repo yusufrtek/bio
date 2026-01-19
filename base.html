@@ -2634,11 +2634,7 @@
             chatMessages.appendChild(bubble);
         }
 
-        function cleanupChat() {
-            chatToggleBtn.style.display = "none";
-            chatOverlay.classList.remove("visible");
-            chatRef = null;
-        }
+
 
         // Event Listeners
         // Event Listeners
@@ -2653,8 +2649,39 @@
         });
 
         $("friendsBtn").addEventListener("click", () => {
-            showToast("Friend system coming soon!", "success");
+            // Only if logged in
+            if (!currentPlayerId) {
+                showToast("Login required for friends!", "error");
+                return;
+            }
+            showScreen(friendsScreen);
+            // Setup tabs
+            const tabs = document.querySelectorAll(".tab-btn");
+            const views = document.querySelectorAll(".tab-content");
+
+            tabs.forEach(tab => {
+                tab.onclick = () => {
+                    tabs.forEach(t => t.classList.remove("active"));
+                    views.forEach(v => v.style.display = "none");
+                    tab.classList.add("active");
+                    const target = $(tab.dataset.tab);
+                    if (target) target.style.display = "block";
+                };
+            });
+
+            // Default tab
+            tabs[0].click();
         });
+
+        if ($("friendsBackBtn")) {
+            $("friendsBackBtn").addEventListener("click", () => {
+                showScreen(welcomeScreen);
+            });
+        }
+
+        if ($("sendReqBtn")) {
+            $("sendReqBtn").addEventListener("click", sendFriendRequest);
+        }
 
         $("globalChatBtn").addEventListener("click", () => {
             setupChat("global-chat", false);
