@@ -1031,6 +1031,66 @@
       console.error("Redirect result error:", error);
     });
 
+    // Presence system
+    let presenceRef = null;
+
+    function setupPresence(user) {
+      if (!user) return;
+
+      const userName = user.displayName || "Anonymous";
+      presenceRef = ref(db, `presence/${user.uid}`);
+      
+      // Connection state reference
+      const connectedRef = ref(db, ".info/connected");
+      
+      onValue(connectedRef, (snapshot) => {
+        if (snapshot.val() === true) {
+          // Set online status
+          set(presenceRef, {
+            uid: user.uid,
+            name: userName.slice(0, 20),
+            roomId: currentRoomId || "lobby",
+            online: true,
+            lastSeen: Date.now()
+          });
+
+          // When disconnected, update status
+          onDisconnect(presenceRef).set({
+            uid: user.uid,
+            name: userName.slice(0, 20),
+            roomId: "lobby",
+            online: false,
+            lastSeen: Date.now()
+          });
+        }
+      });
+    }
+
+    function updatePresenceRoom(roomId) {
+      if (!presenceRef || !auth.currentUser) return;
+      update(presenceRef, {
+        roomId: roomId || "lobby",
+        lastSeen: Date.now()
+      });
+    }
+
+    // Listen to online users count
+    function listenToOnlineUsers() {
+      const presenceListRef = ref(db, "presence");
+      onValue(presenceListRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const onlineUsers = Object.values(data).filter(u => u.online === true);
+          $("onlineCount").textContent = onlineUsers.length;
+        } else {
+          $("onlineCount").textContent = "0";
+        }
+      });
+    }
+
+    // Start listening to online users
+    listenToOnlineUsers();
+
     // Auth state listener
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -1045,9 +1105,13 @@
         // Toggle buttons
         $("googleLoginBtn").style.display = "none";
         $("googleLogoutBtn").style.display = "block";
+
+        // Setup presence
+        setupPresence(user);
       } else {
         uid = null;
         currentPlayerId = null;
+        presenceRef = null;
         
         // Toggle buttons
         $("googleLoginBtn").style.display = "flex";
@@ -1141,6 +1205,9 @@
         const playerRef = ref(db, `rooms/${roomCode}/players/${currentPlayerId}`);
         onDisconnect(playerRef).remove();
 
+        // Update presence
+        updatePresenceRoom(roomCode);
+
         enterLobby(roomCode);
       } catch (error) {
         console.error(error);
@@ -1202,6 +1269,9 @@
 
         // Set up disconnect handler
         onDisconnect(playerRef).remove();
+
+        // Update presence
+        updatePresenceRoom(roomCode);
 
         enterLobby(roomCode);
       } catch (error) {
@@ -1579,8 +1649,11 @@
         }
       }
       
+      // Update presence back to lobby
+      updatePresenceRoom("lobby");
+
       currentRoomId = null;
-      currentPlayerId = null;
+      currentPlayerId = uid; // Keep uid for presence
       isHost = false;
       capturedPhoto = null;
       hasVoted = false;
