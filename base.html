@@ -1143,13 +1143,61 @@
         </div>
     </div>
 
+    <!-- FRIENDS SCREEN -->
+    <div class="screen" id="friendsScreen">
+        <div class="screen-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin:0; font-size: 24px;">Friends</h2>
+                <button class="icon-btn" id="friendsBackBtn"
+                    style="background:var(--surface-color); width:36px; height:36px;">✕</button>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="tab-btn active" data-tab="friendsView"
+                    style="flex:1; padding:10px; border-radius:10px; background:var(--surface-color); color:var(--text-secondary); border:1px solid var(--border-color); cursor:pointer;">Lists</button>
+                <button class="tab-btn" data-tab="requestsView"
+                    style="flex:1; padding:10px; border-radius:10px; background:var(--surface-color); color:var(--text-secondary); border:1px solid var(--border-color); cursor:pointer;">
+                    Requests <span id="reqBadge"
+                        style="background:var(--primary); color:white; padding:2px 6px; border-radius:10px; font-size:10px; display:none;">0</span>
+                </button>
+                <button class="tab-btn" data-tab="addView"
+                    style="flex:1; padding:10px; border-radius:10px; background:var(--surface-color); color:var(--text-secondary); border:1px solid var(--border-color); cursor:pointer;">Add</button>
+            </div>
+
+            <div id="friendsView" class="tab-content visible" style="flex:1; overflow-y:auto; display:none;">
+                <div id="friendList" class="list-container" style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="text-align:center; color:var(--text-secondary); margin-top:20px;">No friends yet.</div>
+                </div>
+            </div>
+
+            <div id="requestsView" class="tab-content" style="flex:1; overflow-y:auto; display:none;">
+                <div id="requestList" class="list-container" style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="text-align:center; color:var(--text-secondary); margin-top:20px;">No pending requests.
+                    </div>
+                </div>
+            </div>
+
+            <div id="addView" class="tab-content" style="flex:1; overflow-y:auto; display:none;">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <input type="text" id="addFriendInput" placeholder="Enter username..."
+                        style="width:100%; padding:16px; border-radius:12px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;">
+                    <button class="btn primary" id="sendReqBtn">Send Request</button>
+                </div>
+                <div id="addResult" style="margin-top:20px; text-align:center; color:var(--text-secondary);"></div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- CHAT OVERLAY -->
     <div class="chat-toggle-btn" id="chatToggleBtn">💬</div>
     <div class="chat-overlay" id="chatOverlay">
         <div class="chat-header">
             <span>Team Chat</span>
-            <span class="chat-close" id="chatCloseBtn">✕</span>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div id="voiceStatus" style="font-size:10px; color:#22c55e; display:none;">● Voice Active</div>
+                <span class="chat-close" id="chatCloseBtn">✕</span>
+            </div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-footer">
@@ -1162,10 +1210,21 @@
                 <button class="emoji-btn">👏</button>
             </div>
             <div class="chat-input-row">
+                <button id="voiceChatBtn" class="icon-btn"
+                    style="background:var(--surface-color); border:1px solid var(--border-color); color:var(--text-primary); margin-right:8px; width:44px; height:44px; border-radius:50%;">🎤</button>
                 <input type="text" id="chatInput" placeholder="Message..." autocomplete="off">
                 <button id="sendChatBtn">➤</button>
             </div>
         </div>
+    </div>
+
+    <!-- ZOOM MODAL -->
+    <div id="zoomModal"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:3000; display:none; align-items:center; justify-content:center; flex-direction:column; opacity:0; transition:opacity 0.3s;">
+        <img id="zoomedImage" src=""
+            style="max-width:90%; max-height:80vh; object-fit:contain; border-radius:8px; box-shadow:0 0 50px rgba(0,0,0,0.5);">
+        <button id="closeZoomBtn"
+            style="margin-top:20px; background:var(--surface-color); color:#fff; border:1px solid var(--border-color); padding:10px 30px; border-radius:20px; cursor:pointer;">Close</button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1173,7 +1232,7 @@
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get, push, onValue, update, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+        import { getDatabase, ref, set, get, push, onValue, update, remove, onDisconnect, onChildAdded } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
         // Firebase Config
@@ -1207,6 +1266,7 @@
         const votingScreen = $("votingScreen");
         const winnerScreen = $("winnerScreen");
         const loadingScreen = $("loadingScreen");
+        const friendsScreen = $("friendsScreen");
         const toast = $("toast");
 
         // Chat Elements
@@ -1240,6 +1300,7 @@
         let capturedPhoto = null;
         let hasVoted = false;
         let roomListener = null;
+        let currentRoomPlayers = {}; // For Voice Chat
 
         // Google Login
         async function loginWithGoogle() {
@@ -1351,6 +1412,8 @@
 
                 // Setup presence
                 setupPresence(user);
+                saveUserProfile(user);
+                setupFriends(user.uid);
             } else {
                 uid = null;
                 currentPlayerId = null;
@@ -1489,6 +1552,8 @@
             $("roomCodeInput").value = id;
             showScreen(joinRoomScreen);
         };
+
+
 
         // Format Time
         function formatTime(sec) {
@@ -1654,6 +1719,7 @@
                 const roomData = snapshot.val();
 
                 // Update players list
+                currentRoomPlayers = roomData.players || {};
                 renderPlayersList(roomData.players);
 
                 // Handle game state changes
@@ -1876,6 +1942,24 @@
                     card.style.cursor = "not-allowed";
                 }
 
+                // Add a "View" button to separate voting from viewing
+                const viewBtn = document.createElement("button");
+                viewBtn.textContent = "🔍";
+                viewBtn.className = "icon-btn";
+                viewBtn.style.position = "absolute";
+                viewBtn.style.top = "10px";
+                viewBtn.style.right = "10px";
+                viewBtn.style.padding = "5px";
+                viewBtn.style.width = "30px";
+                viewBtn.style.height = "30px";
+                viewBtn.style.fontSize = "14px";
+                viewBtn.style.zIndex = "10";
+                viewBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openZoom(player.photo);
+                };
+                card.appendChild(viewBtn);
+
                 grid.appendChild(card);
             });
 
@@ -2007,6 +2091,7 @@
             hasVoted = false;
 
             onlineGameUI.classList.remove("visible");
+            if (typeof stopVoiceChat === 'function') stopVoiceChat();
             cleanupChat();
             showScreen(welcomeScreen);
         }
@@ -2084,16 +2169,25 @@
         // ==========================================
         // CHAT LOGIC
         // ==========================================
-        let chatRef = null;
+        let chatUnsubscribe = null;
         let currentChatPath = null;
+
+        function cleanupChat() {
+            if (chatUnsubscribe) {
+                chatUnsubscribe();
+                chatUnsubscribe = null;
+            }
+            if (chatMessages) chatMessages.innerHTML = "";
+            currentChatPath = null;
+        }
 
         function setupChat(path, isGame = true) {
             cleanupChat();
             currentChatPath = path;
-            chatRef = ref(db, path);
+            const chatRef = ref(db, path);
 
             // Listen
-            onValue(chatRef, (snapshot) => {
+            chatUnsubscribe = onValue(chatRef, (snapshot) => {
                 const msgs = snapshot.val();
                 chatMessages.innerHTML = "";
                 if (msgs) {
@@ -2139,6 +2233,388 @@
 
             chatInput.value = "";
         }
+
+        // ==========================================
+        // VOICE CHAT LOGIC (Mock/Simple)
+        // ==========================================
+        // ==========================================
+        // REAL VOICE CHAT LOGIC (WebRTC Mesh)
+        // ==========================================
+        let isVoiceActive = false;
+        let localStream = null;
+        let peerConnections = {};
+        const voiceBtn = $("voiceChatBtn");
+
+        // Ice servers (STUN)
+        const iceServers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        if (voiceBtn) {
+            voiceBtn.addEventListener("click", toggleVoiceChat);
+        }
+
+        async function toggleVoiceChat() {
+            if (!isVoiceActive) {
+                // Turn ON
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    isVoiceActive = true;
+                    voiceBtn.style.background = "#22c55e";
+                    voiceBtn.style.color = "#fff";
+                    $("voiceStatus").style.display = "block";
+                    showToast("Voice Chat Active", "success");
+
+                    // Setup Signaling
+                    setupSignaling();
+
+                    // Connect to all existing players
+                    if (currentRoomPlayers) {
+                        Object.keys(currentRoomPlayers).forEach(pid => {
+                            if (pid !== currentPlayerId) {
+                                initPeerConnection(pid, true);
+                            }
+                        });
+                    }
+
+                    // Also listen for NEW players joining via roomListener -> but simpler:
+                    // If we are active, and a new player joins, our roomListener update could trigger connection?
+                    // Or we just wait for them to initiate if they join later?
+                    // Typically: Joiner initiates. So if I am already here, I wait for offer.
+                    // But if I just turned on voice, I am like a "new voice joiner", so I initiate.
+
+                } catch (err) {
+                    console.error("Mic/WebRTC Error:", err);
+                    showToast("Voice chat error", "error");
+                    stopVoiceChat();
+                }
+            } else {
+                // Turn OFF
+                stopVoiceChat();
+            }
+        }
+
+        let signalUnsubscribe = null;
+
+        function stopVoiceChat() {
+            isVoiceActive = false;
+            voiceBtn.style.background = "var(--surface-color)";
+            voiceBtn.style.color = "var(--text-primary)";
+            $("voiceStatus").style.display = "none";
+            showToast("Voice Chat Muted", "default");
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+
+            // Close all peers
+            Object.values(peerConnections).forEach(pc => pc.close());
+            peerConnections = {};
+
+            if (signalUnsubscribe) {
+                signalUnsubscribe();
+                signalUnsubscribe = null;
+            }
+        }
+
+        function setupSignaling() {
+            if (!currentRoomId || !currentPlayerId) return;
+            const signalRef = ref(db, `rooms/${currentRoomId}/signal/${currentPlayerId}`);
+
+            // Use onChildAdded to process new signals one by one
+            signalUnsubscribe = onChildAdded(signalRef, async (snapshot) => {
+                if (!isVoiceActive) return;
+
+                const data = snapshot.val();
+                const key = snapshot.key;
+                const senderId = data.senderId;
+
+                if (data.type === 'offer') {
+                    await handleOffer(senderId, data.sdp);
+                } else if (data.type === 'answer') {
+                    await handleAnswer(senderId, data.sdp);
+                } else if (data.type === 'candidate') {
+                    await handleCandidate(senderId, data.candidate);
+                }
+
+                // Remove signal after processing
+                remove(ref(db, `rooms/${currentRoomId}/signal/${currentPlayerId}/${key}`));
+            });
+        }
+
+        async function initPeerConnection(targetId, initiator) {
+            if (peerConnections[targetId]) return;
+
+            const pc = new RTCPeerConnection(iceServers);
+            peerConnections[targetId] = pc;
+
+            // Add local tracks
+            if (localStream) {
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            }
+
+            // Remote tracks
+            pc.ontrack = (event) => {
+                const audio = new Audio();
+                audio.srcObject = event.streams[0];
+                audio.autoplay = true;
+            };
+
+            // ICE Candidates
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    sendSignal(targetId, { type: 'candidate', candidate: JSON.parse(JSON.stringify(event.candidate)) });
+                }
+            };
+
+            // Connection state debugging
+            pc.onconnectionstatechange = () => {
+                console.log(`Connection with ${targetId}: ${pc.connectionState}`);
+            };
+
+            if (initiator) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                sendSignal(targetId, { type: 'offer', sdp: offer });
+            }
+
+            return pc;
+        }
+
+        async function handleOffer(senderId, sdp) {
+            // If we don't have a PC for this sender, create one (not initiator)
+            let pc = peerConnections[senderId];
+            if (!pc) {
+                pc = await initPeerConnection(senderId, false);
+            }
+
+            await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            sendSignal(senderId, { type: 'answer', sdp: answer });
+        }
+
+        async function handleAnswer(senderId, sdp) {
+            const pc = peerConnections[senderId];
+            if (pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+            }
+        }
+
+        async function handleCandidate(senderId, candidate) {
+            const pc = peerConnections[senderId];
+            if (pc) {
+                await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        }
+
+        async function sendSignal(targetId, data) {
+            const signalRef = ref(db, `rooms/${currentRoomId}/signal/${targetId}`);
+            await push(signalRef, {
+                senderId: currentPlayerId,
+                ...data
+            });
+        }
+
+
+        // ==========================================
+        // ZOOM LOGIC
+        // ==========================================
+        const zoomModal = $("zoomModal");
+        const zoomedImage = $("zoomedImage");
+        const closeZoomBtn = $("closeZoomBtn");
+
+        function openZoom(src) {
+            if (!src) return;
+            zoomedImage.src = src;
+            zoomModal.style.display = "flex";
+            // trigger reflow
+            void zoomModal.offsetWidth;
+            zoomModal.style.opacity = "1";
+        }
+
+        if (closeZoomBtn) {
+            closeZoomBtn.onclick = () => {
+                zoomModal.style.opacity = "0";
+                setTimeout(() => zoomModal.style.display = "none", 300);
+            };
+        }
+
+        // ==========================================
+        // FRIEND SYSTEM LOGIC
+        // ==========================================
+        async function saveUserProfile(user) {
+            const userRef = ref(db, `users/${user.uid}`);
+            await update(userRef, {
+                name: user.displayName || "Anonymous",
+                email: user.email,
+                photo: user.photoURL,
+                lastSeen: Date.now()
+            });
+        }
+
+        let friendsRef = null;
+        let requestsRef = null;
+
+        function setupFriends(uid) {
+            friendsRef = ref(db, `users/${uid}/friends`);
+            requestsRef = ref(db, `users/${uid}/requests`); // Requests received
+
+            // Listen to friends
+            onValue(friendsRef, (snapshot) => {
+                const list = $("friendList");
+                list.innerHTML = "";
+                if (snapshot.exists()) {
+                    const friends = snapshot.val();
+                    Object.entries(friends).forEach(([fid, fData]) => {
+                        if (!fData) return;
+                        const el = document.createElement("div");
+                        el.className = "friend-item";
+                        el.style.display = "flex";
+                        el.style.justifyContent = "space-between";
+                        el.style.padding = "12px";
+                        el.style.background = "rgba(255,255,255,0.05)";
+                        el.style.borderRadius = "12px";
+                        el.style.alignItems = "center";
+
+                        el.innerHTML = `
+                             <div style="font-weight:600;">${fData.name || "Unknown"}</div>
+                             <div style="font-size:12px; color:var(--success);">Friend</div>
+                         `;
+                        list.appendChild(el);
+                    });
+                } else {
+                    list.innerHTML = '<div style="text-align:center; color:var(--text-secondary); margin-top:20px;">No friends yet.</div>';
+                }
+            });
+
+            // Listen to requests
+            onValue(requestsRef, (snapshot) => {
+                const list = $("requestList");
+                const badge = $("reqBadge");
+                list.innerHTML = "";
+
+                if (snapshot.exists()) {
+                    const requests = snapshot.val();
+                    const count = Object.keys(requests).length;
+
+                    if (count > 0) {
+                        badge.style.display = "inline-block";
+                        badge.textContent = count;
+                    } else {
+                        badge.style.display = "none";
+                    }
+
+                    Object.entries(requests).forEach(([fid, fData]) => {
+                        const el = document.createElement("div");
+                        el.className = "req-item";
+                        el.style.display = "flex";
+                        el.style.justifyContent = "space-between";
+                        el.style.padding = "12px";
+                        el.style.background = "rgba(255,255,255,0.05)";
+                        el.style.borderRadius = "12px";
+                        el.style.alignItems = "center";
+
+                        el.innerHTML = `
+                             <div style="font-weight:600;">${fData.name || "Unknown"}</div>
+                             <div style="display:flex; gap:8px;">
+                                 <button class="btn-xs success" onclick="window.acceptFriend('${fid}', '${fData.name}')">✓</button>
+                                 <button class="btn-xs error" onclick="window.rejectFriend('${fid}')">✕</button>
+                             </div>
+                         `;
+                        list.appendChild(el);
+                    });
+                } else {
+                    badge.style.display = "none";
+                    list.innerHTML = '<div style="text-align:center; color:var(--text-secondary); margin-top:20px;">No pending requests.</div>';
+                }
+            });
+        }
+
+        async function sendFriendRequest() {
+            const input = $("addFriendInput");
+            const name = input.value.trim();
+            if (!name) return;
+
+            $("addResult").textContent = "Searching...";
+
+            try {
+                // Ugly search: scan all users (Not efficient for prod but works for small app)
+                const usersRef = ref(db, "users");
+                const snapshot = await get(usersRef);
+
+                if (!snapshot.exists()) {
+                    $("addResult").textContent = "User not found.";
+                    return;
+                }
+
+                let targetId = null;
+                const users = snapshot.val();
+
+                for (const [uid, uData] of Object.entries(users)) {
+                    if (uData.name && uData.name.toLowerCase() === name.toLowerCase()) {
+                        if (uid === currentPlayerId) {
+                            $("addResult").textContent = "You cannot add yourself.";
+                            return;
+                        }
+                        targetId = uid;
+                        break;
+                    }
+                }
+
+                if (targetId) {
+                    // Send request
+                    await set(ref(db, `users/${targetId}/requests/${currentPlayerId}`), {
+                        name: playerName,
+                        timestamp: Date.now()
+                    });
+                    $("addResult").textContent = "Request sent!";
+                    input.value = "";
+                } else {
+                    $("addResult").textContent = "User not found.";
+                }
+
+            } catch (e) {
+                console.error(e);
+                $("addResult").textContent = "Error sending request.";
+            }
+        }
+
+        window.acceptFriend = async (fid, fname) => {
+            if (!currentPlayerId) return;
+
+            try {
+                // Add to my friends
+                await update(ref(db, `users/${currentPlayerId}/friends/${fid}`), {
+                    name: fname,
+                    since: Date.now()
+                });
+
+                // Add to their friends
+                await update(ref(db, `users/${fid}/friends/${currentPlayerId}`), {
+                    name: playerName,
+                    since: Date.now()
+                });
+
+                // Remove request
+                await remove(ref(db, `users/${currentPlayerId}/requests/${fid}`));
+
+                showToast(`Added ${fname} to friends!`, "success");
+            } catch (e) {
+                console.error(e);
+                showToast("Error accepting request", "error");
+            }
+        };
+
+        window.rejectFriend = async (fid) => {
+            if (!currentPlayerId) return;
+            await remove(ref(db, `users/${currentPlayerId}/requests/${fid}`));
+            showToast("Request rejected", "default");
+        };
 
         function appendMessage(msg) {
             const bubble = document.createElement("div");
