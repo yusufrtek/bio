@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0a0f">
     <title>Geo Master - Online Photo Contest</title>
@@ -417,9 +417,15 @@
         .online-game-ui.visible {
             opacity: 1;
             visibility: visible;
+            pointer-events: none;
+            /* Container doesn't block */
         }
 
-        .online-game-ui>* {
+        /* Only interactive elements block clicks */
+        .online-top-bar,
+        .bottom-controls,
+        .quit-online-btn,
+        .photo-captured {
             pointer-events: auto;
         }
 
@@ -1238,6 +1244,15 @@
 
         .solo-game-ui.visible {
             opacity: 1;
+            pointer-events: none;
+            /* Keep none on container so map is clickable */
+        }
+
+        /* Enable pointer events on interactive children */
+        .solo-game-ui .top-bar,
+        .solo-game-ui .bottom-panel,
+        .solo-game-ui .question-box,
+        .solo-game-ui .action-buttons {
             pointer-events: auto;
         }
 
@@ -1921,6 +1936,14 @@
         const winnerScreen = $("winnerScreen");
         const loadingScreen = $("loadingScreen");
         const toast = $("toast");
+
+        // Chat Elements
+        const chatToggleBtn = $("chatToggleBtn");
+        const chatOverlay = $("chatOverlay");
+        const chatCloseBtn = $("chatCloseBtn");
+        const chatMessages = $("chatMessages");
+        const chatInput = $("chatInput");
+        const sendChatBtn = $("sendChatBtn");
 
         // Map Setup
         const map = L.map("map", {
@@ -2621,6 +2644,7 @@
             hasVoted = false;
 
             onlineGameUI.classList.remove("visible");
+            cleanupChat();
             showScreen(welcomeScreen);
         }
 
@@ -2694,6 +2718,77 @@
             showScreen(lobbyScreen);
         }
 
+        // ==========================================
+        // CHAT LOGIC
+        // ==========================================
+        let chatRef = null;
+
+        function setupChat(roomId) {
+            chatMessages.innerHTML = ""; // Clear old
+            chatRef = ref(db, `rooms/${roomId}/chat`);
+
+            // Listen
+            onValue(chatRef, (snapshot) => {
+                const msgs = snapshot.val();
+                chatMessages.innerHTML = "";
+                if (msgs) {
+                    Object.values(msgs).forEach(msg => appendMessage(msg));
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+
+            chatToggleBtn.style.display = "flex";
+            chatToggleBtn.onclick = () => {
+                chatOverlay.classList.add("visible");
+                chatToggleBtn.style.display = "none";
+                chatInput.focus();
+            };
+
+            chatCloseBtn.onclick = () => {
+                chatOverlay.classList.remove("visible");
+                chatToggleBtn.style.display = "flex";
+            };
+        }
+
+        async function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (!text || !currentRoomId) return;
+
+            const chatRoomRef = ref(db, `rooms/${currentRoomId}/chat`);
+            await push(chatRoomRef, {
+                senderId: currentPlayerId,
+                senderName: playerName,
+                text: text,
+                time: Date.now()
+            });
+
+            chatInput.value = "";
+        }
+
+        function appendMessage(msg) {
+            const bubble = document.createElement("div");
+            bubble.className = `message-bubble ${msg.senderId === currentPlayerId ? "me" : ""}`;
+
+            if (msg.senderId !== currentPlayerId) {
+                const author = document.createElement("div");
+                author.className = "message-author";
+                author.textContent = msg.senderName;
+                bubble.appendChild(author);
+            }
+
+            const text = document.createElement("div");
+            text.textContent = msg.text;
+            bubble.appendChild(text);
+
+            chatMessages.appendChild(bubble);
+        }
+
+        function cleanupChat() {
+            chatToggleBtn.style.display = "none";
+            chatOverlay.classList.remove("visible");
+            chatRef = null;
+        }
+
         // Event Listeners
         $("onlineBtn").addEventListener("click", () => {
             showScreen(onlineMenuScreen);
@@ -2760,6 +2855,19 @@
         $("playAgainOnlineBtn").addEventListener("click", playAgain);
 
         $("backToLobbyBtn").addEventListener("click", backToLobby);
+
+        // Chat Listeners
+        if (sendChatBtn) sendChatBtn.addEventListener("click", sendChatMessage);
+        if (chatInput) chatInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") sendChatMessage();
+        });
+
+        document.querySelectorAll(".emoji-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                chatInput.value += btn.textContent;
+                chatInput.focus();
+            });
+        });
 
         // Update online count
         const roomsRef = ref(db, "rooms");
@@ -3421,95 +3529,7 @@
 
         // Initial setup
         // Don't loadGeoJSON immediately, wait for user to click Solo.
-        // ==========================================
-        // CHAT LOGIC
-        // ==========================================
-        const chatToggleBtn = $("chatToggleBtn");
-        const chatOverlay = $("chatOverlay");
-        const chatCloseBtn = $("chatCloseBtn");
-        const chatMessages = $("chatMessages");
-        const chatInput = $("chatInput");
-        const sendChatBtn = $("sendChatBtn");
-        let chatRef = null;
 
-        function setupChat(roomId) {
-            chatMessages.innerHTML = ""; // Clear old
-            chatRef = ref(db, `rooms/${roomId}/chat`);
-
-            // Listen
-            onValue(chatRef, (snapshot) => {
-                const msgs = snapshot.val();
-                chatMessages.innerHTML = "";
-                if (msgs) {
-                    Object.values(msgs).forEach(msg => appendMessage(msg));
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
-            });
-
-            chatToggleBtn.style.display = "flex";
-            chatToggleBtn.onclick = () => {
-                chatOverlay.classList.add("visible");
-                chatToggleBtn.style.display = "none";
-                chatInput.focus();
-            };
-
-            chatCloseBtn.onclick = () => {
-                chatOverlay.classList.remove("visible");
-                chatToggleBtn.style.display = "flex";
-            };
-        }
-
-        async function sendChatMessage() {
-            const text = chatInput.value.trim();
-            if (!text || !currentRoomId) return;
-
-            const chatRoomRef = ref(db, `rooms/${currentRoomId}/chat`);
-            await push(chatRoomRef, {
-                senderId: currentPlayerId,
-                senderName: playerName,
-                text: text,
-                time: Date.now()
-            });
-
-            chatInput.value = "";
-        }
-
-        function appendMessage(msg) {
-            const bubble = document.createElement("div");
-            bubble.className = `message-bubble ${msg.senderId === currentPlayerId ? "me" : ""}`;
-
-            if (msg.senderId !== currentPlayerId) {
-                const author = document.createElement("div");
-                author.className = "message-author";
-                author.textContent = msg.senderName;
-                bubble.appendChild(author);
-            }
-
-            const text = document.createElement("div");
-            text.textContent = msg.text;
-            bubble.appendChild(text);
-
-            chatMessages.appendChild(bubble);
-        }
-
-        sendChatBtn.addEventListener("click", sendChatMessage);
-        chatInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") sendChatMessage();
-        });
-
-        document.querySelectorAll(".emoji-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                chatInput.value += btn.textContent;
-                chatInput.focus();
-            });
-        });
-
-        // Hide chat when leaving room
-        function cleanupChat() {
-            chatToggleBtn.style.display = "none";
-            chatOverlay.classList.remove("visible");
-            chatRef = null;
-        }
 
     </script>
 </body>
