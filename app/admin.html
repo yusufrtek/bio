@@ -1,1 +1,186 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel — Presence (Realtime DB)</title>
+  <style>
+    body { font-family: system-ui, Arial; max-width: 1100px; margin: 24px auto; padding: 0 12px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    button { padding:10px 12px; cursor:pointer; }
+    .card { border:1px solid #ddd; border-radius:12px; padding:14px; margin-top:14px; }
+    .muted { color:#666; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; vertical-align:top; }
+    .pill { display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
+    .ok { color: #0a7; }
+    .bad { color: #c33; }
+  </style>
+</head>
+<body>
 
+  <h1>Admin Panel — Online/Aktif Kullanıcılar</h1>
+  <p class="muted">
+    Bu panel <span class="pill">Realtime Database</span> içindeki <span class="pill">/presence</span> yolunu dinler.
+    Firestore ile ilgisi yok.
+  </p>
+
+  <div class="card row">
+    <button id="loginBtn">Google ile giriş</button>
+    <button id="logoutBtn" disabled>Çıkış</button>
+    <span id="me" class="muted">Giriş yok</span>
+    <span id="status" class="pill">Hazır</span>
+  </div>
+
+  <div class="card" id="panel" style="display:none;">
+    <div class="row" style="justify-content:space-between;">
+      <h2 style="margin:0;">Presence</h2>
+      <span class="pill" id="count">0 kişi</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Ad</th>
+          <th>Room</th>
+          <th>Online</th>
+          <th>Last seen</th>
+          <th>UID</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+
+    <p class="muted" style="margin-top:10px;">
+      Not: “aktif” için istersen şu filtreyi uygularız:
+      <span class="pill">online=true</span> ve <span class="pill">Date.now()-lastSeen &lt; 30000</span>
+    </p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+
+    // ✅ Realtime Database URL'ini EKLEDİM (kritik)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      projectId: "maps-52b00",
+      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
+      measurementId: "G-YHHXDYCCG7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const rtdb = getDatabase(app);
+
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const me = document.getElementById("me");
+    const panel = document.getElementById("panel");
+    const tbody = document.getElementById("tbody");
+    const count = document.getElementById("count");
+    const status = document.getElementById("status");
+
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function setStatus(text, ok = true) {
+      status.textContent = text;
+      status.className = "pill " + (ok ? "ok" : "bad");
+    }
+
+    loginBtn.addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+      } catch (e) {
+        console.error(e);
+        alert("Giriş başarısız: " + (e?.message || e));
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error(e);
+        alert("Çıkış başarısız: " + (e?.message || e));
+      }
+    });
+
+    function renderPresence(obj) {
+      const entries = Object.values(obj || {});
+      entries.sort((a, b) => (b.online === true) - (a.online === true));
+
+      tbody.innerHTML = "";
+      count.textContent = `${entries.length} kayıt`;
+
+      for (const p of entries) {
+        const last = p.lastSeen ? new Date(p.lastSeen).toLocaleString() : "-";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${esc(p.name)}</td>
+          <td>${esc(p.roomId)}</td>
+          <td>${p.online ? "✅" : "❌"}</td>
+          <td>${esc(last)}</td>
+          <td>${esc(p.uid)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        loginBtn.disabled = false;
+        logoutBtn.disabled = true;
+        me.textContent = "Giriş yok";
+        panel.style.display = "none";
+        setStatus("Giriş bekleniyor", true);
+        return;
+      }
+
+      loginBtn.disabled = true;
+      logoutBtn.disabled = false;
+      me.textContent = `Giriş: ${user.email} (uid: ${user.uid})`;
+      panel.style.display = "block";
+
+      // 🔥 Realtime Database: /presence dinle
+      const presenceRef = ref(rtdb, "presence");
+      setStatus("Realtime bağlanıyor...", true);
+
+      onValue(
+        presenceRef,
+        (snap) => {
+          const val = snap.val();
+          console.log("PRESENCE RAW =", val);
+          renderPresence(val);
+          setStatus("Realtime bağlı ✅", true);
+        },
+        (err) => {
+          console.error("RTDB READ ERROR:", err);
+          setStatus("Realtime okunamadı ❌", false);
+          alert("Realtime Database okunamadı. (Rules/URL) Hata: " + (err?.message || err));
+        }
+      );
+    });
+  </script>
+</body>
+</html>
