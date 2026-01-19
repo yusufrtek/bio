@@ -2700,7 +2700,19 @@
         });
 
         $("soloBtn").addEventListener("click", () => {
-            showToast("Solo mode coming soon!", "");
+            // Enter Solo Mode
+            setMapTheme("satellite"); // Default solo theme
+            if (geoLayer) map.removeLayer(geoLayer); // Reset
+            loadGeoJSON(); // Load countries
+
+            // Update presence for solo
+            updatePresenceRoom("SOLO");
+
+            // Hide Chat
+            chatToggleBtn.style.display = "none";
+            chatOverlay.classList.remove("visible");
+
+            showScreen(gameTypeScreen);
         });
 
         $("onlineMenuBackBtn").addEventListener("click", () => {
@@ -3017,6 +3029,7 @@
                 loadGeoJSON(); // Reload world
             }
 
+            updatePresenceRoom("lobby");
             showScreen(welcomeScreen);
         }
 
@@ -3192,34 +3205,127 @@
 
         // HELPER GEO FUNCTIONS (Reduced for brevity, assuming standard impl)
         function osmToGeoJSON(osmData) {
-            // simplified placeholder for now or copy full logic if needed. 
-            // copying full logic is safer.
-            // [Truncated for brevity in this thought, will use full code in tool call]
-            // I will use the code I read earlier.
-            const nodes = {}, ways = {}, features = [];
-            osmData.elements.forEach(el => { if (el.type === "node") nodes[el.id] = [el.lon, el.lat]; });
-            osmData.elements.forEach(el => { if (el.type === "way") ways[el.id] = el.nodes.map(n => nodes[n]).filter(Boolean); });
+            const nodes = {};
+            const ways = {};
+            const features = [];
+
             osmData.elements.forEach(el => {
-                if (el.type === "relation" && el.tags && el.tags.name) {
-                    const outer = [];
-                    el.members.forEach(m => { if (m.type === "way" && ways[m.ref] && m.role !== "inner") outer.push(ways[m.ref]); });
-                    if (outer.length) {
-                        const merged = mergeRings(outer);
-                        merged.forEach(bg => features.push({ type: "Feature", properties: { name: el.tags.name }, geometry: { type: "Polygon", coordinates: [bg] } }));
+                if (el.type === "node") {
+                    nodes[el.id] = [el.lon, el.lat];
+                }
+            });
+
+            osmData.elements.forEach(el => {
+                if (el.type === "way") {
+                    ways[el.id] = el.nodes.map(nid => nodes[nid]).filter(Boolean);
+                }
+            });
+
+            osmData.elements.forEach(el => {
+                if (el.type === "relation" && el.tags) {
+                    const name = el.tags.name || el.tags["name:en"] || el.tags["name:tr"];
+                    if (!name) return;
+
+                    const outerRings = [];
+                    const innerRings = [];
+
+                    el.members.forEach(member => {
+                        if (member.type === "way" && ways[member.ref]) {
+                            const coords = ways[member.ref];
+                            if (coords.length > 2) {
+                                if (member.role === "inner") {
+                                    innerRings.push(coords);
+                                } else {
+                                    outerRings.push(coords);
+                                }
+                            }
+                        }
+                    });
+
+                    if (outerRings.length > 0) {
+                        const mergedOuter = mergeRings(outerRings);
+
+                        mergedOuter.forEach(ring => {
+                            const polygon = [ring];
+                            innerRings.forEach(inner => {
+                                polygon.push(inner);
+                            });
+
+                            features.push({
+                                type: "Feature",
+                                properties: {
+                                    name: name,
+                                    admin_level: el.tags.admin_level
+                                },
+                                geometry: {
+                                    type: "Polygon",
+                                    coordinates: polygon
+                                }
+                            });
+                        });
                     }
                 }
             });
-            return { type: "FeatureCollection", features };
+
+            return {
+                type: "FeatureCollection",
+                features: features
+            };
         }
 
         function mergeRings(rings) {
-            // Simplified merge
-            if (!rings.length) return [];
-            let result = [];
-            // Basic join logic
-            const first = rings[0]; // TODO: Use robust merge from index.html if possible
-            return rings; // Placeholder: returning unmerged rings might break polygons but simple test valid.
-            // Better to copy the index.html mergeRings function properly.
+            if (rings.length === 0) return [];
+
+            const result = [];
+            const used = new Set();
+
+            for (let i = 0; i < rings.length; i++) {
+                if (used.has(i)) continue;
+
+                let current = [...rings[i]];
+                used.add(i);
+                let merged = true;
+
+                while (merged) {
+                    merged = false;
+                    for (let j = 0; j < rings.length; j++) {
+                        if (used.has(j)) continue;
+
+                        const ring = rings[j];
+                        const first = current[0];
+                        const last = current[current.length - 1];
+                        const ringFirst = ring[0];
+                        const ringLast = ring[ring.length - 1];
+
+                        if (coordsEqual(last, ringFirst)) {
+                            current = current.concat(ring.slice(1));
+                            used.add(j);
+                            merged = true;
+                        } else if (coordsEqual(last, ringLast)) {
+                            current = current.concat(ring.slice(0, -1).reverse());
+                            used.add(j);
+                            merged = true;
+                        } else if (coordsEqual(first, ringLast)) {
+                            current = ring.concat(current.slice(1));
+                            used.add(j);
+                            merged = true;
+                        } else if (coordsEqual(first, ringFirst)) {
+                            current = ring.slice().reverse().concat(current.slice(1));
+                            used.add(j);
+                            merged = true;
+                        }
+                    }
+                }
+
+                result.push(current);
+            }
+
+            return result;
+        }
+
+        function coordsEqual(a, b) {
+            if (!a || !b) return false;
+            return Math.abs(a[0] - b[0]) < 0.0001 && Math.abs(a[1] - b[1]) < 0.0001;
         }
 
         // EVENT LISTENERS (SOLO)
