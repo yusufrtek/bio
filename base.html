@@ -18,116 +18,463 @@
 
     <style>
         :root {
-            --bg: #0a0a0f;
-            --text: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --text-muted: rgba(255, 255, 255, 0.4);
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.12);
-            --glass-hover: rgba(255, 255, 255, 0.15);
-            --success: #22c55e;
-            --error: #ef4444;
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.4);
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            /* Professional B&W Soft Theme */
+            --bg-color: #0d0d0d;
+            --surface-color: #1a1a1a;
+            --surface-hover: #262626;
+            --text-primary: #ededed;
+            --text-secondary: #aaaaaa;
+            --accent-color: #ffffff;
+            --border-color: #333333;
+            --glass-bg: rgba(26, 26, 26, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.1);
+
+            /* Safe Areas */
+            --safe-top: env(safe-area-inset-top, 20px);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
+            user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        html,
         body {
-            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             overflow: hidden;
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            width: 100%;
+            height: 100dvh;
         }
 
-        /* MAP */
+        /* Map fixes */
         #map {
+            width: 100%;
+            height: 100%;
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
             z-index: 1;
+            filter: grayscale(100%) contrast(1.1);
+            /* Soft B&W Map */
         }
 
-        /* GLASS EFFECT */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-        }
-
-        /* SCREENS */
+        /* Screen Management */
         .screen {
             position: fixed;
             inset: 0;
-            z-index: 100;
+            z-index: 10;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
+            background: var(--bg-color);
             opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: scale(0.98);
         }
 
         .screen.visible {
             opacity: 1;
-            visibility: visible;
+            pointer-events: auto;
+            transform: scale(1);
         }
 
         .screen-content {
-            width: 100%;
-            max-width: 400px;
+            flex: 1;
             display: flex;
             flex-direction: column;
+            padding: calc(20px + var(--safe-top)) 24px calc(20px + var(--safe-bottom));
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            overflow-y: auto;
+        }
+
+        /* UI Components */
+        button {
+            font-family: inherit;
+        }
+
+        .btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            background: var(--surface-hover);
+        }
+
+        .btn.primary {
+            background: var(--text-primary);
+            color: var(--bg-color);
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-icon-svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .title-lg {
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            margin: 24px 0 12px;
+            font-weight: 600;
+        }
+
+        /* Inputs */
+        .input-group {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .input-group input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        /* Avatar Selector */
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .avatar-option {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .avatar-option.selected {
+            background: var(--text-primary);
+            border-color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        /* Room List */
+        .room-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .room-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
 
-        /* WELCOME SCREEN */
-        .welcome-title {
-            font-size: clamp(48px, 14vw, 72px);
-            font-weight: 700;
-            letter-spacing: -3px;
-            margin-bottom: 8px;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        .room-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .welcome-subtitle {
-            font-size: 16px;
+        .room-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .room-meta {
+            font-size: 12px;
             color: var(--text-secondary);
-            margin-bottom: 56px;
+        }
+
+        .join-btn-small {
+            background: var(--text-primary);
+            color: var(--bg-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Camera Frame Overlay */
+        .camera-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             opacity: 0;
-            transform: translateY(20px);
-            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+            transition: opacity 0.3s;
         }
 
-        @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .camera-overlay.visible {
+            opacity: 1;
         }
 
+        .camera-frame {
+            width: 85vw;
+            aspect-ratio: 4/5;
+            /* Professional Ratio */
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            box-shadow: 0 0 0 100vh rgba(0, 0, 0, 0.8);
+            /* Mask */
+            position: relative;
+        }
+
+        .camera-frame::after {
+            /* Crosshair center */
+            content: '+';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 20px;
+        }
+
+        /* Voting Gallery - Fullscreen & Professional */
+        .voting-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2px;
+            width: 100%;
+            padding: 0;
+            margin-top: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .vote-card {
+            position: relative;
+            background: #000;
+            aspect-ratio: 4/5;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .vote-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .vote-card:hover img {
+            opacity: 1;
+        }
+
+        .vote-card.selected img {
+            opacity: 1;
+        }
+
+        .vote-card.selected {
+            border: 2px solid #fff;
+            z-index: 2;
+        }
+
+        .vote-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            font-size: 12px;
+            color: #fff;
+        }
+
+        /* Modern Chat (Hidden by default, overlays nicely) */
+        .chat-modern-toggle {
+            position: fixed;
+            bottom: calc(24px + var(--safe-bottom));
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: var(--text-primary);
+            color: var(--bg-color);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            z-index: 40;
+            cursor: pointer;
+        }
+
+        .chat-modern-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 85dvh;
+            background: var(--bg-color);
+            z-index: 50;
+            border-radius: 24px 24px 0 0;
+            transform: translateY(105%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid var(--border-color);
+            padding-bottom: var(--safe-bottom);
+        }
+
+        .chat-modern-overlay.visible {
+            transform: translateY(0);
+        }
+
+        .chat-header-modern {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .chat-messages-modern {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .msg-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.4;
+            background: var(--surface-color);
+            align-self: flex-start;
+        }
+
+        .msg-bubble.me {
+            background: var(--text-primary);
+            color: var(--bg-color);
+            align-self: flex-end;
+        }
+
+        .msg-meta {
+            font-size: 11px;
+            margin-bottom: 4px;
+            opacity: 0.6;
+            display: block;
+        }
+
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Voice Chat Indicator */
+        .voice-btn {
+            background: var(--surface-color);
+            color: var(--text-primary);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .voice-btn.active {
+            background: #fff;
+            color: #000;
+        }
+
+        /* Stats row on welcome */
         .stats-row {
             display: flex;
-            gap: 48px;
-            margin-bottom: 56px;
-            opacity: 0;
-            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+            gap: 40px;
+            margin-bottom: 40px;
         }
 
         .stat-box {
@@ -135,1328 +482,211 @@
         }
 
         .stat-value {
-            font-size: 32px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
         }
 
         .stat-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 6px;
-        }
-
-        .main-btn {
-            width: 100%;
-            padding: 20px 32px;
-            background: var(--text);
-            color: var(--bg);
-            border: none;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
-            font-family: inherit;
-            opacity: 0;
-            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
-        }
-
-        .main-btn:active {
-            transform: scale(0.97);
-        }
-
-        .main-btn.no-anim {
-            opacity: 1;
-            animation: none;
-        }
-
-        .online-btn {
-            width: 100%;
-            padding: 20px 32px;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            color: var(--text);
-            border: none;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
-            font-family: inherit;
-            opacity: 0;
-            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
-            box-shadow: 0 0 30px var(--primary-glow);
-            margin-bottom: 12px;
-        }
-
-        .online-btn:active {
-            transform: scale(0.97);
-        }
-
-        .secondary-btn {
-            margin-top: 16px;
-            padding: 16px 28px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: var(--text);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            font-size: 14px;
-            cursor: pointer;
-            font-family: inherit;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            opacity: 0;
-            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1s forwards;
-        }
-
-        .secondary-btn:active {
-            background: var(--glass-hover);
-            transform: scale(0.97);
-        }
-
-        .secondary-btn.no-anim {
-            opacity: 1;
-            animation: none;
-        }
-
-        /* BACK BTN */
-        .back-btn {
-            position: absolute;
-            top: calc(24px + var(--safe-top));
-            left: 24px;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            color: var(--text);
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .back-btn:active {
-            background: var(--glass-hover);
-            transform: scale(0.95);
-        }
-
-        .section-title {
             font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 28px;
-        }
-
-        /* LOBBY SCREEN */
-        .lobby-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .lobby-code {
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--primary);
-            letter-spacing: 8px;
-            margin-bottom: 24px;
-            padding: 16px 32px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-        }
-
-        .copy-code-btn {
-            padding: 10px 20px;
-            background: transparent;
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
             color: var(--text-secondary);
-            font-size: 13px;
-            cursor: pointer;
-            font-family: inherit;
-            margin-bottom: 32px;
-            transition: all 0.3s;
-        }
-
-        .copy-code-btn:active {
-            background: var(--glass-hover);
-        }
-
-        .players-list {
-            width: 100%;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 24px;
-        }
-
-        .player-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-
-        .player-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .player-name {
-            flex: 1;
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .player-host {
-            font-size: 11px;
-            color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-top: 5px;
         }
 
-        .player-ready {
+        /* Icon Utility */
+        .icon {
             width: 24px;
             height: 24px;
-            border-radius: 50%;
-            background: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
         }
 
-        .waiting-text {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-
-        /* JOIN SCREEN */
-        .join-input {
-            width: 100%;
-            padding: 18px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            color: var(--text);
-            font-size: 24px;
-            font-family: inherit;
-            text-align: center;
-            letter-spacing: 8px;
-            text-transform: uppercase;
-            outline: none;
-            transition: border-color 0.3s;
-            margin-bottom: 16px;
-        }
-
-        .join-input:focus {
-            border-color: var(--primary);
-        }
-
-        .join-input::placeholder {
-            color: var(--text-muted);
-            letter-spacing: 2px;
-            font-size: 16px;
-        }
-
-        .name-input {
-            width: 100%;
-            padding: 16px 18px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            color: var(--text);
-            font-size: 16px;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.3s;
-            margin-bottom: 24px;
-        }
-
-        .name-input:focus {
-            border-color: var(--primary);
-        }
-
-        .name-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        /* ONLINE GAME UI */
+        /* Online Game UI re-style */
         .online-game-ui {
             position: fixed;
             inset: 0;
             z-index: 50;
             display: flex;
             flex-direction: column;
-            padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
             pointer-events: none;
             opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            transition: opacity 0.5s;
         }
 
         .online-game-ui.visible {
             opacity: 1;
-            visibility: visible;
             pointer-events: none;
-            /* Container doesn't block */
-        }
-
-        /* Only interactive elements block clicks */
-        .online-top-bar,
-        .bottom-controls,
-        .quit-online-btn,
-        .photo-captured {
-            pointer-events: auto;
         }
 
         .online-top-bar {
+            pointer-events: auto;
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
+            justify-content: center;
+            padding-top: 50px;
+            width: 100%;
         }
 
         .online-timer-box {
-            padding: 14px 24px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            font-size: 24px;
-            font-weight: 600;
-            font-variant-numeric: tabular-nums;
-            transition: all 0.3s;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 10px 30px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 32px;
+            font-weight: 700;
+            font-family: monospace;
+            text-align: center;
+            color: #fff;
         }
 
-        .online-timer-box.warning {
-            background: rgba(239, 68, 68, 0.3);
-            border-color: rgba(239, 68, 68, 0.5);
-            animation: pulse 0.5s ease infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.7;
-            }
-        }
-
-        .online-status {
-            padding: 14px 24px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .spacer {
-            flex: 1;
-            pointer-events: none;
+        .bottom-controls {
+            margin-top: auto;
+            padding-bottom: 50px;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
         }
 
         .capture-btn {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            border: 4px solid var(--text);
-            cursor: pointer;
-            transition: all 0.3s;
+            background: #fff;
+            border: 4px solid rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            box-shadow: 0 0 40px var(--primary-glow);
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            transition: transform 0.1s;
         }
 
         .capture-btn:active {
-            transform: scale(0.9);
-        }
-
-        .capture-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .capture-btn svg {
-            width: 32px;
-            height: 32px;
-            fill: var(--text);
+            transform: scale(0.95);
         }
 
         .capture-hint {
-            text-align: center;
-            font-size: 14px;
-            color: var(--text-secondary);
-            padding: 12px 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
         }
 
-        .photo-captured {
+        /* Misc */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            z-index: 100;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        /* Toast */
+        .toast {
             position: fixed;
-            bottom: calc(140px + var(--safe-bottom));
-            right: 16px;
-            width: 100px;
-            height: 75px;
-            border-radius: 10px;
-            border: 2px solid var(--success);
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface-color);
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.visible {
+            opacity: 1;
+        }
+
+        /* Loading */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            margin-bottom: 20px;
+        }
+
+        /* Friends & Social */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .main-btn {
+            background: var(--text-primary);
+            color: #000;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            font-weight: 700;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .secondary-btn {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 16px;
+            font-weight: 600;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .countdown-number {
+            font-size: 15vw;
+            font-weight: 900;
+        }
+
+        /* Photo Captured Preview */
+        .photo-captured {
+            position: absolute;
+            bottom: 140px;
+            right: 20px;
+            width: 120px;
+            height: 150px;
+            background: #fff;
+            padding: 5px;
+            transform: rotate(-5deg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 60;
+            display: none;
+            /* Hidden by default until captured */
+        }
+
+        .photo-captured.show {
+            display: block;
         }
 
         .photo-captured img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-
-        /* VOTING SCREEN */
-        .voting-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .voting-timer {
-            font-size: 48px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 24px;
-        }
-
-        .photos-grid {
-            width: 100%;
-            max-width: 600px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 4px;
-        }
-
-        .photo-card {
-            background: var(--glass-bg);
-            border: 2px solid var(--glass-border);
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .photo-card:active {
-            transform: scale(0.98);
-        }
-
-        .photo-card.selected {
-            border-color: var(--primary);
-            box-shadow: 0 0 20px var(--primary-glow);
-        }
-
-        .photo-card.winner {
-            border-color: var(--success);
-            box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
-        }
-
-        .photo-card img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-        }
-
-        .photo-card-info {
-            padding: 12px;
-        }
-
-        .photo-card-name {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .photo-card-votes {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        /* WINNER SCREEN */
-        .winner-crown {
-            font-size: 72px;
-            margin-bottom: 16px;
-        }
-
-        .winner-title {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .winner-name {
-            font-size: 24px;
-            color: var(--primary);
-            margin-bottom: 24px;
-        }
-
-        .winner-photo {
-            width: 100%;
-            max-width: 300px;
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 24px;
-            box-shadow: 0 0 40px var(--primary-glow);
-        }
-
-        .winner-photo img {
-            width: 100%;
-            height: auto;
-        }
-
-        .winner-votes {
-            font-size: 16px;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-        }
-
-        /* TOAST */
-        .toast {
-            position: fixed;
-            top: calc(100px + var(--safe-top));
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            padding: 14px 28px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 200;
-        }
-
-        .toast.visible {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast.success {
-            background: rgba(34, 197, 94, 0.2);
-            border-color: rgba(34, 197, 94, 0.4);
-        }
-
-        .toast.error {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.4);
-        }
-
-        /* LEAFLET OVERRIDES */
-        .leaflet-control-zoom {
-            display: none !important;
-        }
-
-        .leaflet-control-attribution {
-            display: none;
-        }
-
-        /* SVG ICONS */
-        .icon {
-            width: 24px;
-            height: 24px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* Loading spinner */
-        .loading-spinner {
-            width: 48px;
-            height: 48px;
-            border: 3px solid var(--glass-border);
-            border-top-color: var(--text);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 24px;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .loading-text {
-            font-size: 16px;
-            color: var(--text-secondary);
-        }
-
-        /* Countdown */
-        .countdown-number {
-            font-size: clamp(140px, 40vw, 220px);
-            font-weight: 700;
-            opacity: 0;
-            transform: scale(0.5);
-            animation: countPop 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes countPop {
-            0% {
-                opacity: 0;
-                transform: scale(0.5);
-            }
-
-            60% {
-                opacity: 1;
-                transform: scale(1.05);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .countdown-text {
-            font-size: 13px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            margin-top: 20px;
-        }
-
-        .icon-btn {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            color: var(--text);
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .icon-btn:active {
-            background: var(--glass-hover);
-            transform: scale(0.95);
-        }
-
-        .icon-btn.quit {
-            border-color: rgba(239, 68, 68, 0.3);
-            color: var(--error);
-        }
-
-        .bottom-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .quit-online-btn {
-            position: absolute;
-            bottom: calc(16px + var(--safe-bottom));
-            left: 16px;
-        }
-
-        /* SOLO PROFILES */
-        .type-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            width: 100%;
-        }
-
-        /* AVATARS */
-        .avatar-selector {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-
-        .avatar-option {
-            width: 48px;
-            height: 48px;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid transparent;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .avatar-option.selected {
-            background: var(--glass-hover);
-            border-color: var(--primary);
-            transform: scale(1.1);
-        }
-
-        /* CHAT */
-        .chat-toggle-btn {
-            position: fixed;
-            bottom: calc(20px + var(--safe-bottom));
-            left: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            font-size: 24px;
-            display: none;
-            /* flexible logic to show/hide */
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 200;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .chat-overlay {
-            position: fixed;
-            bottom: calc(80px + var(--safe-bottom));
-            left: 20px;
-            width: 300px;
-            height: 400px;
-            background: rgba(10, 10, 15, 0.95);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            z-index: 200;
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(20px);
-            transition: all 0.3s;
-        }
-
-        .chat-overlay.visible {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateY(0);
-        }
-
-        .chat-header {
-            padding: 12px;
-            border-bottom: 1px solid var(--glass-border);
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .chat-close {
-            cursor: pointer;
-            opacity: 0.7;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .message-bubble {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 12px;
-            border-radius: 12px;
-            border-bottom-left-radius: 2px;
-            font-size: 13px;
-            align-self: flex-start;
-            max-width: 85%;
-            word-wrap: break-word;
-        }
-
-        .message-bubble.me {
-            background: var(--primary);
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 2px;
-            align-self: flex-end;
-        }
-
-        .message-author {
-            font-size: 10px;
-            opacity: 0.7;
-            margin-bottom: 2px;
-        }
-
-        .chat-footer {
-            padding: 10px;
-            border-top: 1px solid var(--glass-border);
-        }
-
-        .emoji-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-        }
-
-        .emoji-btn {
-            font-size: 20px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            background: none;
-            border: none;
-            padding: 0;
-        }
-
-        .emoji-btn:hover {
-            transform: scale(1.2);
-        }
-
-        .chat-input-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        #chatInput {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            border-radius: 8px;
-            padding: 8px;
-            color: white;
-            font-size: 14px;
-            outline: none;
-        }
-
-        #sendChatBtn {
-            background: var(--primary);
-            border: none;
-            border-radius: 8px;
-            width: 36px;
-            color: white;
-            cursor: pointer;
-        }
-
-        .type-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 24px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .type-btn:active,
-        .type-btn.selected {
-            background: var(--glass-hover);
-            border-color: var(--primary);
-            transform: scale(0.98);
-        }
-
-        .type-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
-
-        .type-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .type-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-align: center;
-        }
-
-        /* COUNTRY SELECT */
-        .country-search {
-            width: 100%;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 16px;
-            margin-bottom: 16px;
-            outline: none;
-        }
-
-        .country-search:focus {
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .country-list {
-            width: 100%;
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding-right: 4px;
-            max-height: 400px;
-        }
-
-        .country-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            background: transparent;
-            border: 1px solid transparent;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.2s;
-            width: 100%;
-            color: var(--text);
-            font-family: inherit;
-        }
-
-        .country-item:active {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .country-flag {
-            font-size: 20px;
-            margin-right: 12px;
-        }
-
-        .country-code {
-            margin-left: auto;
-            font-size: 12px;
-            color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        /* MODES */
-        .mode-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .mode-item {
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .mode-item:active,
-        .mode-item.selected {
-            background: var(--glass-hover);
-            border-color: var(--primary);
-        }
-
-        .mode-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .mode-name {
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .mode-difficulty {
-            display: flex;
-            gap: 4px;
-        }
-
-        .diff-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .diff-dot.active {
-            background: var(--success);
-        }
-
-        .mode-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-
-        /* TIME SELECT */
-        .time-options {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin: 30px 0;
-            width: 100%;
-        }
-
-        .time-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .time-btn:active,
-        .time-btn.selected {
-            background: var(--primary);
-            border-color: var(--primary);
-            transform: scale(1.1);
-            box-shadow: 0 0 20px var(--primary-glow);
-        }
-
-        .time-value {
-            font-size: 24px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .time-label {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 2px;
-        }
-
-        /* SETTINGS */
-        .settings-section {
-            width: 100%;
-            margin-bottom: 24px;
-        }
-
-        .settings-label {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            margin-left: 4px;
-        }
-
-        .theme-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .theme-btn {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .theme-btn:active,
-        .theme-btn.selected {
-            background: var(--glass-hover);
-            border-color: var(--primary);
-        }
-
-        .reset-btn {
-            width: 100%;
-            padding: 16px;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 12px;
-            color: var(--error);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .reset-btn:active {
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        /* GAME UI (SOLO) */
-        .solo-game-ui {
-            position: fixed;
-            inset: 0;
-            z-index: 50;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-
-        .solo-game-ui.visible {
-            opacity: 1;
-            pointer-events: none;
-            /* Keep none on container so map is clickable */
-        }
-
-        /* Enable pointer events on interactive children */
-        .solo-game-ui .top-bar,
-        .solo-game-ui .bottom-panel,
-        .solo-game-ui .question-box,
-        .solo-game-ui .action-buttons {
-            pointer-events: auto;
-        }
-
-        .top-bar {
-            padding: calc(16px + var(--safe-top)) 24px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .timer-box {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .timer-display {
-            font-family: monospace;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .timer-display.warning {
-            color: var(--error);
-            animation: pulse 1s infinite;
-        }
-
-        .score-display {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .bottom-panel {
-            margin-top: auto;
-            padding: 0 24px calc(24px + var(--safe-bottom));
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-
-        .main-panel {
-            display: flex;
-            gap: 12px;
-            width: 100%;
-            max-width: 600px;
-        }
-
-        .question-box {
-            flex: 1;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            min-height: 140px;
-            justify-content: center;
-        }
-
-        .question-label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .question-text {
-            font-size: 22px;
-            font-weight: 700;
-            line-height: 1.3;
-            margin-bottom: 4px;
-            color: var(--text);
-        }
-
-        .question-hint {
-            font-size: 14px;
-            color: var(--primary);
-            margin-bottom: 16px;
-            min-height: 20px;
-        }
-
-        .input-container {
-            display: none;
-            width: 100%;
-            flex-direction: row;
-            gap: 8px;
-        }
-
-        .input-container.visible {
-            display: flex;
-        }
-
-        #answerInput {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            color: white;
-            font-size: 16px;
-            outline: none;
-        }
-
-        #answerInput:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: var(--primary);
-        }
-
-        .submit-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 0 20px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .choices-container {
-            display: none;
-            width: 100%;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 14px;
-        }
-
-        .choices-container.visible {
-            display: grid;
-        }
-
-        .choice-btn {
-            padding: 14px 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            font-family: inherit;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .choice-btn:active {
-            background: var(--glass-hover);
-        }
-
-        .choice-btn.correct {
-            background: rgba(34, 197, 94, 0.3);
-            border-color: rgba(34, 197, 94, 0.5);
-        }
-
-        .choice-btn.wrong {
-            background: rgba(239, 68, 68, 0.3);
-            border-color: rgba(239, 68, 68, 0.5);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .icon-btn.active-scale:active {
-            transform: scale(0.95);
-        }
-
-        /* RESULT (SOLO) */
-        .result-stats {
-            display: flex;
-            gap: 32px;
-            margin-bottom: 40px;
-        }
-
-        .result-stat {
-            text-align: center;
-        }
-
-        .result-stat .value {
-            font-size: 42px;
-            font-weight: 700;
-        }
-
-        .result-stat .label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 6px;
         }
     </style>
 </head>
@@ -1466,11 +696,56 @@
 
     <!-- WELCOME SCREEN -->
     <div class="screen visible" id="welcomeScreen">
-        <div class="screen-content">
-            <h1 class="welcome-title">Geo Master</h1>
-            <p class="welcome-subtitle">Online Photo Contest</p>
+        <div class="screen-content" style="max-width: 600px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 class="welcome-title">GeoMaster</h1>
+                <p class="welcome-subtitle">Explore. Capture. Compete.</p>
+            </div>
 
-            <div class="stats-row">
+            <!-- Main Actions -->
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 24px;">
+                <button class="btn primary" id="quickPlayBtn" style="height: 64px; font-size: 18px;">
+                    Play Now
+                </button>
+
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn secondary" id="onlineBtn" style="flex: 1;">
+                        Custom Game
+                    </button>
+                    <button class="btn secondary" id="soloBtnRedirect" style="flex: 1;">
+                        Solo Practice
+                    </button>
+                </div>
+            </div>
+
+            <!-- Social & Rooms -->
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn secondary" id="friendsBtn" style="flex: 1;">Friends</button>
+                    <button class="btn secondary" id="globalChatBtn" style="flex: 1;">Global Chat</button>
+                </div>
+
+                <!-- Open Rooms Section -->
+                <div
+                    style="background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; min-height: 150px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span
+                            style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary);">Open
+                            Rooms</span>
+                        <div id="loadingRooms" class="loading-spinner"
+                            style="width: 16px; height: 16px; border-width: 2px; margin: 0; display: none;"></div>
+                    </div>
+
+                    <div id="roomListContainer" class="room-list">
+                        <div style="text-align: center; padding: 20px; color: var(--text-secondary); font-size: 13px;">
+                            Searching for active rooms...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; display: flex; gap: 20px; justify-content: center;">
                 <div class="stat-box">
                     <div class="stat-value" id="onlineCount">0</div>
                     <div class="stat-label">Online</div>
@@ -1480,9 +755,6 @@
                     <div class="stat-label">Games</div>
                 </div>
             </div>
-
-            <button class="online-btn" id="onlineBtn">Online Mode</button>
-            <button class="main-btn no-anim" id="soloBtn">Solo Practice</button>
         </div>
     </div>
 
@@ -2112,13 +1384,111 @@
             setTimeout(() => toast.className = "toast", 2000);
         }
 
-        // Show Screen - Updated for Unified App
+        // Show Screen - Updated with Dashboard Polling
         function showScreen(screen) {
             document.querySelectorAll(".screen").forEach(s => {
                 s.classList.remove("visible");
             });
             if (screen) screen.classList.add("visible");
+
+            // Dashboard Logic
+            if (screen === welcomeScreen) {
+                startRoomPolling();
+            } else {
+                stopRoomPolling();
+            }
         }
+
+        // ==========================================
+        // DASHBOARD LOGIC
+        // ==========================================
+        let roomPollInterval = null;
+
+        function startRoomPolling() {
+            refreshRoomList();
+            if (!roomPollInterval) roomPollInterval = setInterval(refreshRoomList, 5000);
+        }
+
+        function stopRoomPolling() {
+            if (roomPollInterval) {
+                clearInterval(roomPollInterval);
+                roomPollInterval = null;
+            }
+        }
+
+        async function refreshRoomList() {
+            const listContainer = $("roomListContainer");
+            if (!listContainer) return;
+
+            const loading = $("loadingRooms");
+            if (loading) loading.style.display = "block";
+
+            try {
+                const roomsRef = ref(db, "rooms");
+                const snapshot = await get(roomsRef);
+
+                if (loading) loading.style.display = "none";
+                listContainer.innerHTML = "";
+
+                let found = false;
+                if (snapshot.exists()) {
+                    const rooms = snapshot.val();
+                    Object.entries(rooms).forEach(([id, room]) => {
+                        // Filter for waiting rooms
+                        if (room.status === "waiting" && room.players) {
+                            found = true;
+                            const count = Object.keys(room.players).length;
+                            const hostName = Object.values(room.players).find(p => p.isHost)?.name || "Unknown";
+
+                            const el = document.createElement("div");
+                            el.className = "room-card";
+                            el.innerHTML = `
+                                <div class="room-info">
+                                    <div class="room-name">${hostName}'s Room</div>
+                                    <div class="room-meta">Code: ${id} • ${count}/20 Players</div>
+                                </div>
+                                <button class="join-btn-small" onclick="window.joinRoomById('${id}')">Join</button>
+                            `;
+                            listContainer.appendChild(el);
+                        }
+                    });
+                }
+
+                if (!found) {
+                    listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary); font-size: 13px;">No active rooms. Create one to start!</div>';
+                }
+            } catch (e) {
+                console.error("Error fetching rooms:", e);
+                if (loading) loading.style.display = "none";
+            }
+        }
+
+        async function quickJoin() {
+            showScreen(loadingScreen);
+            $("loadingText").textContent = "Finding match...";
+
+            const roomsRef = ref(db, "rooms");
+            const snapshot = await get(roomsRef);
+
+            if (snapshot.exists()) {
+                const rooms = snapshot.val();
+                // Find first available waiting room
+                const available = Object.entries(rooms).find(([id, room]) => room.status === "waiting");
+                if (available) {
+                    window.joinRoomById(available[0]);
+                } else {
+                    createRoom(); // Auto create
+                }
+            } else {
+                createRoom();
+            }
+        }
+
+        // Global helper for the room list button
+        window.joinRoomById = (id) => {
+            $("roomCodeInput").value = id;
+            showScreen(joinRoomScreen);
+        };
 
         // Format Time
         function formatTime(sec) {
@@ -2139,19 +1509,13 @@
 
         // Create Room
         async function createRoom() {
-            // Check if logged in
+            // Guest handling
             if (!currentPlayerId) {
-                showToast("Sign in with Google first!", "error");
-                return;
+                currentPlayerId = "guest_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
             }
 
             const inputName = $("playerNameInput").value.trim();
-            playerName = inputName || (auth.currentUser?.displayName?.slice(0, 20)) || "Player";
-
-            if (!playerName) {
-                showToast("Enter your name!", "error");
-                return;
-            }
+            playerName = inputName || (auth.currentUser?.displayName?.slice(0, 20)) || "Guest " + currentPlayerId.substr(-4);
 
             showScreen(loadingScreen);
             $("loadingText").textContent = "Creating room...";
@@ -2200,10 +1564,9 @@
 
         // Join Room
         async function joinRoom() {
-            // Check if logged in
+            // Guest handling
             if (!currentPlayerId) {
-                showToast("Sign in with Google first!", "error");
-                return;
+                currentPlayerId = "guest_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
             }
 
             const roomCode = $("roomCodeInput").value.trim().toUpperCase();
@@ -2213,7 +1576,7 @@
             }
 
             const inputName = $("playerNameInput").value.trim();
-            playerName = inputName || (auth.currentUser?.displayName?.slice(0, 20)) || "Player";
+            playerName = inputName || (auth.currentUser?.displayName?.slice(0, 20)) || "Guest " + currentPlayerId.substr(-4);
 
             showScreen(loadingScreen);
             $("loadingText").textContent = "Joining room...";
@@ -2279,7 +1642,7 @@
                 roomListener();
             }
 
-            setupChat(roomCode); // Initialize Chat
+            setupChat(`rooms/${roomCode}/chat`, true); // Initialize Chat
 
             roomListener = onValue(roomRef, (snapshot) => {
                 if (!snapshot.exists()) {
@@ -2722,10 +2085,12 @@
         // CHAT LOGIC
         // ==========================================
         let chatRef = null;
+        let currentChatPath = null;
 
-        function setupChat(roomId) {
-            chatMessages.innerHTML = ""; // Clear old
-            chatRef = ref(db, `rooms/${roomId}/chat`);
+        function setupChat(path, isGame = true) {
+            cleanupChat();
+            currentChatPath = path;
+            chatRef = ref(db, path);
 
             // Listen
             onValue(chatRef, (snapshot) => {
@@ -2737,24 +2102,34 @@
                 }
             });
 
-            chatToggleBtn.style.display = "flex";
-            chatToggleBtn.onclick = () => {
+            if (isGame) {
+                chatToggleBtn.style.display = "flex";
+                chatToggleBtn.onclick = () => {
+                    chatOverlay.classList.add("visible");
+                    chatToggleBtn.style.display = "none";
+                    if (chatInput) chatInput.focus();
+                };
+            } else {
+                // Global Chat: Open immediately
                 chatOverlay.classList.add("visible");
-                chatToggleBtn.style.display = "none";
-                chatInput.focus();
-            };
+                $("chatMessages").innerHTML = '<div style="text-align:center; opacity:0.5; font-size:12px; margin-top:10px;">Welcome to Global Chat</div>';
+            }
 
             chatCloseBtn.onclick = () => {
                 chatOverlay.classList.remove("visible");
-                chatToggleBtn.style.display = "flex";
+                if (isGame) {
+                    chatToggleBtn.style.display = "flex";
+                } else {
+                    cleanupChat(); // Disconnect global chat when closed
+                }
             };
         }
 
         async function sendChatMessage() {
             const text = chatInput.value.trim();
-            if (!text || !currentRoomId) return;
+            if (!text || !currentChatPath) return;
 
-            const chatRoomRef = ref(db, `rooms/${currentRoomId}/chat`);
+            const chatRoomRef = ref(db, currentChatPath);
             await push(chatRoomRef, {
                 senderId: currentPlayerId,
                 senderName: playerName,
@@ -2790,24 +2165,23 @@
         }
 
         // Event Listeners
+        // Event Listeners
+        $("quickPlayBtn").addEventListener("click", quickJoin);
+
         $("onlineBtn").addEventListener("click", () => {
             showScreen(onlineMenuScreen);
         });
 
-        $("soloBtn").addEventListener("click", () => {
-            // Enter Solo Mode
-            setMapTheme("satellite"); // Default solo theme
-            if (geoLayer) map.removeLayer(geoLayer); // Reset
-            loadGeoJSON(); // Load countries
+        $("soloBtnRedirect").addEventListener("click", () => {
+            window.location.href = "https://yusufertek.com.tr/map";
+        });
 
-            // Update presence for solo
-            updatePresenceRoom("SOLO");
+        $("friendsBtn").addEventListener("click", () => {
+            showToast("Friend system coming soon!", "success");
+        });
 
-            // Hide Chat
-            chatToggleBtn.style.display = "none";
-            chatOverlay.classList.remove("visible");
-
-            showScreen(gameTypeScreen);
+        $("globalChatBtn").addEventListener("click", () => {
+            setupChat("global-chat", false);
         });
 
         $("onlineMenuBackBtn").addEventListener("click", () => {
@@ -3436,80 +2810,10 @@
             return Math.abs(a[0] - b[0]) < 0.0001 && Math.abs(a[1] - b[1]) < 0.0001;
         }
 
-        // EVENT LISTENERS (SOLO)
+        // EVENT LISTENERS
         $("soloBtn").addEventListener("click", () => {
-            // Enter Solo Mode
-            setMapTheme("satellite"); // Default solo theme
-            if (geoLayer) map.removeLayer(geoLayer); // Reset
-            loadGeoJSON(); // Load countries
-            showScreen(gameTypeScreen);
+            window.location.href = "https://yusufertek.com.tr/map";
         });
-
-        $("gameTypeBackBtn").addEventListener("click", () => showScreen(welcomeScreen));
-
-        document.querySelectorAll(".type-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("selected"));
-                btn.classList.add("selected");
-                selectedGameType = btn.dataset.type;
-                if (selectedGameType === GAME_TYPE.COUNTRIES) showScreen(modeScreen);
-                else {
-                    const list = $("countryList");
-                    list.innerHTML = "";
-                    CITY_COUNTRIES.forEach(c => {
-                        const b = document.createElement("button");
-                        b.className = "country-item";
-                        b.innerHTML = `<span class="country-flag">${c.flag}</span><span>${c.name}</span>`;
-                        b.onclick = () => {
-                            showScreen(loadingScreen);
-                            $("loadingText").textContent = "Loading cities...";
-                            selectedCountryCode = c.code;
-                            loadCitiesForCountry(c.code).then(() => showScreen(modeScreen)).catch(err => { console.error(err); showScreen(countrySelectScreen); });
-                        };
-                        list.appendChild(b);
-                    });
-                    showScreen(countrySelectScreen);
-                }
-            });
-        });
-
-        $("countrySearchInput").addEventListener("input", (e) => {
-            // Filter logic...
-        });
-
-        $("countrySelectBackBtn").addEventListener("click", () => showScreen(gameTypeScreen));
-        $("modeBackBtn").addEventListener("click", () => showScreen(gameTypeScreen)); // simplified
-
-        document.querySelectorAll(".mode-item").forEach(item => {
-            item.addEventListener("click", () => {
-                selectedMode = item.dataset.mode;
-                showScreen(timeScreen);
-            });
-        });
-
-        $("timeBackBtn").addEventListener("click", () => showScreen(modeScreen));
-        document.querySelectorAll(".time-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
-                btn.classList.add("selected");
-                selectedTime = parseInt(btn.dataset.time);
-            });
-        });
-
-        $("startSoloGameBtn").addEventListener("click", () => {
-            // Solo Countdown? or just start
-            startSoloGame();
-        });
-
-        $("submitBtn").addEventListener("click", checkTypedAnswer);
-        $("answerInput").addEventListener("keydown", e => { if (e.key === "Enter") checkTypedAnswer(); });
-        $("skipBtn").addEventListener("click", () => newQuestion());
-        $("fitBtn").addEventListener("click", fitWorld);
-        $("quitSoloBtn").addEventListener("click", quitSoloToMenu);
-        $("playAgainSoloBtn").addEventListener("click", () => startSoloGame());
-        $("soloMenuBtn").addEventListener("click", quitSoloToMenu);
-        $("settingsBtn").addEventListener("click", () => showScreen(settingsScreen));
-        $("settingsBackBtn").addEventListener("click", () => showScreen(welcomeScreen));
 
         document.querySelectorAll(".theme-btn").forEach(btn => {
             btn.addEventListener("click", () => setMapTheme(btn.dataset.theme));
@@ -3518,12 +2822,7 @@
         $("onlineBtn").addEventListener("click", () => {
             // Prepare Online Mode
             if (geoLayer) map.removeLayer(geoLayer);
-            // Reset to Istanbul default or online logic
-            map.setView([41.0082, 28.9784], 12);
-            // Theme?
-            if (currentTileLayer) map.removeLayer(currentTileLayer);
-            L.tileLayer(MAP_THEMES['satellite'], { maxZoom: 19 }).addTo(map);
-
+            map.invalidateSize();
             showScreen(onlineMenuScreen);
         });
 
