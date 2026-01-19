@@ -10,20 +10,26 @@
     button { padding:10px 12px; cursor:pointer; }
     .card { border:1px solid #ddd; border-radius:12px; padding:14px; margin-top:14px; }
     .muted { color:#666; }
-    table { width:100%; border-collapse:collapse; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
     th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; vertical-align:top; }
     .pill { display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
+    .ok { color: #0a7; }
+    .bad { color: #c33; }
   </style>
 </head>
 <body>
 
-  <h1>Admin Panel — Online Kullanıcılar</h1>
-  <p class="muted">Bu sayfa Firestore değil, Realtime Database içindeki <span class="pill">/presence</span> verisini dinler.</p>
+  <h1>Admin Panel — Online/Aktif Kullanıcılar</h1>
+  <p class="muted">
+    Bu panel <span class="pill">Realtime Database</span> içindeki <span class="pill">/presence</span> yolunu dinler.
+    Firestore ile ilgisi yok.
+  </p>
 
   <div class="card row">
     <button id="loginBtn">Google ile giriş</button>
     <button id="logoutBtn" disabled>Çıkış</button>
     <span id="me" class="muted">Giriş yok</span>
+    <span id="status" class="pill">Hazır</span>
   </div>
 
   <div class="card" id="panel" style="display:none;">
@@ -32,13 +38,11 @@
       <span class="pill" id="count">0 kişi</span>
     </div>
 
-    <table style="margin-top:10px;">
+    <table>
       <thead>
         <tr>
           <th>Ad</th>
-          <th>Email</th>
           <th>Room</th>
-          <th>Takım</th>
           <th>Online</th>
           <th>Last seen</th>
           <th>UID</th>
@@ -48,19 +52,32 @@
     </table>
 
     <p class="muted" style="margin-top:10px;">
-      “Aktif” filtrelemek istersen: <span class="pill">online=true</span> ve <span class="pill">Date.now()-lastSeen &lt; 30000</span>
+      Not: “aktif” için istersen şu filtreyi uygularız:
+      <span class="pill">online=true</span> ve <span class="pill">Date.now()-lastSeen &lt; 30000</span>
     </p>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
+    // ✅ Realtime Database URL'ini EKLEDİM (kritik)
     const firebaseConfig = {
       apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
       authDomain: "maps-52b00.firebaseapp.com",
       projectId: "maps-52b00",
+      databaseURL: "https://maps-52b00-default-rtdb.firebaseio.com",
       storageBucket: "maps-52b00.firebasestorage.app",
       messagingSenderId: "485125559932",
       appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
@@ -77,35 +94,51 @@
     const panel = document.getElementById("panel");
     const tbody = document.getElementById("tbody");
     const count = document.getElementById("count");
+    const status = document.getElementById("status");
+
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function setStatus(text, ok = true) {
+      status.textContent = text;
+      status.className = "pill " + (ok ? "ok" : "bad");
+    }
 
     loginBtn.addEventListener("click", async () => {
-      await signInWithPopup(auth, new GoogleAuthProvider());
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+      } catch (e) {
+        console.error(e);
+        alert("Giriş başarısız: " + (e?.message || e));
+      }
     });
 
     logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error(e);
+        alert("Çıkış başarısız: " + (e?.message || e));
+      }
     });
-
-    function esc(s) {
-      return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-    }
 
     function renderPresence(obj) {
       const entries = Object.values(obj || {});
-      // Online olanlar öne
-      entries.sort((a,b) => (b.online === true) - (a.online === true));
+      entries.sort((a, b) => (b.online === true) - (a.online === true));
 
       tbody.innerHTML = "";
-      count.textContent = `${entries.length} kişi`;
+      count.textContent = `${entries.length} kayıt`;
 
       for (const p of entries) {
         const last = p.lastSeen ? new Date(p.lastSeen).toLocaleString() : "-";
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${esc(p.name)}</td>
-          <td>${esc(p.email)}</td>
           <td>${esc(p.roomId)}</td>
-          <td>${esc(p.team)}</td>
           <td>${p.online ? "✅" : "❌"}</td>
           <td>${esc(last)}</td>
           <td>${esc(p.uid)}</td>
@@ -120,6 +153,7 @@
         logoutBtn.disabled = true;
         me.textContent = "Giriş yok";
         panel.style.display = "none";
+        setStatus("Giriş bekleniyor", true);
         return;
       }
 
@@ -129,12 +163,23 @@
       panel.style.display = "block";
 
       // 🔥 Realtime Database: /presence dinle
-      onValue(ref(rtdb, "presence"), (snap) => {
-        renderPresence(snap.val());
-      }, (err) => {
-        console.error(err);
-        alert("Realtime Database okunamadı. Rules izin veriyor mu?");
-      });
+      const presenceRef = ref(rtdb, "presence");
+      setStatus("Realtime bağlanıyor...", true);
+
+      onValue(
+        presenceRef,
+        (snap) => {
+          const val = snap.val();
+          console.log("PRESENCE RAW =", val);
+          renderPresence(val);
+          setStatus("Realtime bağlı ✅", true);
+        },
+        (err) => {
+          console.error("RTDB READ ERROR:", err);
+          setStatus("Realtime okunamadı ❌", false);
+          alert("Realtime Database okunamadı. (Rules/URL) Hata: " + (err?.message || err));
+        }
+      );
     });
   </script>
 </body>
