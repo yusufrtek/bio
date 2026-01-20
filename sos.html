@@ -216,13 +216,22 @@
 
     .form-group input::placeholder { color: rgba(61, 47, 31, 0.5); }
 
+    .username-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
     .username-prefix {
       position: absolute;
       left: 16px;
-      bottom: 14px;
+      top: 50%;
+      transform: translateY(-50%);
       font-size: 16px;
       color: var(--c-action);
       font-weight: 600;
+      pointer-events: none;
+      z-index: 1;
     }
 
     .form-group input.with-prefix {
@@ -1075,6 +1084,132 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    /* Notification Popup */
+    .notification-popup {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      max-width: 320px;
+      padding: 16px 20px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(61, 47, 31, 0.2);
+      z-index: 1001;
+      transform: translateX(400px);
+      transition: transform 300ms ease;
+      cursor: pointer;
+    }
+
+    .notification-popup.show {
+      transform: translateX(0);
+    }
+
+    .notification-popup .notification-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .notification-popup .notification-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+      object-fit: cover;
+    }
+
+    .notification-popup .notification-text {
+      flex: 1;
+    }
+
+    .notification-popup .notification-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+
+    .notification-popup .notification-desc {
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    /* Games Page */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .game-card {
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      text-align: center;
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .game-card:hover {
+      background: rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .game-card i {
+      font-size: 36px;
+      color: var(--c-action);
+      margin-bottom: 12px;
+    }
+
+    .game-card h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .game-card p {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    /* Events Page */
+    .event-card {
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .event-card:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .event-card .event-date {
+      display: inline-block;
+      padding: 6px 12px;
+      background: rgba(212, 165, 116, 0.4);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .event-card h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .event-card p {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      line-height: 1.4;
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .glass-content { padding: 28px 20px; }
@@ -1083,6 +1218,7 @@
       .quick-link { padding: 16px; }
       .quick-link i { font-size: 24px; }
       .message { max-width: 85%; }
+      .notification-popup { right: 10px; left: 10px; max-width: none; }
     }
   </style>
 </head>
@@ -1120,8 +1256,10 @@
           
           <div class="form-group">
             <label>Kullanici Adi</label>
-            <span class="username-prefix">@</span>
-            <input type="text" id="username" class="with-prefix" placeholder="kullaniciadi" maxlength="20">
+            <div class="username-input-wrapper">
+              <span class="username-prefix">@</span>
+              <input type="text" id="username" class="with-prefix" placeholder="kullaniciadi" maxlength="20">
+            </div>
             <p class="form-hint">Sadece harf, rakam ve alt cizgi kullanilabilir</p>
             <p class="form-error" id="usernameError"></p>
           </div>
@@ -1181,11 +1319,11 @@
 
         <h3 class="section-title"><i class="fas fa-rocket"></i> Yaklasanlar</h3>
         <div class="quick-links">
-          <div class="quick-link">
+          <div class="quick-link" onclick="navigateTo('games')">
             <i class="fas fa-gamepad"></i>
             <span>Oyunlar</span>
           </div>
-          <div class="quick-link">
+          <div class="quick-link" onclick="navigateTo('events')">
             <i class="fas fa-calendar-alt"></i>
             <span>Etkinlikler</span>
           </div>
@@ -1227,6 +1365,28 @@
           <div class="empty-state">
             <i class="fas fa-comment-dots"></i>
             <p>Henuz bir sohbetin yok. Arkadaslarinla mesajlasmaya basla!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Games Page -->
+      <div class="page" id="gamesPage">
+        <h2 class="page-title">Oyunlar</h2>
+        <div class="games-grid" id="gamesGrid">
+          <div class="empty-state">
+            <i class="fas fa-gamepad"></i>
+            <p>Henuz oyun eklenmemis</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events Page -->
+      <div class="page" id="eventsPage">
+        <h2 class="page-title">Etkinlikler</h2>
+        <div id="eventsList">
+          <div class="empty-state">
+            <i class="fas fa-calendar-alt"></i>
+            <p>Henuz etkinlik eklenmemis</p>
           </div>
         </div>
       </div>
@@ -1312,6 +1472,17 @@
     </div>
   </div>
 
+  <!-- Notification Popup -->
+  <div class="notification-popup" id="notificationPopup" onclick="handleNotificationClick()">
+    <div class="notification-content">
+      <img class="notification-avatar" id="notificationAvatar" src="" alt="">
+      <div class="notification-text">
+        <div class="notification-title" id="notificationTitle"></div>
+        <div class="notification-desc" id="notificationDesc"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
@@ -1338,7 +1509,8 @@
       equalTo,
       update,
       serverTimestamp,
-      limitToLast
+      limitToLast,
+      onChildAdded
     } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
     // Firebase Config
@@ -1363,6 +1535,8 @@
     let chatListener = null;
     let friendsListener = null;
     let requestsListener = null;
+    let friendsCountListener = null;
+    let lastNotificationData = null;
 
     // Auth State
     onAuthStateChanged(auth, async (user) => {
@@ -1377,6 +1551,9 @@
           updateUserOnlineStatus(true);
           loadFriendRequests();
           loadChats();
+          loadFriendCountRealtime();
+          loadGames();
+          loadEvents();
         } else {
           showSetupForm(user);
         }
@@ -1516,8 +1693,6 @@
       document.getElementById('profileEmail').textContent = currentUserData.email;
       document.getElementById('profileBirthDate').textContent = formatDate(currentUserData.birthDate);
       document.getElementById('profileJoinDate').textContent = formatDate(new Date(currentUserData.createdAt).toISOString().split('T')[0]);
-      
-      loadFriendCount();
     }
 
     // Format Date
@@ -1692,29 +1867,113 @@
       }
     };
 
-    // Load Friend Requests
+    // Show Notification Popup
+    async function showNotificationPopup(type, userId) {
+      try {
+        const userSnapshot = await get(ref(db, `users/${userId}`));
+        if (!userSnapshot.exists()) return;
+        
+        const user = userSnapshot.val();
+        const popup = document.getElementById('notificationPopup');
+        
+        document.getElementById('notificationAvatar').src = user.photoURL;
+        
+        if (type === 'friendRequest') {
+          document.getElementById('notificationTitle').textContent = 'Yeni Arkadas Istegi';
+          document.getElementById('notificationDesc').textContent = `${user.displayName} sana arkadas istegi gonderdi`;
+          lastNotificationData = { type: 'friendRequest', userId };
+        } else if (type === 'message') {
+          document.getElementById('notificationTitle').textContent = 'Yeni Mesaj';
+          document.getElementById('notificationDesc').textContent = `${user.displayName} sana mesaj gonderdi`;
+          lastNotificationData = { type: 'message', userId };
+        }
+        
+        popup.classList.add('show');
+        
+        setTimeout(() => {
+          popup.classList.remove('show');
+        }, 5000);
+      } catch (e) {
+        console.error("Notification error:", e);
+      }
+    }
+
+    // Handle Notification Click
+    window.handleNotificationClick = () => {
+      const popup = document.getElementById('notificationPopup');
+      popup.classList.remove('show');
+      
+      if (lastNotificationData) {
+        if (lastNotificationData.type === 'friendRequest') {
+          navigateTo('friends');
+          setTimeout(() => switchFriendsTab('requests'), 100);
+        } else if (lastNotificationData.type === 'message') {
+          openChat(lastNotificationData.userId);
+        }
+      }
+    };
+
+    // Load Friend Requests with real-time notifications
     function loadFriendRequests() {
       const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
+      
+      // Track existing requests to detect new ones
+      let existingRequests = new Set();
+      let isInitialLoad = true;
+      
       onValue(requestsRef, async (snapshot) => {
         const badge = document.getElementById('requestsBadge');
         const navBadge = document.getElementById('friendsNavBadge');
         
         if (snapshot.exists()) {
-          const count = Object.keys(snapshot.val()).length;
+          const requests = snapshot.val();
+          const requestIds = Object.keys(requests);
+          const count = requestIds.length;
+          
           badge.textContent = count;
           badge.style.display = count > 0 ? 'flex' : 'none';
           navBadge.classList.toggle('show', count > 0);
+          
+          // Check for new requests (not initial load)
+          if (!isInitialLoad) {
+            for (const requesterId of requestIds) {
+              if (!existingRequests.has(requesterId)) {
+                // New friend request - show notification
+                showNotificationPopup('friendRequest', requesterId);
+              }
+            }
+          }
+          
+          // Update existing requests set
+          existingRequests = new Set(requestIds);
         } else {
           badge.style.display = 'none';
           navBadge.classList.remove('show');
+          existingRequests.clear();
         }
+        
+        isInitialLoad = false;
+      });
+    }
+
+    // Load Friend Count in real-time
+    function loadFriendCountRealtime() {
+      const friendsRef = ref(db, `friends/${currentUser.uid}`);
+      
+      if (friendsCountListener) {
+        off(friendsRef);
+      }
+      
+      friendsCountListener = onValue(friendsRef, (snapshot) => {
+        const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        document.getElementById('friendCount').textContent = count;
       });
     }
 
     // Switch Friends Tab
     window.switchFriendsTab = async (tab) => {
       document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
+      event?.target?.classList.add('active');
 
       const contentEl = document.getElementById('friendsContent');
       contentEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -1845,17 +2104,13 @@
       }
     }
 
-    // Load Friend Count
-    async function loadFriendCount() {
-      const friendsRef = ref(db, `friends/${currentUser.uid}`);
-      const snapshot = await get(friendsRef);
-      const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-      document.getElementById('friendCount').textContent = count;
-    }
-
-    // Load Chats
+    // Load Chats with real-time updates
     function loadChats() {
       const chatsRef = ref(db, `userChats/${currentUser.uid}`);
+      
+      let existingChats = {};
+      let isInitialLoad = true;
+      
       onValue(chatsRef, async (snapshot) => {
         const chatListEl = document.getElementById('chatList');
         
@@ -1868,7 +2123,24 @@
         let html = '';
         let totalUnread = 0;
 
-        for (const [chatId, chatData] of Object.entries(chats)) {
+        // Check for new messages
+        if (!isInitialLoad) {
+          for (const [chatId, chatData] of Object.entries(chats)) {
+            const oldChat = existingChats[chatId];
+            if (oldChat && chatData.lastTime > oldChat.lastTime && chatData.unread > 0) {
+              // New message received
+              const otherUserId = chatId.split('_').find(id => id !== currentUser.uid);
+              if (otherUserId !== currentChatUserId) {
+                showNotificationPopup('message', otherUserId);
+              }
+            }
+          }
+        }
+
+        // Sort chats by lastTime
+        const sortedChats = Object.entries(chats).sort((a, b) => (b[1].lastTime || 0) - (a[1].lastTime || 0));
+
+        for (const [chatId, chatData] of sortedChats) {
           const otherUserId = chatId.split('_').find(id => id !== currentUser.uid);
           const userSnapshot = await get(ref(db, `users/${otherUserId}`));
           
@@ -1898,6 +2170,10 @@
 
         chatListEl.innerHTML = html || '<div class="empty-state"><p>Henuz bir sohbetin yok</p></div>';
         
+        // Update existing chats
+        existingChats = JSON.parse(JSON.stringify(chats));
+        isInitialLoad = false;
+        
         const chatNavBadge = document.getElementById('chatNavBadge');
         chatNavBadge.classList.toggle('show', totalUnread > 0);
       });
@@ -1914,7 +2190,7 @@
       return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
     }
 
-    // Open Chat
+    // Open Chat - FIXED: Now creates chat entry when opening
     window.openChat = async (userId) => {
       currentChatUserId = userId;
       
@@ -1931,8 +2207,19 @@
       // Generate chat ID
       const chatId = [currentUser.uid, userId].sort().join('_');
       
-      // Clear unread
-      await update(ref(db, `userChats/${currentUser.uid}/${chatId}`), { unread: 0 });
+      // Create chat entry for current user if it doesn't exist
+      const currentUserChatRef = ref(db, `userChats/${currentUser.uid}/${chatId}`);
+      const currentUserChatSnapshot = await get(currentUserChatRef);
+      if (!currentUserChatSnapshot.exists()) {
+        await set(currentUserChatRef, {
+          lastMessage: '',
+          lastTime: Date.now(),
+          unread: 0
+        });
+      } else {
+        // Clear unread
+        await update(currentUserChatRef, { unread: 0 });
+      }
       
       // Load messages
       loadMessages(chatId);
@@ -1981,7 +2268,7 @@
       });
     }
 
-    // Send Message
+    // Send Message - FIXED: Creates chat entries for both users
     window.sendMessage = async () => {
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
@@ -2000,19 +2287,19 @@
           timestamp: Date.now()
         });
 
-        // Update chat metadata for both users
+        // Update chat metadata for current user
         await update(ref(db, `userChats/${currentUser.uid}/${chatId}`), {
           lastMessage: text,
           lastTime: Date.now(),
           unread: 0
         });
 
-        // Get current unread count for other user
+        // Get current unread count for other user and create/update their chat entry
         const otherUserChatRef = ref(db, `userChats/${currentChatUserId}/${chatId}`);
         const otherChatSnapshot = await get(otherUserChatRef);
         const currentUnread = otherChatSnapshot.exists() ? (otherChatSnapshot.val().unread || 0) : 0;
 
-        await update(otherUserChatRef, {
+        await set(otherUserChatRef, {
           lastMessage: text,
           lastTime: Date.now(),
           unread: currentUnread + 1
@@ -2029,6 +2316,67 @@
         sendMessage();
       }
     };
+
+    // Load Games
+    async function loadGames() {
+      const gamesRef = ref(db, 'games');
+      onValue(gamesRef, (snapshot) => {
+        const gamesGrid = document.getElementById('gamesGrid');
+        
+        if (!snapshot.exists()) {
+          gamesGrid.innerHTML = '<div class="empty-state"><i class="fas fa-gamepad"></i><p>Henuz oyun eklenmemis</p></div>';
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach((child) => {
+          const game = child.val();
+          html += `
+            <div class="game-card" onclick="window.open('${game.url || '#'}', '_blank')">
+              <i class="${game.icon || 'fas fa-gamepad'}"></i>
+              <h4>${game.name}</h4>
+              <p>${game.description || ''}</p>
+            </div>
+          `;
+        });
+
+        gamesGrid.innerHTML = html || '<div class="empty-state"><i class="fas fa-gamepad"></i><p>Henuz oyun eklenmemis</p></div>';
+      });
+    }
+
+    // Load Events
+    async function loadEvents() {
+      const eventsRef = ref(db, 'events');
+      onValue(eventsRef, (snapshot) => {
+        const eventsList = document.getElementById('eventsList');
+        
+        if (!snapshot.exists()) {
+          eventsList.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>Henuz etkinlik eklenmemis</p></div>';
+          return;
+        }
+
+        let html = '';
+        const events = [];
+        snapshot.forEach((child) => {
+          events.push({ id: child.key, ...child.val() });
+        });
+
+        // Sort by date
+        events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        events.forEach(event => {
+          html += `
+            <div class="event-card">
+              <span class="event-date">${formatDate(event.date)}</span>
+              <h4>${event.title}</h4>
+              <p>${event.description || ''}</p>
+            </div>
+          `;
+        });
+
+        eventsList.innerHTML = html || '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>Henuz etkinlik eklenmemis</p></div>';
+      });
+    }
 
     // Show Toast
     window.showToast = (message) => {
