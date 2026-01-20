@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocialHub - Admin Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --c-bg: #1a1a2e;
+      --c-bg-secondary: #16213e;
+      --c-content: #eaeaea;
+      --c-content-secondary: #a0a0a0;
+      --c-action: #e94560;
+      --c-action-secondary: #0f3460;
+      --c-success: #4ecca3;
+      --c-warning: #ffc107;
+      --c-error: #e94560;
+      --c-card: rgba(22, 33, 62, 0.8);
+      --c-border: rgba(233, 69, 96, 0.2);
+    }
+
+    body {
+      font-family: "DM Sans", sans-serif;
+      background: linear-gradient(135deg, var(--c-bg) 0%, var(--c-bg-secondary) 100%);
+      color: var(--c-content);
+      min-height: 100vh;
+    }
+
+    /* Login Screen */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      background: linear-gradient(135deg, var(--c-bg) 0%, var(--c-bg-secondary) 100%);
+    }
+
+    .login-screen.hidden {
+      display: none;
+    }
+
+    .login-box {
+      width: 400px;
+      max-width: 90%;
+      padding: 40px;
+      background: var(--c-card);
+      border-radius: 20px;
+      border: 1px solid var(--c-border);
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin-bottom: 8px;
+      color: var(--c-action);
+    }
+
+    .login-box p {
+      color: var(--c-content-secondary);
+      margin-bottom: 30px;
+    }
+
+    .google-btn {
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--c-action);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 200ms ease;
+    }
+
+    .google-btn:hover {
+      background: #d13a52;
+      transform: translateY(-2px);
+    }
+
+    .google-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .access-denied {
+      display: none;
+      padding: 20px;
+      background: rgba(233, 69, 96, 0.1);
+      border: 1px solid var(--c-error);
+      border-radius: 12px;
+      color: var(--c-error);
+      margin-top: 20px;
+    }
+
+    .access-denied.show {
+      display: block;
+    }
+
+    /* Admin Container */
+    .admin-container {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .admin-container.active {
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--c-card);
+      border-right: 1px solid var(--c-border);
+      padding: 20px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--c-border);
+      margin-bottom: 20px;
+    }
+
+    .sidebar-logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--c-action);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-logo i {
+      font-size: 1.6rem;
+    }
+
+    .admin-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: rgba(233, 69, 96, 0.1);
+      margin: 0 12px 20px;
+      border-radius: 12px;
+    }
+
+    .admin-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+    }
+
+    .admin-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .admin-role {
+      font-size: 0.75rem;
+      color: var(--c-action);
+    }
+
+    .nav-menu {
+      list-style: none;
+    }
+
+    .nav-item {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 200ms ease;
+      border-left: 3px solid transparent;
+      color: var(--c-content-secondary);
+    }
+
+    .nav-item:hover {
+      background: rgba(233, 69, 96, 0.1);
+      color: var(--c-content);
+    }
+
+    .nav-item.active {
+      background: rgba(233, 69, 96, 0.15);
+      border-left-color: var(--c-action);
+      color: var(--c-action);
+    }
+
+    .nav-item i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .logout-btn {
+      margin: 20px;
+      padding: 12px;
+      background: rgba(233, 69, 96, 0.2);
+      border: 1px solid var(--c-action);
+      border-radius: 10px;
+      color: var(--c-action);
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 200ms ease;
+    }
+
+    .logout-btn:hover {
+      background: var(--c-action);
+      color: white;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 30px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .page-subtitle {
+      color: var(--c-content-secondary);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      padding: 24px;
+      background: var(--c-card);
+      border-radius: 16px;
+      border: 1px solid var(--c-border);
+    }
+
+    .stat-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .stat-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .stat-card-icon.users { background: rgba(78, 204, 163, 0.2); color: var(--c-success); }
+    .stat-card-icon.online { background: rgba(233, 69, 96, 0.2); color: var(--c-action); }
+    .stat-card-icon.games { background: rgba(255, 193, 7, 0.2); color: var(--c-warning); }
+    .stat-card-icon.events { background: rgba(15, 52, 96, 0.5); color: #64b5f6; }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      color: var(--c-content-secondary);
+      font-size: 0.85rem;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+      animation: fadeIn 300ms ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--c-card);
+      border-radius: 16px;
+      border: 1px solid var(--c-border);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--c-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 200ms ease;
+    }
+
+    .btn-primary {
+      background: var(--c-action);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #d13a52;
+    }
+
+    .btn-secondary {
+      background: var(--c-action-secondary);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #0d2a4a;
+    }
+
+    .btn-success {
+      background: var(--c-success);
+      color: var(--c-bg);
+    }
+
+    .btn-warning {
+      background: var(--c-warning);
+      color: var(--c-bg);
+    }
+
+    .btn-danger {
+      background: var(--c-error);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    th {
+      color: var(--c-content-secondary);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    tr:hover {
+      background: rgba(233, 69, 96, 0.05);
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--c-border);
+    }
+
+    .user-name {
+      font-weight: 600;
+    }
+
+    .user-email {
+      font-size: 0.8rem;
+      color: var(--c-content-secondary);
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-online {
+      background: rgba(78, 204, 163, 0.2);
+      color: var(--c-success);
+    }
+
+    .status-offline {
+      background: rgba(160, 160, 160, 0.2);
+      color: var(--c-content-secondary);
+    }
+
+    .status-banned {
+      background: rgba(233, 69, 96, 0.2);
+      color: var(--c-error);
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--c-border);
+      border-radius: 10px;
+      color: var(--c-content);
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 200ms ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--c-action);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      width: 500px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--c-bg-secondary);
+      border-radius: 20px;
+      border: 1px solid var(--c-border);
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--c-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(233, 69, 96, 0.2);
+      border: none;
+      color: var(--c-action);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 200ms ease;
+    }
+
+    .modal-close:hover {
+      background: var(--c-action);
+      color: white;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid var(--c-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    /* Search */
+    .search-box {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--c-border);
+      border-radius: 10px;
+      color: var(--c-content);
+      font-size: 1rem;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--c-content-secondary);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      background: var(--c-card);
+      border: 1px solid var(--c-border);
+      color: var(--c-content);
+      font-weight: 500;
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 300ms ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      border-color: var(--c-success);
+      background: rgba(78, 204, 163, 0.1);
+    }
+
+    .toast.error {
+      border-color: var(--c-error);
+      background: rgba(233, 69, 96, 0.1);
+    }
+
+    /* Item Cards (Games/Events) */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .item-card {
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 14px;
+      border: 1px solid var(--c-border);
+      transition: all 200ms ease;
+    }
+
+    .item-card:hover {
+      border-color: var(--c-action);
+    }
+
+    .item-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .item-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(233, 69, 96, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: var(--c-action);
+    }
+
+    .item-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .item-subtitle {
+      font-size: 0.8rem;
+      color: var(--c-content-secondary);
+    }
+
+    .item-description {
+      font-size: 0.9rem;
+      color: var(--c-content-secondary);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        z-index: 100;
+        transition: transform 300ms ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-box">
+      <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
+      <p>Yonetici paneline erisim icin giris yapin</p>
+      <button class="google-btn" onclick="signInWithGoogle()">
+        <svg viewBox="0 0 24 24">
+          <path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Google ile Giris Yap
+      </button>
+      <div class="access-denied" id="accessDenied">
+        <i class="fas fa-ban"></i> Bu hesabin admin yetkisi bulunmamaktadir.
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Container -->
+  <div class="admin-container" id="adminContainer">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fas fa-shield-alt"></i>
+          SocialHub Admin
+        </div>
+      </div>
+
+      <div class="admin-info">
+        <img class="admin-avatar" id="adminAvatar" src="https://ui-avatars.com/api/?name=A&background=e94560&color=fff" alt="">
+        <div>
+          <div class="admin-name" id="adminName">Admin</div>
+          <div class="admin-role">Yonetici</div>
+        </div>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item active" onclick="showSection('dashboard')">
+          <i class="fas fa-chart-line"></i>
+          Dashboard
+        </li>
+        <li class="nav-item" onclick="showSection('users')">
+          <i class="fas fa-users"></i>
+          Kullanicilar
+        </li>
+        <li class="nav-item" onclick="showSection('games')">
+          <i class="fas fa-gamepad"></i>
+          Oyunlar
+        </li>
+        <li class="nav-item" onclick="showSection('events')">
+          <i class="fas fa-calendar-alt"></i>
+          Etkinlikler
+        </li>
+      </ul>
+
+      <button class="logout-btn" onclick="signOut()">
+        <i class="fas fa-sign-out-alt"></i>
+        Cikis Yap
+      </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard Section -->
+      <section class="section active" id="dashboardSection">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">Genel bakis ve istatistikler</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon users">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <div class="stat-value" id="totalUsers">0</div>
+            <div class="stat-label">Toplam Kullanici</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon online">
+                <i class="fas fa-circle"></i>
+              </div>
+            </div>
+            <div class="stat-value" id="onlineUsers">0</div>
+            <div class="stat-label">Cevrimici</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon games">
+                <i class="fas fa-gamepad"></i>
+              </div>
+            </div>
+            <div class="stat-value" id="totalGames">0</div>
+            <div class="stat-label">Toplam Oyun</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon events">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+            </div>
+            <div class="stat-value" id="totalEvents">0</div>
+            <div class="stat-label">Toplam Etkinlik</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Cevrimici Kullanicilar</h3>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kullanici</th>
+                    <th>Kullanici Adi</th>
+                    <th>Durum</th>
+                    <th>Son Gorunme</th>
+                  </tr>
+                </thead>
+                <tbody id="onlineUsersTable">
+                  <tr>
+                    <td colspan="4" style="text-align: center; color: var(--c-content-secondary);">
+                      Yukleniyor...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Users Section -->
+      <section class="section" id="usersSection">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Kullanicilar</h1>
+            <p class="page-subtitle">Tum kullanicilari yonetin</p>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="userSearch" placeholder="Kullanici ara..." oninput="filterUsers()">
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kullanici</th>
+                    <th>Kullanici Adi</th>
+                    <th>E-posta</th>
+                    <th>Durum</th>
+                    <th>Katilim</th>
+                    <th>Islemler</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTable">
+                  <tr>
+                    <td colspan="6" style="text-align: center; color: var(--c-content-secondary);">
+                      Yukleniyor...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Games Section -->
+      <section class="section" id="gamesSection">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Oyunlar</h1>
+            <p class="page-subtitle">Oyunlari yonetin ve yeni oyun ekleyin</p>
+          </div>
+          <button class="btn btn-primary" onclick="openGameModal()">
+            <i class="fas fa-plus"></i> Yeni Oyun
+          </button>
+        </div>
+
+        <div class="items-grid" id="gamesGrid">
+          <p style="color: var(--c-content-secondary);">Yukleniyor...</p>
+        </div>
+      </section>
+
+      <!-- Events Section -->
+      <section class="section" id="eventsSection">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Etkinlikler</h1>
+            <p class="page-subtitle">Etkinlikleri yonetin ve yeni etkinlik ekleyin</p>
+          </div>
+          <button class="btn btn-primary" onclick="openEventModal()">
+            <i class="fas fa-plus"></i> Yeni Etkinlik
+          </button>
+        </div>
+
+        <div class="items-grid" id="eventsGrid">
+          <p style="color: var(--c-content-secondary);">Yukleniyor...</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Game Modal -->
+  <div class="modal" id="gameModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="gameModalTitle">Yeni Oyun Ekle</h3>
+        <button class="modal-close" onclick="closeGameModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="gameId">
+        <div class="form-group">
+          <label>Oyun Adi</label>
+          <input type="text" id="gameName" placeholder="Oyun adini girin">
+        </div>
+        <div class="form-group">
+          <label>Aciklama</label>
+          <textarea id="gameDescription" placeholder="Oyun aciklamasini girin"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Icon (FontAwesome class)</label>
+            <input type="text" id="gameIcon" placeholder="fas fa-gamepad">
+          </div>
+          <div class="form-group">
+            <label>URL (opsiyonel)</label>
+            <input type="text" id="gameUrl" placeholder="https://...">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeGameModal()">Iptal</button>
+        <button class="btn btn-primary" onclick="saveGame()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Modal -->
+  <div class="modal" id="eventModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="eventModalTitle">Yeni Etkinlik Ekle</h3>
+        <button class="modal-close" onclick="closeEventModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="eventId">
+        <div class="form-group">
+          <label>Etkinlik Adi</label>
+          <input type="text" id="eventTitle" placeholder="Etkinlik adini girin">
+        </div>
+        <div class="form-group">
+          <label>Aciklama</label>
+          <textarea id="eventDescription" placeholder="Etkinlik aciklamasini girin"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tarih</label>
+          <input type="date" id="eventDate">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeEventModal()">Iptal</button>
+        <button class="btn btn-primary" onclick="saveEvent()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Edit Modal -->
+  <div class="modal" id="userModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Kullanici Duzenle</h3>
+        <button class="modal-close" onclick="closeUserModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editUserId">
+        <div class="form-group">
+          <label>Isim Soyisim</label>
+          <input type="text" id="editUserName" placeholder="Isim Soyisim">
+        </div>
+        <div class="form-group">
+          <label>Kullanici Adi</label>
+          <input type="text" id="editUserUsername" placeholder="kullaniciadi" readonly>
+        </div>
+        <div class="form-group">
+          <label>E-posta</label>
+          <input type="email" id="editUserEmail" placeholder="E-posta" readonly>
+        </div>
+        <div class="form-group">
+          <label>Dogum Tarihi</label>
+          <input type="date" id="editUserBirthDate">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeUserModal()">Iptal</button>
+        <button class="btn btn-primary" onclick="saveUserChanges()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithPopup, 
+      GoogleAuthProvider, 
+      onAuthStateChanged,
+      signOut as firebaseSignOut 
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      get, 
+      push, 
+      onValue, 
+      remove,
+      update
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "maps-52b00",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentAdmin = null;
+    let allUsers = [];
+
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Check if user is admin
+        const adminsRef = ref(db, 'admins');
+        const snapshot = await get(adminsRef);
+        
+        if (snapshot.exists()) {
+          const admins = snapshot.val();
+          const isAdmin = Object.values(admins).includes(user.uid);
+          
+          if (isAdmin) {
+            currentAdmin = user;
+            showAdminPanel();
+            loadDashboardData();
+            loadUsers();
+            loadGames();
+            loadEvents();
+          } else {
+            document.getElementById('accessDenied').classList.add('show');
+            setTimeout(() => {
+              firebaseSignOut(auth);
+            }, 2000);
+          }
+        } else {
+          document.getElementById('accessDenied').classList.add('show');
+          setTimeout(() => {
+            firebaseSignOut(auth);
+          }, 2000);
+        }
+      } else {
+        currentAdmin = null;
+        showLogin();
+      }
+    });
+
+    // Sign In
+    window.signInWithGoogle = async () => {
+      try {
+        document.getElementById('accessDenied').classList.remove('show');
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Login error:", error);
+        showToast("Giris yapilamadi", "error");
+      }
+    };
+
+    // Sign Out
+    window.signOut = async () => {
+      try {
+        await firebaseSignOut(auth);
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    };
+
+    // Show Login
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('adminContainer').classList.remove('active');
+    }
+
+    // Show Admin Panel
+    function showAdminPanel() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('adminContainer').classList.add('active');
+      
+      if (currentAdmin) {
+        document.getElementById('adminAvatar').src = currentAdmin.photoURL || 'https://ui-avatars.com/api/?name=A&background=e94560&color=fff';
+        document.getElementById('adminName').textContent = currentAdmin.displayName || 'Admin';
+      }
+    }
+
+    // Show Section
+    window.showSection = (section) => {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      document.getElementById(section + 'Section').classList.add('active');
+      event.target.closest('.nav-item').classList.add('active');
+    };
+
+    // Load Dashboard Data
+    function loadDashboardData() {
+      // Users stats
+      const usersRef = ref(db, 'users');
+      onValue(usersRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const users = Object.values(snapshot.val());
+          document.getElementById('totalUsers').textContent = users.length;
+          
+          const online = users.filter(u => u.online === true);
+          document.getElementById('onlineUsers').textContent = online.length;
+
+          // Online users table
+          const tableBody = document.getElementById('onlineUsersTable');
+          if (online.length > 0) {
+            tableBody.innerHTML = online.slice(0, 10).map(user => `
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <img class="user-avatar" src="${user.photoURL}" alt="">
+                    <div>
+                      <div class="user-name">${user.displayName}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>@${user.username}</td>
+                <td><span class="status-badge status-online">Cevrimici</span></td>
+                <td>${formatDate(user.lastSeen)}</td>
+              </tr>
+            `).join('');
+          } else {
+            tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--c-content-secondary);">Cevrimici kullanici yok</td></tr>';
+          }
+        }
+      });
+
+      // Games stats
+      const gamesRef = ref(db, 'games');
+      onValue(gamesRef, (snapshot) => {
+        const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        document.getElementById('totalGames').textContent = count;
+      });
+
+      // Events stats
+      const eventsRef = ref(db, 'events');
+      onValue(eventsRef, (snapshot) => {
+        const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        document.getElementById('totalEvents').textContent = count;
+      });
+    }
+
+    // Load Users
+    function loadUsers() {
+      const usersRef = ref(db, 'users');
+      onValue(usersRef, (snapshot) => {
+        const tableBody = document.getElementById('usersTable');
+        
+        if (!snapshot.exists()) {
+          tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Kullanici bulunamadi</td></tr>';
+          return;
+        }
+
+        allUsers = [];
+        snapshot.forEach((child) => {
+          allUsers.push({ id: child.key, ...child.val() });
+        });
+
+        renderUsersTable(allUsers);
+      });
+    }
+
+    // Render Users Table
+    function renderUsersTable(users) {
+      const tableBody = document.getElementById('usersTable');
+      
+      if (users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Kullanici bulunamadi</td></tr>';
+        return;
+      }
+
+      tableBody.innerHTML = users.map(user => `
+        <tr>
+          <td>
+            <div class="user-cell">
+              <img class="user-avatar" src="${user.photoURL}" alt="">
+              <div>
+                <div class="user-name">${user.displayName}</div>
+              </div>
+            </div>
+          </td>
+          <td>@${user.username}</td>
+          <td>${user.email}</td>
+          <td>
+            <span class="status-badge ${user.banned ? 'status-banned' : (user.online ? 'status-online' : 'status-offline')}">
+              ${user.banned ? 'Engelli' : (user.online ? 'Cevrimici' : 'Cevrimdisi')}
+            </span>
+          </td>
+          <td>${formatShortDate(user.createdAt)}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-secondary btn-sm" onclick="editUser('${user.id}')">
+                <i class="fas fa-edit"></i>
+              </button>
+              ${user.banned ? 
+                `<button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}')">
+                  <i class="fas fa-unlock"></i>
+                </button>` :
+                `<button class="btn btn-danger btn-sm" onclick="banUser('${user.id}')">
+                  <i class="fas fa-ban"></i>
+                </button>`
+              }
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Filter Users
+    window.filterUsers = () => {
+      const search = document.getElementById('userSearch').value.toLowerCase();
+      const filtered = allUsers.filter(u => 
+        u.displayName.toLowerCase().includes(search) ||
+        u.username.toLowerCase().includes(search) ||
+        u.email.toLowerCase().includes(search)
+      );
+      renderUsersTable(filtered);
+    };
+
+    // Edit User
+    window.editUser = (userId) => {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) return;
+
+      document.getElementById('editUserId').value = userId;
+      document.getElementById('editUserName').value = user.displayName;
+      document.getElementById('editUserUsername').value = user.username;
+      document.getElementById('editUserEmail').value = user.email;
+      document.getElementById('editUserBirthDate').value = user.birthDate || '';
+
+      document.getElementById('userModal').classList.add('active');
+    };
+
+    // Close User Modal
+    window.closeUserModal = () => {
+      document.getElementById('userModal').classList.remove('active');
+    };
+
+    // Save User Changes
+    window.saveUserChanges = async () => {
+      const userId = document.getElementById('editUserId').value;
+      const displayName = document.getElementById('editUserName').value.trim();
+      const birthDate = document.getElementById('editUserBirthDate').value;
+
+      if (!displayName) {
+        showToast("Isim alani bos birakilamaz", "error");
+        return;
+      }
+
+      try {
+        await update(ref(db, `users/${userId}`), {
+          displayName,
+          birthDate
+        });
+        showToast("Kullanici guncellendi", "success");
+        closeUserModal();
+      } catch (error) {
+        console.error("Update error:", error);
+        showToast("Guncelleme basarisiz", "error");
+      }
+    };
+
+    // Ban User
+    window.banUser = async (userId) => {
+      if (!confirm("Bu kullaniciyi engellemek istediginize emin misiniz?")) return;
+      
+      try {
+        await update(ref(db, `users/${userId}`), {
+          banned: true,
+          online: false
+        });
+        showToast("Kullanici engellendi", "success");
+      } catch (error) {
+        console.error("Ban error:", error);
+        showToast("Engelleme basarisiz", "error");
+      }
+    };
+
+    // Unban User
+    window.unbanUser = async (userId) => {
+      try {
+        await update(ref(db, `users/${userId}`), {
+          banned: false
+        });
+        showToast("Engel kaldirildi", "success");
+      } catch (error) {
+        console.error("Unban error:", error);
+        showToast("Islem basarisiz", "error");
+      }
+    };
+
+    // Load Games
+    function loadGames() {
+      const gamesRef = ref(db, 'games');
+      onValue(gamesRef, (snapshot) => {
+        const grid = document.getElementById('gamesGrid');
+        
+        if (!snapshot.exists()) {
+          grid.innerHTML = '<p style="color: var(--c-content-secondary);">Henuz oyun eklenmemis</p>';
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach((child) => {
+          const game = child.val();
+          const gameId = child.key;
+          html += `
+            <div class="item-card">
+              <div class="item-card-header">
+                <div class="item-icon">
+                  <i class="${game.icon || 'fas fa-gamepad'}"></i>
+                </div>
+                <div>
+                  <div class="item-title">${game.name}</div>
+                  <div class="item-subtitle">${game.url ? 'URL mevcut' : 'URL yok'}</div>
+                </div>
+              </div>
+              <p class="item-description">${game.description || 'Aciklama yok'}</p>
+              <div class="item-actions">
+                <button class="btn btn-secondary btn-sm" onclick="editGame('${gameId}')">
+                  <i class="fas fa-edit"></i> Duzenle
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteGame('${gameId}')">
+                  <i class="fas fa-trash"></i> Sil
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        grid.innerHTML = html;
+      });
+    }
+
+    // Open Game Modal
+    window.openGameModal = (gameId = null) => {
+      document.getElementById('gameId').value = '';
+      document.getElementById('gameName').value = '';
+      document.getElementById('gameDescription').value = '';
+      document.getElementById('gameIcon').value = 'fas fa-gamepad';
+      document.getElementById('gameUrl').value = '';
+      document.getElementById('gameModalTitle').textContent = 'Yeni Oyun Ekle';
+      document.getElementById('gameModal').classList.add('active');
+    };
+
+    // Edit Game
+    window.editGame = async (gameId) => {
+      const snapshot = await get(ref(db, `games/${gameId}`));
+      if (!snapshot.exists()) return;
+
+      const game = snapshot.val();
+      document.getElementById('gameId').value = gameId;
+      document.getElementById('gameName').value = game.name || '';
+      document.getElementById('gameDescription').value = game.description || '';
+      document.getElementById('gameIcon').value = game.icon || 'fas fa-gamepad';
+      document.getElementById('gameUrl').value = game.url || '';
+      document.getElementById('gameModalTitle').textContent = 'Oyunu Duzenle';
+      document.getElementById('gameModal').classList.add('active');
+    };
+
+    // Close Game Modal
+    window.closeGameModal = () => {
+      document.getElementById('gameModal').classList.remove('active');
+    };
+
+    // Save Game
+    window.saveGame = async () => {
+      const gameId = document.getElementById('gameId').value;
+      const name = document.getElementById('gameName').value.trim();
+      const description = document.getElementById('gameDescription').value.trim();
+      const icon = document.getElementById('gameIcon').value.trim() || 'fas fa-gamepad';
+      const url = document.getElementById('gameUrl').value.trim();
+
+      if (!name) {
+        showToast("Oyun adi gerekli", "error");
+        return;
+      }
+
+      try {
+        const gameData = { name, description, icon, url, updatedAt: Date.now() };
+        
+        if (gameId) {
+          await update(ref(db, `games/${gameId}`), gameData);
+        } else {
+          gameData.createdAt = Date.now();
+          await push(ref(db, 'games'), gameData);
+        }
+        
+        showToast(gameId ? "Oyun guncellendi" : "Oyun eklendi", "success");
+        closeGameModal();
+      } catch (error) {
+        console.error("Save game error:", error);
+        showToast("Kaydetme basarisiz", "error");
+      }
+    };
+
+    // Delete Game
+    window.deleteGame = async (gameId) => {
+      if (!confirm("Bu oyunu silmek istediginize emin misiniz?")) return;
+      
+      try {
+        await remove(ref(db, `games/${gameId}`));
+        showToast("Oyun silindi", "success");
+      } catch (error) {
+        console.error("Delete error:", error);
+        showToast("Silme basarisiz", "error");
+      }
+    };
+
+    // Load Events
+    function loadEvents() {
+      const eventsRef = ref(db, 'events');
+      onValue(eventsRef, (snapshot) => {
+        const grid = document.getElementById('eventsGrid');
+        
+        if (!snapshot.exists()) {
+          grid.innerHTML = '<p style="color: var(--c-content-secondary);">Henuz etkinlik eklenmemis</p>';
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach((child) => {
+          const event = child.val();
+          const eventId = child.key;
+          html += `
+            <div class="item-card">
+              <div class="item-card-header">
+                <div class="item-icon">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div>
+                  <div class="item-title">${event.title}</div>
+                  <div class="item-subtitle">${formatShortDate(new Date(event.date).getTime())}</div>
+                </div>
+              </div>
+              <p class="item-description">${event.description || 'Aciklama yok'}</p>
+              <div class="item-actions">
+                <button class="btn btn-secondary btn-sm" onclick="editEvent('${eventId}')">
+                  <i class="fas fa-edit"></i> Duzenle
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteEvent('${eventId}')">
+                  <i class="fas fa-trash"></i> Sil
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        grid.innerHTML = html;
+      });
+    }
+
+    // Open Event Modal
+    window.openEventModal = () => {
+      document.getElementById('eventId').value = '';
+      document.getElementById('eventTitle').value = '';
+      document.getElementById('eventDescription').value = '';
+      document.getElementById('eventDate').value = '';
+      document.getElementById('eventModalTitle').textContent = 'Yeni Etkinlik Ekle';
+      document.getElementById('eventModal').classList.add('active');
+    };
+
+    // Edit Event
+    window.editEvent = async (eventId) => {
+      const snapshot = await get(ref(db, `events/${eventId}`));
+      if (!snapshot.exists()) return;
+
+      const event = snapshot.val();
+      document.getElementById('eventId').value = eventId;
+      document.getElementById('eventTitle').value = event.title || '';
+      document.getElementById('eventDescription').value = event.description || '';
+      document.getElementById('eventDate').value = event.date || '';
+      document.getElementById('eventModalTitle').textContent = 'Etkinligi Duzenle';
+      document.getElementById('eventModal').classList.add('active');
+    };
+
+    // Close Event Modal
+    window.closeEventModal = () => {
+      document.getElementById('eventModal').classList.remove('active');
+    };
+
+    // Save Event
+    window.saveEvent = async () => {
+      const eventId = document.getElementById('eventId').value;
+      const title = document.getElementById('eventTitle').value.trim();
+      const description = document.getElementById('eventDescription').value.trim();
+      const date = document.getElementById('eventDate').value;
+
+      if (!title || !date) {
+        showToast("Etkinlik adi ve tarih gerekli", "error");
+        return;
+      }
+
+      try {
+        const eventData = { title, description, date, updatedAt: Date.now() };
+        
+        if (eventId) {
+          await update(ref(db, `events/${eventId}`), eventData);
+        } else {
+          eventData.createdAt = Date.now();
+          await push(ref(db, 'events'), eventData);
+        }
+        
+        showToast(eventId ? "Etkinlik guncellendi" : "Etkinlik eklendi", "success");
+        closeEventModal();
+      } catch (error) {
+        console.error("Save event error:", error);
+        showToast("Kaydetme basarisiz", "error");
+      }
+    };
+
+    // Delete Event
+    window.deleteEvent = async (eventId) => {
+      if (!confirm("Bu etkinligi silmek istediginize emin misiniz?")) return;
+      
+      try {
+        await remove(ref(db, `events/${eventId}`));
+        showToast("Etkinlik silindi", "success");
+      } catch (error) {
+        console.error("Delete error:", error);
+        showToast("Silme basarisiz", "error");
+      }
+    };
+
+    // Format Date
+    function formatDate(timestamp) {
+      if (!timestamp) return '-';
+      const date = new Date(timestamp);
+      return date.toLocaleString('tr-TR', { 
+        day: 'numeric', 
+        month: 'short', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    }
+
+    function formatShortDate(timestamp) {
+      if (!timestamp) return '-';
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('tr-TR', { 
+        day: 'numeric', 
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    // Show Toast
+    window.showToast = (message, type = 'success') => {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + type;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    };
+  </script>
+</body>
+</html>
