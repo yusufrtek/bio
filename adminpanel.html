@@ -27,6 +27,7 @@
       --c-error: #e94560;
       --c-card: rgba(22, 33, 62, 0.8);
       --c-border: rgba(233, 69, 96, 0.2);
+      --c-verified: #1da1f2;
     }
 
     body {
@@ -185,7 +186,7 @@
       list-style: none;
     }
 
-    .nav-item {
+    .nav-menu .nav-item {
       padding: 14px 20px;
       display: flex;
       align-items: center;
@@ -196,18 +197,18 @@
       color: var(--c-content-secondary);
     }
 
-    .nav-item:hover {
+    .nav-menu .nav-item:hover {
       background: rgba(233, 69, 96, 0.1);
       color: var(--c-content);
     }
 
-    .nav-item.active {
+    .nav-menu .nav-item.active {
       background: rgba(233, 69, 96, 0.15);
       border-left-color: var(--c-action);
       color: var(--c-action);
     }
 
-    .nav-item i {
+    .nav-menu .nav-item i {
       width: 20px;
       text-align: center;
     }
@@ -392,6 +393,11 @@
       color: white;
     }
 
+    .btn-info {
+      background: var(--c-verified);
+      color: white;
+    }
+
     .btn-sm {
       padding: 6px 12px;
       font-size: 0.8rem;
@@ -439,6 +445,14 @@
 
     .user-name {
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .verified-badge {
+      color: var(--c-verified);
+      font-size: 14px;
     }
 
     .user-email {
@@ -676,19 +690,27 @@
     }
 
     .item-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
       background: rgba(233, 69, 96, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 24px;
       color: var(--c-action);
+      overflow: hidden;
+    }
+
+    .item-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .item-title {
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 1.1rem;
       margin-bottom: 2px;
     }
 
@@ -707,6 +729,76 @@
     .item-actions {
       display: flex;
       gap: 8px;
+    }
+
+    /* Event Image Preview */
+    .event-image-preview {
+      width: 100%;
+      height: 120px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-bottom: 12px;
+    }
+
+    /* Participants List */
+    .participants-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .participant-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .participant-item:last-child {
+      border-bottom: none;
+    }
+
+    .participant-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
+    /* QA Admin */
+    .qa-admin-item {
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    .qa-admin-question {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .qa-admin-asker {
+      font-size: 0.85rem;
+      color: var(--c-content-secondary);
+      margin-bottom: 12px;
+    }
+
+    .qa-admin-answer {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      color: var(--c-content);
+      font-size: 0.9rem;
+      font-family: inherit;
+      resize: none;
+      margin-bottom: 8px;
+    }
+
+    .qa-admin-answer:focus {
+      outline: none;
+      border-color: var(--c-action);
     }
 
     /* Responsive */
@@ -912,7 +1004,7 @@
                     <th>Kullanici Adi</th>
                     <th>E-posta</th>
                     <th>Durum</th>
-                    <th>Katilim</th>
+                    <th>Onay</th>
                     <th>Islemler</th>
                   </tr>
                 </thead>
@@ -984,15 +1076,14 @@
           <label>Aciklama</label>
           <textarea id="gameDescription" placeholder="Oyun aciklamasini girin"></textarea>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Icon (FontAwesome class)</label>
-            <input type="text" id="gameIcon" placeholder="fas fa-gamepad">
-          </div>
-          <div class="form-group">
-            <label>URL (opsiyonel)</label>
-            <input type="text" id="gameUrl" placeholder="https://...">
-          </div>
+        <div class="form-group">
+          <label>Icon Resim URL</label>
+          <input type="text" id="gameIconUrl" placeholder="https://example.com/game-icon.png">
+          <p style="font-size:0.8rem;opacity:0.7;margin-top:4px;">Kare oraninda bir resim URL'si girin</p>
+        </div>
+        <div class="form-group">
+          <label>Oyun URL (opsiyonel)</label>
+          <input type="text" id="gameUrl" placeholder="https://...">
         </div>
       </div>
       <div class="modal-footer">
@@ -1022,6 +1113,10 @@
           <textarea id="eventDescription" placeholder="Etkinlik aciklamasini girin"></textarea>
         </div>
         <div class="form-group">
+          <label>Etkinlik Resmi URL</label>
+          <input type="text" id="eventImageUrl" placeholder="https://example.com/event-image.jpg">
+        </div>
+        <div class="form-group">
           <label>Tarih</label>
           <input type="date" id="eventDate">
         </div>
@@ -1029,6 +1124,31 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeEventModal()">Iptal</button>
         <button class="btn btn-primary" onclick="saveEvent()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Detail Modal -->
+  <div class="modal" id="eventDetailModal">
+    <div class="modal-content" style="max-width:600px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="eventDetailTitle">Etkinlik Detayi</h3>
+        <button class="modal-close" onclick="closeEventDetailModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="eventDetailImage" class="event-image-preview" src="" alt="" style="display:none;">
+        <p id="eventDetailDesc" style="margin-bottom:20px;"></p>
+        <p id="eventDetailDate" style="margin-bottom:20px;color:var(--c-content-secondary);"></p>
+        
+        <h4 style="margin-bottom:12px;"><i class="fas fa-users"></i> Katilimcilar (<span id="eventDetailParticipantCount">0</span>)</h4>
+        <div class="participants-list" id="eventDetailParticipants">
+          <p style="opacity:0.7;">Henuz katilimci yok</p>
+        </div>
+        
+        <h4 style="margin:20px 0 12px;"><i class="fas fa-question-circle"></i> Sorular</h4>
+        <div id="eventDetailQA"></div>
       </div>
     </div>
   </div>
@@ -1110,6 +1230,7 @@
 
     let currentAdmin = null;
     let allUsers = [];
+    let currentDetailEventId = null;
 
     // Hardcoded admin emails and UIDs for direct access
     const ADMIN_EMAILS = [
@@ -1225,7 +1346,7 @@
     // Show Section
     window.showSection = (section) => {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.nav-menu .nav-item').forEach(n => n.classList.remove('active'));
       
       document.getElementById(section + 'Section').classList.add('active');
       event.target.closest('.nav-item').classList.add('active');
@@ -1252,7 +1373,10 @@
                   <div class="user-cell">
                     <img class="user-avatar" src="${user.photoURL}" alt="">
                     <div>
-                      <div class="user-name">${user.displayName}</div>
+                      <div class="user-name">
+                        ${user.displayName}
+                        ${user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -1317,7 +1441,10 @@
             <div class="user-cell">
               <img class="user-avatar" src="${user.photoURL}" alt="">
               <div>
-                <div class="user-name">${user.displayName}</div>
+                <div class="user-name">
+                  ${user.displayName}
+                  ${user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}
+                </div>
               </div>
             </div>
           </td>
@@ -1328,19 +1455,32 @@
               ${user.banned ? 'Engelli' : (user.online ? 'Cevrimici' : 'Cevrimdisi')}
             </span>
           </td>
-          <td>${formatShortDate(user.createdAt)}</td>
+          <td>
+            ${user.verified 
+              ? '<span class="status-badge" style="background:rgba(29,161,242,0.2);color:#1da1f2;"><i class="fas fa-check-circle"></i> Onayli</span>'
+              : '<span class="status-badge status-offline">Onaysiz</span>'
+            }
+          </td>
           <td>
             <div class="action-btns">
-              <button class="btn btn-secondary btn-sm" onclick="editUser('${user.id}')">
+              <button class="btn btn-secondary btn-sm" onclick="editUser('${user.id}')" title="Duzenle">
                 <i class="fas fa-edit"></i>
               </button>
-              ${user.banned ? 
-                `<button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}')">
-                  <i class="fas fa-unlock"></i>
-                </button>` :
-                `<button class="btn btn-danger btn-sm" onclick="banUser('${user.id}')">
-                  <i class="fas fa-ban"></i>
-                </button>`
+              ${user.verified 
+                ? `<button class="btn btn-warning btn-sm" onclick="removeVerify('${user.id}')" title="Onay Kaldir">
+                    <i class="fas fa-times-circle"></i>
+                  </button>`
+                : `<button class="btn btn-info btn-sm" onclick="verifyUser('${user.id}')" title="Onayla">
+                    <i class="fas fa-check-circle"></i>
+                  </button>`
+              }
+              ${user.banned 
+                ? `<button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}')" title="Engeli Kaldir">
+                    <i class="fas fa-unlock"></i>
+                  </button>`
+                : `<button class="btn btn-danger btn-sm" onclick="banUser('${user.id}')" title="Engelle">
+                    <i class="fas fa-ban"></i>
+                  </button>`
               }
             </div>
           </td>
@@ -1402,6 +1542,36 @@
       }
     };
 
+    // Verify User (Give Blue Tick)
+    window.verifyUser = async (userId) => {
+      if (!confirm("Bu kullaniciya mavi tik vermek istediginize emin misiniz?")) return;
+      
+      try {
+        await update(ref(db, `users/${userId}`), {
+          verified: true
+        });
+        showToast("Kullanici onaylandi (Mavi Tik verildi)", "success");
+      } catch (error) {
+        console.error("Verify error:", error);
+        showToast("Onaylama basarisiz", "error");
+      }
+    };
+
+    // Remove Verify
+    window.removeVerify = async (userId) => {
+      if (!confirm("Bu kullanicinin mavi tikini kaldirmak istediginize emin misiniz?")) return;
+      
+      try {
+        await update(ref(db, `users/${userId}`), {
+          verified: false
+        });
+        showToast("Mavi tik kaldirildi", "success");
+      } catch (error) {
+        console.error("Remove verify error:", error);
+        showToast("Islem basarisiz", "error");
+      }
+    };
+
     // Ban User
     window.banUser = async (userId) => {
       if (!confirm("Bu kullaniciyi engellemek istediginize emin misiniz?")) return;
@@ -1446,11 +1616,15 @@
         snapshot.forEach((child) => {
           const game = child.val();
           const gameId = child.key;
+          const iconHtml = game.iconUrl 
+            ? `<img src="${game.iconUrl}" alt="${game.name}">`
+            : `<i class="${game.icon || 'fas fa-gamepad'}"></i>`;
+          
           html += `
             <div class="item-card">
               <div class="item-card-header">
                 <div class="item-icon">
-                  <i class="${game.icon || 'fas fa-gamepad'}"></i>
+                  ${iconHtml}
                 </div>
                 <div>
                   <div class="item-title">${game.name}</div>
@@ -1469,48 +1643,44 @@
             </div>
           `;
         });
-
         grid.innerHTML = html;
       });
     }
 
-    // Open Game Modal
-    window.openGameModal = (gameId = null) => {
+    // Game Modal Functions
+    window.openGameModal = () => {
+      document.getElementById('gameModalTitle').textContent = 'Yeni Oyun Ekle';
       document.getElementById('gameId').value = '';
       document.getElementById('gameName').value = '';
       document.getElementById('gameDescription').value = '';
-      document.getElementById('gameIcon').value = 'fas fa-gamepad';
+      document.getElementById('gameIconUrl').value = '';
       document.getElementById('gameUrl').value = '';
-      document.getElementById('gameModalTitle').textContent = 'Yeni Oyun Ekle';
       document.getElementById('gameModal').classList.add('active');
     };
 
-    // Edit Game
-    window.editGame = async (gameId) => {
-      const snapshot = await get(ref(db, `games/${gameId}`));
-      if (!snapshot.exists()) return;
-
-      const game = snapshot.val();
-      document.getElementById('gameId').value = gameId;
-      document.getElementById('gameName').value = game.name || '';
-      document.getElementById('gameDescription').value = game.description || '';
-      document.getElementById('gameIcon').value = game.icon || 'fas fa-gamepad';
-      document.getElementById('gameUrl').value = game.url || '';
-      document.getElementById('gameModalTitle').textContent = 'Oyunu Duzenle';
-      document.getElementById('gameModal').classList.add('active');
-    };
-
-    // Close Game Modal
     window.closeGameModal = () => {
       document.getElementById('gameModal').classList.remove('active');
     };
 
-    // Save Game
+    window.editGame = async (gameId) => {
+      const snapshot = await get(ref(db, `games/${gameId}`));
+      if (!snapshot.exists()) return;
+      
+      const game = snapshot.val();
+      document.getElementById('gameModalTitle').textContent = 'Oyunu Duzenle';
+      document.getElementById('gameId').value = gameId;
+      document.getElementById('gameName').value = game.name;
+      document.getElementById('gameDescription').value = game.description || '';
+      document.getElementById('gameIconUrl').value = game.iconUrl || '';
+      document.getElementById('gameUrl').value = game.url || '';
+      document.getElementById('gameModal').classList.add('active');
+    };
+
     window.saveGame = async () => {
       const gameId = document.getElementById('gameId').value;
       const name = document.getElementById('gameName').value.trim();
       const description = document.getElementById('gameDescription').value.trim();
-      const icon = document.getElementById('gameIcon').value.trim() || 'fas fa-gamepad';
+      const iconUrl = document.getElementById('gameIconUrl').value.trim();
       const url = document.getElementById('gameUrl').value.trim();
 
       if (!name) {
@@ -1518,25 +1688,30 @@
         return;
       }
 
+      const gameData = {
+        name,
+        description,
+        iconUrl,
+        url,
+        updatedAt: Date.now()
+      };
+
       try {
-        const gameData = { name, description, icon, url, updatedAt: Date.now() };
-        
         if (gameId) {
           await update(ref(db, `games/${gameId}`), gameData);
+          showToast("Oyun guncellendi", "success");
         } else {
           gameData.createdAt = Date.now();
           await push(ref(db, 'games'), gameData);
+          showToast("Oyun eklendi", "success");
         }
-        
-        showToast(gameId ? "Oyun guncellendi" : "Oyun eklendi", "success");
         closeGameModal();
       } catch (error) {
-        console.error("Save game error:", error);
+        console.error("Game save error:", error);
         showToast("Kaydetme basarisiz", "error");
       }
     };
 
-    // Delete Game
     window.deleteGame = async (gameId) => {
       if (!confirm("Bu oyunu silmek istediginize emin misiniz?")) return;
       
@@ -1564,19 +1739,25 @@
         snapshot.forEach((child) => {
           const event = child.val();
           const eventId = child.key;
+          const participantCount = event.participants ? Object.keys(event.participants).length : 0;
+          
           html += `
             <div class="item-card">
+              ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" class="event-image-preview">` : ''}
               <div class="item-card-header">
                 <div class="item-icon">
                   <i class="fas fa-calendar-alt"></i>
                 </div>
                 <div>
                   <div class="item-title">${event.title}</div>
-                  <div class="item-subtitle">${formatShortDate(new Date(event.date).getTime())}</div>
+                  <div class="item-subtitle">${formatEventDate(event.date)} - ${participantCount} katilimci</div>
                 </div>
               </div>
               <p class="item-description">${event.description || 'Aciklama yok'}</p>
               <div class="item-actions">
+                <button class="btn btn-secondary btn-sm" onclick="viewEventDetail('${eventId}')">
+                  <i class="fas fa-eye"></i> Detay
+                </button>
                 <button class="btn btn-secondary btn-sm" onclick="editEvent('${eventId}')">
                   <i class="fas fa-edit"></i> Duzenle
                 </button>
@@ -1587,45 +1768,44 @@
             </div>
           `;
         });
-
         grid.innerHTML = html;
       });
     }
 
-    // Open Event Modal
+    // Event Modal Functions
     window.openEventModal = () => {
+      document.getElementById('eventModalTitle').textContent = 'Yeni Etkinlik Ekle';
       document.getElementById('eventId').value = '';
       document.getElementById('eventTitle').value = '';
       document.getElementById('eventDescription').value = '';
+      document.getElementById('eventImageUrl').value = '';
       document.getElementById('eventDate').value = '';
-      document.getElementById('eventModalTitle').textContent = 'Yeni Etkinlik Ekle';
       document.getElementById('eventModal').classList.add('active');
     };
 
-    // Edit Event
-    window.editEvent = async (eventId) => {
-      const snapshot = await get(ref(db, `events/${eventId}`));
-      if (!snapshot.exists()) return;
-
-      const event = snapshot.val();
-      document.getElementById('eventId').value = eventId;
-      document.getElementById('eventTitle').value = event.title || '';
-      document.getElementById('eventDescription').value = event.description || '';
-      document.getElementById('eventDate').value = event.date || '';
-      document.getElementById('eventModalTitle').textContent = 'Etkinligi Duzenle';
-      document.getElementById('eventModal').classList.add('active');
-    };
-
-    // Close Event Modal
     window.closeEventModal = () => {
       document.getElementById('eventModal').classList.remove('active');
     };
 
-    // Save Event
+    window.editEvent = async (eventId) => {
+      const snapshot = await get(ref(db, `events/${eventId}`));
+      if (!snapshot.exists()) return;
+      
+      const event = snapshot.val();
+      document.getElementById('eventModalTitle').textContent = 'Etkinligi Duzenle';
+      document.getElementById('eventId').value = eventId;
+      document.getElementById('eventTitle').value = event.title;
+      document.getElementById('eventDescription').value = event.description || '';
+      document.getElementById('eventImageUrl').value = event.imageUrl || '';
+      document.getElementById('eventDate').value = event.date;
+      document.getElementById('eventModal').classList.add('active');
+    };
+
     window.saveEvent = async () => {
       const eventId = document.getElementById('eventId').value;
       const title = document.getElementById('eventTitle').value.trim();
       const description = document.getElementById('eventDescription').value.trim();
+      const imageUrl = document.getElementById('eventImageUrl').value.trim();
       const date = document.getElementById('eventDate').value;
 
       if (!title || !date) {
@@ -1633,30 +1813,36 @@
         return;
       }
 
+      const eventData = {
+        title,
+        description,
+        imageUrl,
+        date,
+        updatedAt: Date.now()
+      };
+
       try {
-        const eventData = { title, description, date, updatedAt: Date.now() };
-        
         if (eventId) {
           await update(ref(db, `events/${eventId}`), eventData);
+          showToast("Etkinlik guncellendi", "success");
         } else {
           eventData.createdAt = Date.now();
           await push(ref(db, 'events'), eventData);
+          showToast("Etkinlik eklendi", "success");
         }
-        
-        showToast(eventId ? "Etkinlik guncellendi" : "Etkinlik eklendi", "success");
         closeEventModal();
       } catch (error) {
-        console.error("Save event error:", error);
+        console.error("Event save error:", error);
         showToast("Kaydetme basarisiz", "error");
       }
     };
 
-    // Delete Event
     window.deleteEvent = async (eventId) => {
       if (!confirm("Bu etkinligi silmek istediginize emin misiniz?")) return;
       
       try {
         await remove(ref(db, `events/${eventId}`));
+        await remove(ref(db, `eventQA/${eventId}`));
         showToast("Etkinlik silindi", "success");
       } catch (error) {
         console.error("Delete error:", error);
@@ -1664,36 +1850,139 @@
       }
     };
 
-    // Format Date
+    // View Event Detail
+    window.viewEventDetail = async (eventId) => {
+      currentDetailEventId = eventId;
+      
+      const snapshot = await get(ref(db, `events/${eventId}`));
+      if (!snapshot.exists()) return;
+      
+      const event = snapshot.val();
+      
+      document.getElementById('eventDetailTitle').textContent = event.title;
+      document.getElementById('eventDetailDesc').textContent = event.description || '';
+      document.getElementById('eventDetailDate').innerHTML = `<i class="fas fa-calendar"></i> ${formatEventDate(event.date)}`;
+      
+      const imgEl = document.getElementById('eventDetailImage');
+      if (event.imageUrl) {
+        imgEl.src = event.imageUrl;
+        imgEl.style.display = 'block';
+      } else {
+        imgEl.style.display = 'none';
+      }
+      
+      // Load participants
+      const participantCount = event.participants ? Object.keys(event.participants).length : 0;
+      document.getElementById('eventDetailParticipantCount').textContent = participantCount;
+      
+      const participantsContainer = document.getElementById('eventDetailParticipants');
+      if (event.participants) {
+        let participantsHtml = '';
+        for (const [userId, data] of Object.entries(event.participants)) {
+          const userSnapshot = await get(ref(db, `users/${userId}`));
+          if (userSnapshot.exists()) {
+            const user = userSnapshot.val();
+            participantsHtml += `
+              <div class="participant-item">
+                <img class="participant-avatar" src="${user.photoURL}" alt="">
+                <span>${user.displayName}</span>
+                ${user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}
+              </div>
+            `;
+          }
+        }
+        participantsContainer.innerHTML = participantsHtml || '<p style="opacity:0.7;">Henuz katilimci yok</p>';
+      } else {
+        participantsContainer.innerHTML = '<p style="opacity:0.7;">Henuz katilimci yok</p>';
+      }
+      
+      // Load Q&A
+      await loadEventQAAdmin(eventId);
+      
+      document.getElementById('eventDetailModal').classList.add('active');
+    };
+
+    window.closeEventDetailModal = () => {
+      document.getElementById('eventDetailModal').classList.remove('active');
+      currentDetailEventId = null;
+    };
+
+    // Load Event Q&A for Admin
+    async function loadEventQAAdmin(eventId) {
+      const container = document.getElementById('eventDetailQA');
+      const qaSnapshot = await get(ref(db, `eventQA/${eventId}`));
+      
+      if (!qaSnapshot.exists()) {
+        container.innerHTML = '<p style="opacity:0.7;">Henuz soru sorulmamis</p>';
+        return;
+      }
+      
+      let html = '';
+      qaSnapshot.forEach((child) => {
+        const qa = child.val();
+        const qaId = child.key;
+        html += `
+          <div class="qa-admin-item">
+            <div class="qa-admin-question"><i class="fas fa-question-circle" style="color:var(--c-action);margin-right:8px;"></i>${qa.question}</div>
+            <div class="qa-admin-asker">Soran: ${qa.askedByName || 'Bilinmiyor'}</div>
+            <textarea class="qa-admin-answer" id="answer_${qaId}" placeholder="Cevabinizi yazin...">${qa.answer || ''}</textarea>
+            <button class="btn btn-success btn-sm" onclick="saveQAAnswer('${eventId}', '${qaId}')">
+              <i class="fas fa-check"></i> Cevapla
+            </button>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    // Save Q&A Answer
+    window.saveQAAnswer = async (eventId, qaId) => {
+      const answer = document.getElementById(`answer_${qaId}`).value.trim();
+      
+      if (!answer) {
+        showToast("Cevap alani bos birakilamaz", "error");
+        return;
+      }
+      
+      try {
+        await update(ref(db, `eventQA/${eventId}/${qaId}`), {
+          answer,
+          answeredBy: currentAdmin.displayName || 'Admin',
+          answeredAt: Date.now()
+        });
+        showToast("Cevap kaydedildi", "success");
+      } catch (error) {
+        console.error("Answer error:", error);
+        showToast("Kaydetme basarisiz", "error");
+      }
+    };
+
+    // Utility Functions
     function formatDate(timestamp) {
       if (!timestamp) return '-';
-      const date = new Date(timestamp);
-      return date.toLocaleString('tr-TR', { 
-        day: 'numeric', 
-        month: 'short', 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
+      return new Date(timestamp).toLocaleString('tr-TR');
     }
 
     function formatShortDate(timestamp) {
       if (!timestamp) return '-';
-      const date = new Date(timestamp);
-      return date.toLocaleDateString('tr-TR', { 
-        day: 'numeric', 
-        month: 'short',
-        year: 'numeric'
-      });
+      return new Date(timestamp).toLocaleDateString('tr-TR');
     }
 
-    // Show Toast
-    window.showToast = (message, type = 'success') => {
+    function formatEventDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function showToast(message, type = '') {
       const toast = document.getElementById('toast');
       toast.textContent = message;
-      toast.className = 'toast ' + type;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    };
+      toast.className = 'toast ' + type + ' show';
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
   </script>
 </body>
 </html>
