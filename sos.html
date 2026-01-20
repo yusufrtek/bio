@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SocialHub - Sosyal Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    :root {
+      --c-bg: #f5e6d3;
+      --c-content: #3d2f1f;
+      --c-action: #d4a574;
+      --c-glass: #e8d4b8;
+      --c-light: #ffffff;
+      --c-dark: #2a1f15;
+      --c-success: #6b9b6b;
+      --c-error: #c97070;
+      --c-online: #7cb97c;
+    }
+
+    body {
+      font-family: "DM Sans", sans-serif;
+      background: linear-gradient(135deg, #f5e6d3 0%, #f0dcc4 50%, #f8ead8 100%);
+      color: var(--c-content);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(212, 165, 116, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(201, 150, 95, 0.15) 0%, transparent 50%);
+      animation: particleFloat 20s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes particleFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+    }
+
+    /* Login Screen */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 500ms ease, visibility 500ms ease;
+      background: linear-gradient(135deg, #f5e6d3 0%, #f0dcc4 50%, #f8ead8 100%);
+    }
+
+    .login-screen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(212, 165, 116, 0.2) 0%, transparent 70%);
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.1); }
+    }
+
+    .login-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .glass-form {
+      position: relative;
+      width: 420px;
+      max-width: 92%;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 
+        0 8px 32px rgba(61, 47, 31, 0.2),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+      animation: fadeInUp 600ms ease;
+      z-index: 10;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .glass-filter {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      backdrop-filter: blur(16px) saturate(1.5);
+      -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    }
+
+    .glass-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: rgba(232, 212, 184, 0.4);
+    }
+
+    .glass-content {
+      position: relative;
+      z-index: 4;
+      padding: 40px;
+    }
+
+    .glass-content h3 {
+      margin: 0 0 12px;
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .glass-content .subtitle {
+      text-align: center;
+      font-size: 0.95rem;
+      opacity: 0.8;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .google-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(212, 165, 116, 0.4);
+      border-radius: 12px;
+      color: var(--c-content);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 250ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 4px 12px rgba(61, 47, 31, 0.15);
+    }
+
+    .google-btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 6px 20px rgba(61, 47, 31, 0.2);
+    }
+
+    .google-btn:active { transform: translateY(0); }
+
+    .google-btn svg { width: 20px; height: 20px; }
+
+    /* Setup Form */
+    .setup-form {
+      display: none;
+    }
+
+    .setup-form.active {
+      display: block;
+      animation: fadeInUp 400ms ease;
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(212, 165, 116, 0.3);
+      border-radius: 12px;
+      color: var(--c-content);
+      font-size: 16px;
+      font-family: inherit;
+      transition: all 250ms ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.8);
+      border-color: var(--c-action);
+      box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.2);
+    }
+
+    .form-group input::placeholder { color: rgba(61, 47, 31, 0.5); }
+
+    .username-prefix {
+      position: absolute;
+      left: 16px;
+      bottom: 14px;
+      font-size: 16px;
+      color: var(--c-action);
+      font-weight: 600;
+    }
+
+    .form-group input.with-prefix {
+      padding-left: 32px;
+    }
+
+    .form-hint {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    .form-error {
+      font-size: 0.8rem;
+      color: var(--c-error);
+      margin-top: 4px;
+      display: none;
+    }
+
+    .form-error.show { display: block; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: rgba(212, 165, 116, 0.5);
+      border: 1px solid rgba(212, 165, 116, 0.7);
+      border-radius: 12px;
+      color: var(--c-content);
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 250ms ease;
+      margin-top: 8px;
+    }
+
+    .submit-btn:hover {
+      background: rgba(212, 165, 116, 0.7);
+      transform: translateY(-2px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Main App */
+    .app-container {
+      display: none;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding-bottom: 100px;
+    }
+
+    .app-container.active { display: block; }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      border-radius: 99px;
+      background: rgba(232, 212, 184, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+        0 4px 16px rgba(42, 31, 21, 0.12);
+    }
+
+    .header-logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--c-content);
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 14px 6px 8px;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: background 200ms ease;
+    }
+
+    .header-user:hover { background: rgba(255, 255, 255, 0.6); }
+
+    .header-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+      object-fit: cover;
+    }
+
+    .header-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+    }
+
+    .nav-inner {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px;
+      border-radius: 99px;
+      background: rgba(232, 212, 184, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+        0 4px 16px rgba(42, 31, 21, 0.15);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 48px;
+      border-radius: 99px;
+      color: var(--c-content);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 200ms ease;
+      position: relative;
+    }
+
+    .nav-item:hover { color: var(--c-action); }
+
+    .nav-item.active {
+      background: rgba(232, 212, 184, 0.6);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    }
+
+    .nav-badge {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: var(--c-error);
+      border-radius: 50%;
+      display: none;
+    }
+
+    .nav-badge.show { display: block; }
+
+    /* Pages */
+    .page {
+      display: none;
+      padding: 90px 16px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      animation: pageIn 400ms ease;
+    }
+
+    .page.active { display: block; }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    /* Home Page */
+    .welcome-card {
+      padding: 28px;
+      border-radius: 20px;
+      background: rgba(232, 212, 184, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        0 8px 24px rgba(42, 31, 21, 0.12);
+      margin-bottom: 24px;
+    }
+
+    .welcome-greeting {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .welcome-text {
+      opacity: 0.8;
+      line-height: 1.5;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .quick-link {
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 250ms ease;
+      text-align: center;
+    }
+
+    .quick-link:hover {
+      background: rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .quick-link i {
+      font-size: 28px;
+      color: var(--c-action);
+      margin-bottom: 10px;
+    }
+
+    .quick-link span {
+      display: block;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    /* Search */
+    .search-box {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 16px 14px 48px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(212, 165, 116, 0.3);
+      border-radius: 14px;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--c-content);
+      transition: all 250ms ease;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.8);
+      border-color: var(--c-action);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--c-content);
+      opacity: 0.6;
+    }
+
+    /* User Cards */
+    .user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .user-card:hover {
+      background: rgba(255, 255, 255, 0.6);
+      transform: translateX(4px);
+    }
+
+    .user-card-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+      object-fit: cover;
+      position: relative;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+    }
+
+    .online-dot {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      background: var(--c-online);
+      border: 2px solid var(--c-bg);
+      border-radius: 50%;
+    }
+
+    .user-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-card-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .user-card-username {
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    .user-card-action {
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: rgba(212, 165, 116, 0.4);
+      border: none;
+      color: var(--c-content);
+      font-weight: 600;
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 200ms ease;
+      white-space: nowrap;
+    }
+
+    .user-card-action:hover {
+      background: rgba(212, 165, 116, 0.6);
+    }
+
+    .user-card-action.pending {
+      background: rgba(107, 155, 107, 0.3);
+    }
+
+    .user-card-action.friend {
+      background: rgba(107, 155, 107, 0.4);
+    }
+
+    /* Friends Page */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .tab {
+      padding: 10px 18px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--c-content);
+      cursor: pointer;
+      transition: all 200ms ease;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .tab:hover { background: rgba(255, 255, 255, 0.5); }
+
+    .tab.active {
+      background: rgba(212, 165, 116, 0.4);
+    }
+
+    .tab-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: var(--c-error);
+      border-radius: 99px;
+      font-size: 0.7rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .friend-requests {
+      margin-bottom: 24px;
+    }
+
+    .request-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      margin-bottom: 10px;
+    }
+
+    .request-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .btn-accept, .btn-reject {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 200ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-accept {
+      background: rgba(107, 155, 107, 0.4);
+      color: var(--c-content);
+    }
+
+    .btn-accept:hover { background: rgba(107, 155, 107, 0.6); }
+
+    .btn-reject {
+      background: rgba(201, 112, 112, 0.3);
+      color: var(--c-content);
+    }
+
+    .btn-reject:hover { background: rgba(201, 112, 112, 0.5); }
+
+    /* Chat */
+    .chat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .chat-item:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .chat-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-item-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .chat-item-preview {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-item-meta {
+      text-align: right;
+    }
+
+    .chat-item-time {
+      font-size: 0.75rem;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+
+    .chat-unread {
+      width: 20px;
+      height: 20px;
+      background: var(--c-action);
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+    }
+
+    /* Chat View */
+    .chat-view {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #f5e6d3 0%, #f0dcc4 50%, #f8ead8 100%);
+      z-index: 200;
+      flex-direction: column;
+    }
+
+    .chat-view.active {
+      display: flex;
+      animation: slideIn 300ms ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(232, 212, 184, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .chat-back {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.4);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--c-content);
+      transition: background 200ms ease;
+    }
+
+    .chat-back:hover { background: rgba(255, 255, 255, 0.6); }
+
+    .chat-header-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+      object-fit: cover;
+    }
+
+    .chat-header-info h4 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .chat-header-status {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      position: relative;
+    }
+
+    .message.sent {
+      align-self: flex-end;
+      background: rgba(212, 165, 116, 0.5);
+      border-bottom-right-radius: 6px;
+    }
+
+    .message.received {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.6);
+      border-bottom-left-radius: 6px;
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      opacity: 0.6;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      background: rgba(232, 212, 184, 0.6);
+      backdrop-filter: blur(12px);
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 99px;
+      border: 1px solid rgba(212, 165, 116, 0.3);
+      background: rgba(255, 255, 255, 0.6);
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--c-content);
+      transition: all 200ms ease;
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: var(--c-action);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .chat-send {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(212, 165, 116, 0.5);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--c-content);
+      transition: all 200ms ease;
+    }
+
+    .chat-send:hover {
+      background: rgba(212, 165, 116, 0.7);
+      transform: scale(1.05);
+    }
+
+    /* Profile Page */
+    .profile-header {
+      text-align: center;
+      padding: 24px;
+      border-radius: 20px;
+      background: rgba(232, 212, 184, 0.5);
+      backdrop-filter: blur(12px);
+      margin-bottom: 24px;
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--c-action);
+      object-fit: cover;
+      margin-bottom: 16px;
+    }
+
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .profile-username {
+      font-size: 1rem;
+      color: var(--c-action);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .profile-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 16px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .profile-section {
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      margin-bottom: 16px;
+    }
+
+    .profile-section h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .profile-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(212, 165, 116, 0.2);
+    }
+
+    .profile-info-row:last-child { border-bottom: none; }
+
+    .profile-info-label {
+      opacity: 0.7;
+    }
+
+    .profile-info-value {
+      font-weight: 600;
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(201, 112, 112, 0.3);
+      border: none;
+      color: var(--c-content);
+      font-weight: 600;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 200ms ease;
+      margin-top: 20px;
+    }
+
+    .logout-btn:hover {
+      background: rgba(201, 112, 112, 0.5);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      opacity: 0.7;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state p {
+      font-size: 0.95rem;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(212, 165, 116, 0.3);
+      border-top-color: var(--c-action);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 12px 24px;
+      border-radius: 12px;
+      background: rgba(61, 47, 31, 0.9);
+      color: white;
+      font-weight: 500;
+      z-index: 1000;
+      opacity: 0;
+      transition: all 300ms ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .glass-content { padding: 28px 20px; }
+      .page { padding: 80px 12px 20px; }
+      .quick-links { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .quick-link { padding: 16px; }
+      .quick-link i { font-size: 24px; }
+      .message { max-width: 85%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div class="login-screen" id="loginScreen">
+    <div class="glass-form">
+      <div class="glass-filter"></div>
+      <div class="glass-overlay"></div>
+      <div class="glass-content">
+        <!-- Google Login -->
+        <div id="googleLogin">
+          <h3>Hos Geldin</h3>
+          <p class="subtitle">Sosyal platformumuza katil ve yeni insanlarla tanisarak baglanti kur</p>
+          <button class="google-btn" onclick="signInWithGoogle()">
+            <svg viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google ile Giris Yap
+          </button>
+        </div>
+
+        <!-- Setup Form -->
+        <div class="setup-form" id="setupForm">
+          <h3>Profilini Olustur</h3>
+          <p class="subtitle">Hesabini tamamlamak icin bilgilerini gir</p>
+          
+          <div class="form-group">
+            <label>Isim Soyisim</label>
+            <input type="text" id="displayName" placeholder="Adin Soyadin">
+          </div>
+          
+          <div class="form-group">
+            <label>Kullanici Adi</label>
+            <span class="username-prefix">@</span>
+            <input type="text" id="username" class="with-prefix" placeholder="kullaniciadi" maxlength="20">
+            <p class="form-hint">Sadece harf, rakam ve alt cizgi kullanilabilir</p>
+            <p class="form-error" id="usernameError"></p>
+          </div>
+          
+          <div class="form-group">
+            <label>Dogum Tarihi</label>
+            <input type="date" id="birthDate">
+          </div>
+          
+          <button class="submit-btn" id="completeSetup" onclick="completeProfile()">Profili Tamamla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div class="app-container" id="appContainer">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <span class="header-logo">SocialHub</span>
+        <div class="header-user" onclick="navigateTo('profile')">
+          <img class="header-avatar" id="headerAvatar" src="https://ui-avatars.com/api/?name=U&background=d4a574&color=3d2f1f" alt="Avatar">
+          <span class="header-name" id="headerName">Kullanici</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Pages -->
+    <main>
+      <!-- Home Page -->
+      <div class="page active" id="homePage">
+        <div class="welcome-card">
+          <p class="welcome-greeting" id="welcomeGreeting">Merhaba!</p>
+          <p class="welcome-text">Bugun yeni insanlarla tanisabilir, arkadaslarinla sohbet edebilirsin.</p>
+        </div>
+
+        <h3 class="section-title"><i class="fas fa-compass"></i> Hizli Erisim</h3>
+        <div class="quick-links">
+          <div class="quick-link" onclick="navigateTo('search')">
+            <i class="fas fa-search"></i>
+            <span>Kullanici Ara</span>
+          </div>
+          <div class="quick-link" onclick="navigateTo('friends')">
+            <i class="fas fa-user-friends"></i>
+            <span>Arkadaslar</span>
+          </div>
+          <div class="quick-link" onclick="navigateTo('chat')">
+            <i class="fas fa-comments"></i>
+            <span>Mesajlar</span>
+          </div>
+          <div class="quick-link" onclick="navigateTo('profile')">
+            <i class="fas fa-user"></i>
+            <span>Profil</span>
+          </div>
+        </div>
+
+        <h3 class="section-title"><i class="fas fa-rocket"></i> Yaklasanlar</h3>
+        <div class="quick-links">
+          <div class="quick-link">
+            <i class="fas fa-gamepad"></i>
+            <span>Oyunlar</span>
+          </div>
+          <div class="quick-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Etkinlikler</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Page -->
+      <div class="page" id="searchPage">
+        <h2 class="page-title">Kullanici Ara</h2>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Isim veya kullanici adi ara..." oninput="searchUsers()">
+        </div>
+        <div class="user-list" id="searchResults">
+          <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>Yeni insanlarla tanismak icin aramaya basla</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Friends Page -->
+      <div class="page" id="friendsPage">
+        <h2 class="page-title">Arkadaslar</h2>
+        <div class="tabs">
+          <button class="tab active" onclick="switchFriendsTab('friends')">Arkadaslar</button>
+          <button class="tab" onclick="switchFriendsTab('requests')">Istekler <span class="tab-badge" id="requestsBadge" style="display:none;">0</span></button>
+          <button class="tab" onclick="switchFriendsTab('sent')">Gonderilenler</button>
+        </div>
+        <div id="friendsContent">
+          <div class="user-list" id="friendsList"></div>
+        </div>
+      </div>
+
+      <!-- Chat Page -->
+      <div class="page" id="chatPage">
+        <h2 class="page-title">Mesajlar</h2>
+        <div class="chat-list" id="chatList">
+          <div class="empty-state">
+            <i class="fas fa-comment-dots"></i>
+            <p>Henuz bir sohbetin yok. Arkadaslarinla mesajlasmaya basla!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Page -->
+      <div class="page" id="profilePage">
+        <div class="profile-header">
+          <img class="profile-avatar" id="profileAvatar" src="https://ui-avatars.com/api/?name=U&background=d4a574&color=3d2f1f&size=200" alt="Avatar">
+          <h2 class="profile-name" id="profileName">Kullanici</h2>
+          <p class="profile-username" id="profileUsername">@kullanici</p>
+          <div class="profile-stats">
+            <div class="stat">
+              <div class="stat-value" id="friendCount">0</div>
+              <div class="stat-label">Arkadas</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-section">
+          <h4>Bilgiler</h4>
+          <div class="profile-info-row">
+            <span class="profile-info-label">E-posta</span>
+            <span class="profile-info-value" id="profileEmail">-</span>
+          </div>
+          <div class="profile-info-row">
+            <span class="profile-info-label">Dogum Tarihi</span>
+            <span class="profile-info-value" id="profileBirthDate">-</span>
+          </div>
+          <div class="profile-info-row">
+            <span class="profile-info-label">Katilim Tarihi</span>
+            <span class="profile-info-value" id="profileJoinDate">-</span>
+          </div>
+        </div>
+
+        <button class="logout-btn" onclick="signOut()">
+          <i class="fas fa-sign-out-alt"></i> Cikis Yap
+        </button>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="nav-inner">
+        <div class="nav-item active" onclick="navigateTo('home')" data-page="home">
+          <i class="fas fa-home"></i>
+        </div>
+        <div class="nav-item" onclick="navigateTo('search')" data-page="search">
+          <i class="fas fa-search"></i>
+        </div>
+        <div class="nav-item" onclick="navigateTo('friends')" data-page="friends">
+          <i class="fas fa-user-friends"></i>
+          <span class="nav-badge" id="friendsNavBadge"></span>
+        </div>
+        <div class="nav-item" onclick="navigateTo('chat')" data-page="chat">
+          <i class="fas fa-comments"></i>
+          <span class="nav-badge" id="chatNavBadge"></span>
+        </div>
+        <div class="nav-item" onclick="navigateTo('profile')" data-page="profile">
+          <i class="fas fa-user"></i>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Chat View -->
+  <div class="chat-view" id="chatView">
+    <div class="chat-header">
+      <button class="chat-back" onclick="closeChatView()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <img class="chat-header-avatar" id="chatViewAvatar" src="https://ui-avatars.com/api/?name=U&background=d4a574&color=3d2f1f" alt="Avatar">
+      <div class="chat-header-info">
+        <h4 id="chatViewName">Kullanici</h4>
+        <p class="chat-header-status" id="chatViewStatus">Cevrimdisi</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="messageInput" placeholder="Mesaj yaz..." onkeypress="handleMessageKeypress(event)">
+      <button class="chat-send" onclick="sendMessage()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithPopup, 
+      GoogleAuthProvider, 
+      onAuthStateChanged,
+      signOut as firebaseSignOut 
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      get, 
+      push, 
+      onValue, 
+      off,
+      query, 
+      orderByChild, 
+      equalTo,
+      update,
+      serverTimestamp,
+      limitToLast
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "maps-52b00",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentUser = null;
+    let currentUserData = null;
+    let currentChatUserId = null;
+    let chatListener = null;
+    let friendsListener = null;
+    let requestsListener = null;
+
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+        
+        if (snapshot.exists() && snapshot.val().username) {
+          currentUserData = snapshot.val();
+          showApp();
+          updateUserOnlineStatus(true);
+          loadFriendRequests();
+          loadChats();
+        } else {
+          showSetupForm(user);
+        }
+      } else {
+        currentUser = null;
+        currentUserData = null;
+        showLogin();
+      }
+    });
+
+    // Sign In with Google
+    window.signInWithGoogle = async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Login error:", error);
+        showToast("Giris yapilamadi. Tekrar deneyin.");
+      }
+    };
+
+    // Sign Out
+    window.signOut = async () => {
+      try {
+        await updateUserOnlineStatus(false);
+        await firebaseSignOut(auth);
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    };
+
+    // Show Setup Form
+    function showSetupForm(user) {
+      document.getElementById('googleLogin').style.display = 'none';
+      document.getElementById('setupForm').classList.add('active');
+      document.getElementById('displayName').value = user.displayName || '';
+    }
+
+    // Complete Profile
+    window.completeProfile = async () => {
+      const displayName = document.getElementById('displayName').value.trim();
+      const username = document.getElementById('username').value.trim().toLowerCase();
+      const birthDate = document.getElementById('birthDate').value;
+      const errorEl = document.getElementById('usernameError');
+
+      if (!displayName || !username || !birthDate) {
+        showToast("Lutfen tum alanlari doldurun");
+        return;
+      }
+
+      if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+        errorEl.textContent = "Kullanici adi 3-20 karakter, sadece harf, rakam ve _ icermeli";
+        errorEl.classList.add('show');
+        return;
+      }
+
+      // Check username uniqueness
+      const usernameRef = ref(db, 'usernames/' + username);
+      const usernameSnapshot = await get(usernameRef);
+      
+      if (usernameSnapshot.exists()) {
+        errorEl.textContent = "Bu kullanici adi zaten alinmis";
+        errorEl.classList.add('show');
+        return;
+      }
+
+      errorEl.classList.remove('show');
+
+      try {
+        const btn = document.getElementById('completeSetup');
+        btn.disabled = true;
+        btn.textContent = "Kaydediliyor...";
+
+        // Save username reservation
+        await set(usernameRef, currentUser.uid);
+
+        // Save user data
+        const userData = {
+          uid: currentUser.uid,
+          displayName: displayName,
+          username: username,
+          email: currentUser.email,
+          photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=d4a574&color=3d2f1f&size=200`,
+          birthDate: birthDate,
+          createdAt: Date.now(),
+          online: true,
+          lastSeen: Date.now()
+        };
+
+        await set(ref(db, `users/${currentUser.uid}`), userData);
+        currentUserData = userData;
+        showApp();
+        showToast("Profil olusturuldu!");
+      } catch (error) {
+        console.error("Profile save error:", error);
+        showToast("Bir hata olustu");
+        document.getElementById('completeSetup').disabled = false;
+        document.getElementById('completeSetup').textContent = "Profili Tamamla";
+      }
+    };
+
+    // Update Online Status
+    async function updateUserOnlineStatus(online) {
+      if (!currentUser) return;
+      try {
+        await update(ref(db, `users/${currentUser.uid}`), {
+          online: online,
+          lastSeen: Date.now()
+        });
+      } catch (e) {}
+    }
+
+    // Show Login
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('appContainer').classList.remove('active');
+      document.getElementById('googleLogin').style.display = 'block';
+      document.getElementById('setupForm').classList.remove('active');
+    }
+
+    // Show App
+    function showApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.add('active');
+      updateUI();
+    }
+
+    // Update UI
+    function updateUI() {
+      if (!currentUserData) return;
+      
+      document.getElementById('headerAvatar').src = currentUserData.photoURL;
+      document.getElementById('headerName').textContent = currentUserData.displayName.split(' ')[0];
+      document.getElementById('welcomeGreeting').textContent = `Merhaba, ${currentUserData.displayName.split(' ')[0]}!`;
+      document.getElementById('profileAvatar').src = currentUserData.photoURL;
+      document.getElementById('profileName').textContent = currentUserData.displayName;
+      document.getElementById('profileUsername').textContent = `@${currentUserData.username}`;
+      document.getElementById('profileEmail').textContent = currentUserData.email;
+      document.getElementById('profileBirthDate').textContent = formatDate(currentUserData.birthDate);
+      document.getElementById('profileJoinDate').textContent = formatDate(new Date(currentUserData.createdAt).toISOString().split('T')[0]);
+      
+      loadFriendCount();
+    }
+
+    // Format Date
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    // Navigation
+    window.navigateTo = (page) => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      document.getElementById(page + 'Page').classList.add('active');
+      document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+
+      if (page === 'friends') {
+        switchFriendsTab('friends');
+      }
+    };
+
+    // Search Users
+    window.searchUsers = async () => {
+      const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+      const resultsEl = document.getElementById('searchResults');
+
+      if (searchTerm.length < 2) {
+        resultsEl.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>Yeni insanlarla tanismak icin aramaya basla</p>
+          </div>
+        `;
+        return;
+      }
+
+      resultsEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      try {
+        const usersRef = ref(db, 'users');
+        const snapshot = await get(usersRef);
+        
+        if (!snapshot.exists()) {
+          resultsEl.innerHTML = '<div class="empty-state"><p>Kullanici bulunamadi</p></div>';
+          return;
+        }
+
+        const users = [];
+        snapshot.forEach((child) => {
+          const user = child.val();
+          if (user.uid !== currentUser.uid) {
+            if (user.displayName.toLowerCase().includes(searchTerm) || 
+                user.username.toLowerCase().includes(searchTerm)) {
+              users.push(user);
+            }
+          }
+        });
+
+        if (users.length === 0) {
+          resultsEl.innerHTML = '<div class="empty-state"><p>Kullanici bulunamadi</p></div>';
+          return;
+        }
+
+        // Get friendship status for each user
+        let html = '';
+        for (const user of users) {
+          const status = await getFriendshipStatus(user.uid);
+          html += createUserCard(user, status);
+        }
+        resultsEl.innerHTML = html;
+      } catch (error) {
+        console.error("Search error:", error);
+        resultsEl.innerHTML = '<div class="empty-state"><p>Arama sirasinda hata olustu</p></div>';
+      }
+    };
+
+    // Get Friendship Status
+    async function getFriendshipStatus(userId) {
+      const friendRef = ref(db, `friends/${currentUser.uid}/${userId}`);
+      const friendSnapshot = await get(friendRef);
+      if (friendSnapshot.exists()) return 'friend';
+
+      const sentRef = ref(db, `friendRequests/${userId}/${currentUser.uid}`);
+      const sentSnapshot = await get(sentRef);
+      if (sentSnapshot.exists()) return 'pending';
+
+      const receivedRef = ref(db, `friendRequests/${currentUser.uid}/${userId}`);
+      const receivedSnapshot = await get(receivedRef);
+      if (receivedSnapshot.exists()) return 'received';
+
+      return 'none';
+    }
+
+    // Create User Card
+    function createUserCard(user, status) {
+      let actionBtn = '';
+      switch(status) {
+        case 'friend':
+          actionBtn = `<button class="user-card-action friend" onclick="openChat('${user.uid}')">Mesaj</button>`;
+          break;
+        case 'pending':
+          actionBtn = `<button class="user-card-action pending" disabled>Bekleniyor</button>`;
+          break;
+        case 'received':
+          actionBtn = `<button class="user-card-action" onclick="acceptFriendRequest('${user.uid}')">Kabul Et</button>`;
+          break;
+        default:
+          actionBtn = `<button class="user-card-action" onclick="sendFriendRequest('${user.uid}')">Arkadas Ekle</button>`;
+      }
+
+      return `
+        <div class="user-card">
+          <div class="avatar-wrapper">
+            <img class="user-card-avatar" src="${user.photoURL}" alt="${user.displayName}">
+            ${user.online ? '<span class="online-dot"></span>' : ''}
+          </div>
+          <div class="user-card-info">
+            <div class="user-card-name">${user.displayName}</div>
+            <div class="user-card-username">@${user.username}</div>
+          </div>
+          ${actionBtn}
+        </div>
+      `;
+    }
+
+    // Send Friend Request
+    window.sendFriendRequest = async (userId) => {
+      try {
+        await set(ref(db, `friendRequests/${userId}/${currentUser.uid}`), {
+          from: currentUser.uid,
+          timestamp: Date.now()
+        });
+        showToast("Arkadas istegi gonderildi");
+        searchUsers();
+      } catch (error) {
+        console.error("Friend request error:", error);
+        showToast("Istek gonderilemedi");
+      }
+    };
+
+    // Accept Friend Request
+    window.acceptFriendRequest = async (userId) => {
+      try {
+        // Add to friends (both ways)
+        await set(ref(db, `friends/${currentUser.uid}/${userId}`), {
+          timestamp: Date.now()
+        });
+        await set(ref(db, `friends/${userId}/${currentUser.uid}`), {
+          timestamp: Date.now()
+        });
+        
+        // Remove request
+        await set(ref(db, `friendRequests/${currentUser.uid}/${userId}`), null);
+        
+        showToast("Arkadas istegi kabul edildi");
+        loadFriendRequests();
+        searchUsers();
+      } catch (error) {
+        console.error("Accept error:", error);
+        showToast("Istek kabul edilemedi");
+      }
+    };
+
+    // Reject Friend Request
+    window.rejectFriendRequest = async (userId) => {
+      try {
+        await set(ref(db, `friendRequests/${currentUser.uid}/${userId}`), null);
+        showToast("Istek reddedildi");
+        loadFriendRequests();
+      } catch (error) {
+        console.error("Reject error:", error);
+      }
+    };
+
+    // Load Friend Requests
+    function loadFriendRequests() {
+      const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
+      onValue(requestsRef, async (snapshot) => {
+        const badge = document.getElementById('requestsBadge');
+        const navBadge = document.getElementById('friendsNavBadge');
+        
+        if (snapshot.exists()) {
+          const count = Object.keys(snapshot.val()).length;
+          badge.textContent = count;
+          badge.style.display = count > 0 ? 'flex' : 'none';
+          navBadge.classList.toggle('show', count > 0);
+        } else {
+          badge.style.display = 'none';
+          navBadge.classList.remove('show');
+        }
+      });
+    }
+
+    // Switch Friends Tab
+    window.switchFriendsTab = async (tab) => {
+      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const contentEl = document.getElementById('friendsContent');
+      contentEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      if (tab === 'friends') {
+        await loadFriendsList();
+      } else if (tab === 'requests') {
+        await loadRequestsList();
+      } else if (tab === 'sent') {
+        await loadSentRequests();
+      }
+    };
+
+    // Load Friends List
+    async function loadFriendsList() {
+      const contentEl = document.getElementById('friendsContent');
+      const friendsRef = ref(db, `friends/${currentUser.uid}`);
+      const snapshot = await get(friendsRef);
+
+      if (!snapshot.exists()) {
+        contentEl.innerHTML = '<div class="empty-state"><i class="fas fa-user-friends"></i><p>Henuz arkadasin yok</p></div>';
+        return;
+      }
+
+      let html = '<div class="user-list">';
+      for (const [friendId, data] of Object.entries(snapshot.val())) {
+        const userSnapshot = await get(ref(db, `users/${friendId}`));
+        if (userSnapshot.exists()) {
+          const user = userSnapshot.val();
+          html += `
+            <div class="user-card" onclick="openChat('${user.uid}')">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${user.photoURL}" alt="${user.displayName}">
+                ${user.online ? '<span class="online-dot"></span>' : ''}
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${user.displayName}</div>
+                <div class="user-card-username">@${user.username}</div>
+              </div>
+              <button class="user-card-action friend">Mesaj</button>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+      contentEl.innerHTML = html;
+    }
+
+    // Load Requests List
+    async function loadRequestsList() {
+      const contentEl = document.getElementById('friendsContent');
+      const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
+      const snapshot = await get(requestsRef);
+
+      if (!snapshot.exists()) {
+        contentEl.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Arkadas istegi yok</p></div>';
+        return;
+      }
+
+      let html = '<div class="friend-requests">';
+      for (const [fromId, data] of Object.entries(snapshot.val())) {
+        const userSnapshot = await get(ref(db, `users/${fromId}`));
+        if (userSnapshot.exists()) {
+          const user = userSnapshot.val();
+          html += `
+            <div class="request-card">
+              <img class="user-card-avatar" src="${user.photoURL}" alt="${user.displayName}">
+              <div class="user-card-info">
+                <div class="user-card-name">${user.displayName}</div>
+                <div class="user-card-username">@${user.username}</div>
+              </div>
+              <div class="request-actions">
+                <button class="btn-accept" onclick="acceptFriendRequest('${user.uid}')">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="btn-reject" onclick="rejectFriendRequest('${user.uid}')">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+      contentEl.innerHTML = html;
+    }
+
+    // Load Sent Requests
+    async function loadSentRequests() {
+      const contentEl = document.getElementById('friendsContent');
+      const usersRef = ref(db, 'users');
+      const usersSnapshot = await get(usersRef);
+      
+      if (!usersSnapshot.exists()) {
+        contentEl.innerHTML = '<div class="empty-state"><p>Gonderilen istek yok</p></div>';
+        return;
+      }
+
+      let html = '<div class="user-list">';
+      let found = false;
+
+      for (const [userId, userData] of Object.entries(usersSnapshot.val())) {
+        if (userId === currentUser.uid) continue;
+        
+        const requestRef = ref(db, `friendRequests/${userId}/${currentUser.uid}`);
+        const requestSnapshot = await get(requestRef);
+        
+        if (requestSnapshot.exists()) {
+          found = true;
+          html += `
+            <div class="user-card">
+              <img class="user-card-avatar" src="${userData.photoURL}" alt="${userData.displayName}">
+              <div class="user-card-info">
+                <div class="user-card-name">${userData.displayName}</div>
+                <div class="user-card-username">@${userData.username}</div>
+              </div>
+              <button class="user-card-action pending" disabled>Bekleniyor</button>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+
+      if (!found) {
+        contentEl.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>Gonderilen istek yok</p></div>';
+      } else {
+        contentEl.innerHTML = html;
+      }
+    }
+
+    // Load Friend Count
+    async function loadFriendCount() {
+      const friendsRef = ref(db, `friends/${currentUser.uid}`);
+      const snapshot = await get(friendsRef);
+      const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+      document.getElementById('friendCount').textContent = count;
+    }
+
+    // Load Chats
+    function loadChats() {
+      const chatsRef = ref(db, `userChats/${currentUser.uid}`);
+      onValue(chatsRef, async (snapshot) => {
+        const chatListEl = document.getElementById('chatList');
+        
+        if (!snapshot.exists()) {
+          chatListEl.innerHTML = '<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Henuz bir sohbetin yok</p></div>';
+          return;
+        }
+
+        const chats = snapshot.val();
+        let html = '';
+        let totalUnread = 0;
+
+        for (const [chatId, chatData] of Object.entries(chats)) {
+          const otherUserId = chatId.split('_').find(id => id !== currentUser.uid);
+          const userSnapshot = await get(ref(db, `users/${otherUserId}`));
+          
+          if (userSnapshot.exists()) {
+            const user = userSnapshot.val();
+            const unread = chatData.unread || 0;
+            totalUnread += unread;
+            
+            html += `
+              <div class="chat-item" onclick="openChat('${otherUserId}')">
+                <div class="avatar-wrapper">
+                  <img class="user-card-avatar" src="${user.photoURL}" alt="${user.displayName}">
+                  ${user.online ? '<span class="online-dot"></span>' : ''}
+                </div>
+                <div class="chat-item-info">
+                  <div class="chat-item-name">${user.displayName}</div>
+                  <div class="chat-item-preview">${chatData.lastMessage || ''}</div>
+                </div>
+                <div class="chat-item-meta">
+                  <div class="chat-item-time">${chatData.lastTime ? formatTime(chatData.lastTime) : ''}</div>
+                  ${unread > 0 ? `<div class="chat-unread">${unread}</div>` : ''}
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        chatListEl.innerHTML = html || '<div class="empty-state"><p>Henuz bir sohbetin yok</p></div>';
+        
+        const chatNavBadge = document.getElementById('chatNavBadge');
+        chatNavBadge.classList.toggle('show', totalUnread > 0);
+      });
+    }
+
+    // Format Time
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      
+      if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      }
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    }
+
+    // Open Chat
+    window.openChat = async (userId) => {
+      currentChatUserId = userId;
+      
+      const userSnapshot = await get(ref(db, `users/${userId}`));
+      if (!userSnapshot.exists()) return;
+      
+      const user = userSnapshot.val();
+      document.getElementById('chatViewAvatar').src = user.photoURL;
+      document.getElementById('chatViewName').textContent = user.displayName;
+      document.getElementById('chatViewStatus').textContent = user.online ? 'Cevrimici' : 'Cevrimdisi';
+      
+      document.getElementById('chatView').classList.add('active');
+      
+      // Generate chat ID
+      const chatId = [currentUser.uid, userId].sort().join('_');
+      
+      // Clear unread
+      await update(ref(db, `userChats/${currentUser.uid}/${chatId}`), { unread: 0 });
+      
+      // Load messages
+      loadMessages(chatId);
+    };
+
+    // Close Chat View
+    window.closeChatView = () => {
+      document.getElementById('chatView').classList.remove('active');
+      if (chatListener) {
+        off(ref(db, `messages/${[currentUser.uid, currentChatUserId].sort().join('_')}`));
+        chatListener = null;
+      }
+      currentChatUserId = null;
+    };
+
+    // Load Messages
+    function loadMessages(chatId) {
+      const messagesRef = query(ref(db, `messages/${chatId}`), limitToLast(100));
+      
+      if (chatListener) {
+        off(ref(db, `messages/${chatId}`));
+      }
+      
+      chatListener = onValue(messagesRef, (snapshot) => {
+        const messagesEl = document.getElementById('chatMessages');
+        
+        if (!snapshot.exists()) {
+          messagesEl.innerHTML = '<div class="empty-state"><p>Henuz mesaj yok. Ilk mesaji sen gonder!</p></div>';
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach((child) => {
+          const msg = child.val();
+          const isSent = msg.senderId === currentUser.uid;
+          html += `
+            <div class="message ${isSent ? 'sent' : 'received'}">
+              ${msg.text}
+              <div class="message-time">${formatTime(msg.timestamp)}</div>
+            </div>
+          `;
+        });
+
+        messagesEl.innerHTML = html;
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      });
+    }
+
+    // Send Message
+    window.sendMessage = async () => {
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      
+      if (!text || !currentChatUserId) return;
+      
+      input.value = '';
+      
+      const chatId = [currentUser.uid, currentChatUserId].sort().join('_');
+      const messagesRef = ref(db, `messages/${chatId}`);
+      
+      try {
+        await push(messagesRef, {
+          text: text,
+          senderId: currentUser.uid,
+          timestamp: Date.now()
+        });
+
+        // Update chat metadata for both users
+        await update(ref(db, `userChats/${currentUser.uid}/${chatId}`), {
+          lastMessage: text,
+          lastTime: Date.now(),
+          unread: 0
+        });
+
+        // Get current unread count for other user
+        const otherUserChatRef = ref(db, `userChats/${currentChatUserId}/${chatId}`);
+        const otherChatSnapshot = await get(otherUserChatRef);
+        const currentUnread = otherChatSnapshot.exists() ? (otherChatSnapshot.val().unread || 0) : 0;
+
+        await update(otherUserChatRef, {
+          lastMessage: text,
+          lastTime: Date.now(),
+          unread: currentUnread + 1
+        });
+      } catch (error) {
+        console.error("Send message error:", error);
+        showToast("Mesaj gonderilemedi");
+      }
+    };
+
+    // Handle Message Keypress
+    window.handleMessageKeypress = (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    };
+
+    // Show Toast
+    window.showToast = (message) => {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    };
+
+    // Handle visibility change for online status
+    document.addEventListener('visibilitychange', () => {
+      if (currentUser) {
+        updateUserOnlineStatus(!document.hidden);
+      }
+    });
+
+    // Handle before unload
+    window.addEventListener('beforeunload', () => {
+      if (currentUser) {
+        updateUserOnlineStatus(false);
+      }
+    });
+  </script>
+</body>
+</html>
