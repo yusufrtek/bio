@@ -1111,10 +1111,48 @@
     let currentAdmin = null;
     let allUsers = [];
 
+    // Hardcoded admin emails and UIDs for direct access
+    const ADMIN_EMAILS = [
+      'm.yusufertek@gmail.com'
+    ];
+    const ADMIN_UIDS = [
+      'lt2xdi66anYLjkqlhFzYZ4vyULx2'
+    ];
+
     // Auth State
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Check if user is admin
+        // First check hardcoded admins (email or UID)
+        const isHardcodedAdmin = ADMIN_EMAILS.includes(user.email) || ADMIN_UIDS.includes(user.uid);
+        
+        if (isHardcodedAdmin) {
+          // If hardcoded admin, also add to Firebase admins if not exists
+          const adminsRef = ref(db, 'admins');
+          const snapshot = await get(adminsRef);
+          
+          if (!snapshot.exists()) {
+            // Create admins node if it doesn't exist
+            await set(ref(db, 'admins/admin1'), user.uid);
+          } else {
+            const admins = snapshot.val();
+            const isInFirebase = Object.values(admins).includes(user.uid);
+            if (!isInFirebase) {
+              // Add this admin to Firebase
+              const newAdminKey = 'admin' + (Object.keys(admins).length + 1);
+              await set(ref(db, `admins/${newAdminKey}`), user.uid);
+            }
+          }
+          
+          currentAdmin = user;
+          showAdminPanel();
+          loadDashboardData();
+          loadUsers();
+          loadGames();
+          loadEvents();
+          return;
+        }
+        
+        // Check Firebase admins database
         const adminsRef = ref(db, 'admins');
         const snapshot = await get(adminsRef);
         
