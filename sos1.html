@@ -1,0 +1,3710 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LENG - Sosyal Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    :root {
+      --c-bg: #f5f5f5;
+      --c-content: #1a1a1a;
+      --c-action: #3b82f6;
+      --c-glass: #ffffff;
+      --c-light: #ffffff;
+      --c-dark: #1a1a1a;
+      --c-success: #22c55e;
+      --c-error: #ef4444;
+      --c-online: #22c55e;
+      --c-verified: #1da1f2;
+      --c-border: #e5e7eb;
+      --c-muted: #6b7280;
+    }
+
+    body {
+      font-family: "DM Sans", sans-serif;
+      background: var(--c-bg);
+      color: var(--c-content);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* Theme: Dark */
+    body.theme-dark {
+      --c-bg: #0f0f0f;
+      --c-content: #f5f5f5;
+      --c-action: #3b82f6;
+      --c-glass: #1a1a1a;
+      --c-light: #1a1a1a;
+      --c-dark: #f5f5f5;
+      --c-border: #2a2a2a;
+      --c-muted: #a1a1aa;
+    }
+
+    /* Theme: Midnight */
+    body.theme-midnight {
+      --c-bg: #0c1222;
+      --c-content: #e2e8f0;
+      --c-action: #6366f1;
+      --c-glass: #1e293b;
+      --c-light: #1e293b;
+      --c-dark: #f1f5f9;
+      --c-border: #334155;
+      --c-muted: #94a3b8;
+    }
+
+    /* Theme: Forest */
+    body.theme-forest {
+      --c-bg: #f0fdf4;
+      --c-content: #14532d;
+      --c-action: #16a34a;
+      --c-glass: #ffffff;
+      --c-light: #ffffff;
+      --c-dark: #14532d;
+      --c-border: #bbf7d0;
+      --c-muted: #4ade80;
+    }
+
+    /* Theme: Sunset */
+    body.theme-sunset {
+      --c-bg: #1c1917;
+      --c-content: #fef3c7;
+      --c-action: #f59e0b;
+      --c-glass: #292524;
+      --c-light: #292524;
+      --c-dark: #fef3c7;
+      --c-border: #44403c;
+      --c-muted: #d6d3d1;
+    }
+
+    /* Login Screen */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 500ms ease, visibility 500ms ease;
+      background: var(--c-bg);
+    }
+
+    .login-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .glass-form {
+      position: relative;
+      width: 420px;
+      max-width: 92%;
+      border-radius: 24px;
+      overflow: hidden;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      animation: fadeInUp 600ms ease;
+      z-index: 10;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .glass-content {
+      position: relative;
+      z-index: 4;
+      padding: 40px;
+    }
+
+    .glass-content h3 {
+      margin: 0 0 12px;
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .glass-content .subtitle {
+      text-align: center;
+      font-size: 0.95rem;
+      opacity: 0.7;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .brand-logo {
+      font-size: 2.5rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 8px;
+      color: var(--c-action);
+      letter-spacing: 4px;
+    }
+
+    .google-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background: var(--c-light);
+      border: 1px solid var(--c-border);
+      border-radius: 12px;
+      color: var(--c-content);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 250ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .google-btn:hover {
+      background: var(--c-action);
+      color: white;
+      border-color: var(--c-action);
+      transform: translateY(-2px);
+    }
+
+    .google-btn:active { transform: translateY(0); }
+    .google-btn svg { width: 20px; height: 20px; }
+
+    /* Setup Form */
+    .setup-form { display: none; }
+    .setup-form.active { display: block; animation: fadeInUp 400ms ease; }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      border-radius: 12px;
+      color: var(--c-content);
+      font-size: 16px;
+      font-family: inherit;
+      transition: all 250ms ease;
+    }
+
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--c-action);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-group input::placeholder { color: var(--c-muted); }
+
+    .username-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .username-prefix {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--c-action);
+      font-weight: 600;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .form-group input.with-prefix { padding-left: 32px; }
+
+    .form-hint {
+      font-size: 0.8rem;
+      opacity: 0.6;
+      margin-top: 4px;
+    }
+
+    .form-error {
+      font-size: 0.8rem;
+      color: var(--c-error);
+      margin-top: 4px;
+      display: none;
+    }
+
+    .form-error.show { display: block; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--c-action);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 250ms ease;
+      margin-top: 8px;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Main App */
+    .app-container {
+      display: none;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding-bottom: 100px;
+    }
+
+    .app-container.active { display: block; }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: center;
+      background: var(--c-bg);
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 600px;
+      justify-content: space-between;
+    }
+
+    .header-logo {
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: var(--c-action);
+      letter-spacing: 3px;
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 14px 6px 8px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .header-user:hover { background: var(--c-bg); }
+
+    .header-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+      object-fit: cover;
+    }
+
+    .header-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .verified-badge {
+      color: var(--c-verified);
+      font-size: 14px;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+    }
+
+    .nav-inner {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px;
+      border-radius: 99px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 48px;
+      border-radius: 99px;
+      color: var(--c-muted);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 200ms ease;
+      position: relative;
+    }
+
+    .nav-item:hover { color: var(--c-action); }
+
+    .nav-item.active {
+      background: var(--c-action);
+      color: white;
+    }
+
+    .nav-badge {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: var(--c-error);
+      border-radius: 50%;
+      display: none;
+    }
+
+    .nav-badge.show { display: block; }
+
+    /* Pages */
+    .page {
+      display: none;
+      padding: 90px 16px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      animation: pageIn 400ms ease;
+    }
+
+    .page.active { display: block; }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    /* Home Page - Welcome Section */
+    .welcome-section {
+      margin-bottom: 24px;
+    }
+
+    .welcome-greeting {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .welcome-text {
+      color: var(--c-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Events Carousel */
+    .carousel-section {
+      margin-bottom: 28px;
+    }
+
+    .carousel-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .carousel-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 500ms ease;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .carousel-slide img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 20px;
+    }
+
+    .carousel-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.8));
+      border-radius: 0 0 20px 20px;
+      color: white;
+    }
+
+    .carousel-overlay h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .carousel-overlay p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--c-border);
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .carousel-dot.active {
+      background: var(--c-action);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .quick-link {
+      padding: 20px;
+      border-radius: 16px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      cursor: pointer;
+      transition: all 250ms ease;
+      text-align: center;
+    }
+
+    .quick-link:hover {
+      border-color: var(--c-action);
+      transform: translateY(-2px);
+    }
+
+    .quick-link i {
+      font-size: 28px;
+      color: var(--c-action);
+      margin-bottom: 10px;
+    }
+
+    .quick-link span {
+      display: block;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    /* Search */
+    .search-box {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 16px 14px 48px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--c-content);
+      transition: all 250ms ease;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--c-muted);
+    }
+
+    /* User Cards */
+    .user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .user-card:hover {
+      border-color: var(--c-action);
+      transform: translateX(4px);
+    }
+
+    .user-card-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+      object-fit: cover;
+    }
+
+    .avatar-wrapper { position: relative; }
+
+    .online-dot {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      background: var(--c-online);
+      border: 2px solid var(--c-bg);
+      border-radius: 50%;
+    }
+
+    .user-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-card-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .user-card-username {
+      font-size: 0.85rem;
+      color: var(--c-muted);
+    }
+
+    .user-card-action {
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: var(--c-action);
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 200ms ease;
+      white-space: nowrap;
+    }
+
+    .user-card-action:hover { opacity: 0.9; }
+    .user-card-action.pending { background: var(--c-muted); }
+    .user-card-action.friend { background: var(--c-success); }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .tab {
+      padding: 10px 18px;
+      border-radius: 10px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      font-weight: 600;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--c-content);
+      cursor: pointer;
+      transition: all 200ms ease;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .tab:hover { border-color: var(--c-action); }
+
+    .tab.active {
+      background: var(--c-action);
+      color: white;
+      border-color: var(--c-action);
+    }
+
+    .tab-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: var(--c-error);
+      border-radius: 99px;
+      font-size: 0.7rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .request-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      margin-bottom: 10px;
+    }
+
+    .request-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .btn-accept, .btn-reject {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 200ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-accept {
+      background: var(--c-success);
+      color: white;
+    }
+
+    .btn-accept:hover { opacity: 0.9; }
+
+    .btn-reject {
+      background: var(--c-error);
+      color: white;
+    }
+
+    .btn-reject:hover { opacity: 0.9; }
+
+    /* Chat */
+    .chat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .chat-item:hover { border-color: var(--c-action); }
+
+    .chat-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-item-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-item-preview {
+      font-size: 0.85rem;
+      color: var(--c-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-item-meta { text-align: right; }
+
+    .chat-item-time {
+      font-size: 0.75rem;
+      color: var(--c-muted);
+      margin-bottom: 4px;
+    }
+
+    .chat-unread {
+      width: 20px;
+      height: 20px;
+      background: var(--c-action);
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      color: white;
+    }
+
+    /* Chat View */
+    .chat-view {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--c-bg);
+      z-index: 200;
+      flex-direction: column;
+    }
+
+    .chat-view.active {
+      display: flex;
+      animation: slideIn 300ms ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--c-glass);
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .chat-back {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--c-content);
+      transition: all 200ms ease;
+    }
+
+    .chat-back:hover { border-color: var(--c-action); }
+
+    .chat-header-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+      object-fit: cover;
+    }
+
+    .chat-header-info h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-header-status {
+      font-size: 0.8rem;
+      color: var(--c-muted);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      position: relative;
+    }
+
+    .message.sent {
+      align-self: flex-end;
+      background: var(--c-action);
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+
+    .message.received {
+      align-self: flex-start;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      border-bottom-left-radius: 6px;
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--c-glass);
+      border-top: 1px solid var(--c-border);
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 99px;
+      border: 1px solid var(--c-border);
+      background: var(--c-bg);
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--c-content);
+      transition: all 200ms ease;
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .chat-send {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--c-action);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+      transition: all 200ms ease;
+    }
+
+    .chat-send:hover { opacity: 0.9; transform: scale(1.05); }
+
+    /* Profile Page */
+    .profile-full-page {
+      padding-top: 20px;
+    }
+
+    .profile-header {
+      text-align: center;
+      padding: 24px;
+      border-radius: 20px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      margin-bottom: 24px;
+    }
+
+    .profile-avatar-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--c-action);
+      object-fit: cover;
+      margin-bottom: 16px;
+    }
+
+    .profile-verified {
+      position: absolute;
+      bottom: 12px;
+      right: -4px;
+      background: white;
+      border-radius: 50%;
+      padding: 2px;
+    }
+
+    .profile-verified i {
+      color: var(--c-verified);
+      font-size: 24px;
+    }
+
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .profile-username {
+      font-size: 1rem;
+      color: var(--c-action);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .profile-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 16px;
+    }
+
+    .stat { text-align: center; }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--c-muted);
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-content);
+      font-size: 18px;
+      text-decoration: none;
+      transition: all 200ms ease;
+    }
+
+    .social-link:hover { border-color: var(--c-action); transform: scale(1.1); }
+    .social-link.instagram { color: #E4405F; }
+    .social-link.tiktok { color: #000000; }
+    .social-link.twitter { color: #1DA1F2; }
+
+    .profile-section {
+      padding: 20px;
+      border-radius: 16px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      margin-bottom: 16px;
+    }
+
+    .profile-section h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .profile-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .profile-info-row:last-child { border-bottom: none; }
+    .profile-info-label { color: var(--c-muted); }
+    .profile-info-value { font-weight: 600; }
+
+    .profile-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .profile-btn {
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      color: var(--c-content);
+      font-weight: 600;
+      font-size: 0.9rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 200ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .profile-btn:hover { border-color: var(--c-action); }
+
+    .logout-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--c-error);
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 200ms ease;
+      margin-top: 20px;
+    }
+
+    .logout-btn:hover { opacity: 0.9; }
+
+    /* Games Page */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .game-card {
+      padding: 20px;
+      border-radius: 16px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      text-align: center;
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .game-card:hover {
+      border-color: var(--c-action);
+      transform: translateY(-2px);
+    }
+
+    .game-card-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      object-fit: cover;
+      margin: 0 auto 12px;
+      display: block;
+    }
+
+    .game-card i {
+      font-size: 36px;
+      color: var(--c-action);
+      margin-bottom: 12px;
+    }
+
+    .game-card h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .game-card p {
+      font-size: 0.8rem;
+      color: var(--c-muted);
+    }
+
+    /* Events Page */
+    .events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .event-card {
+      border-radius: 20px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .event-card:hover {
+      border-color: var(--c-action);
+      transform: translateY(-2px);
+    }
+
+    .event-card-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .event-card-content { padding: 20px; }
+
+    .event-card .event-date {
+      display: inline-block;
+      padding: 6px 12px;
+      background: var(--c-action);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .event-card h4 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .event-card p {
+      font-size: 0.9rem;
+      color: var(--c-muted);
+      line-height: 1.4;
+    }
+
+    .event-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--c-border);
+    }
+
+    .event-participants {
+      font-size: 0.85rem;
+      color: var(--c-muted);
+    }
+
+    /* Event Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-content {
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 24px;
+      background: var(--c-bg);
+      animation: modalIn 300ms ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header { position: relative; }
+
+    .modal-header img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-body { padding: 24px; }
+
+    .modal-body h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .modal-event-date {
+      display: inline-block;
+      padding: 6px 12px;
+      background: var(--c-action);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .modal-event-desc {
+      line-height: 1.6;
+      color: var(--c-muted);
+      margin-bottom: 20px;
+    }
+
+    .modal-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .join-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--c-action);
+      border: none;
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 200ms ease;
+      margin-bottom: 20px;
+    }
+
+    .join-btn:hover { opacity: 0.9; }
+    .join-btn.joined { background: var(--c-success); }
+
+    /* Q&A Section */
+    .qa-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--c-border);
+    }
+
+    .qa-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .qa-item {
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+    }
+
+    .qa-question {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .qa-question i {
+      color: var(--c-action);
+      margin-top: 2px;
+    }
+
+    .qa-answer {
+      padding-left: 24px;
+      color: var(--c-muted);
+      line-height: 1.5;
+    }
+
+    .qa-answerer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--c-action);
+      margin-bottom: 4px;
+    }
+
+    .qa-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .qa-form textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--c-border);
+      background: var(--c-glass);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--c-content);
+      resize: none;
+      min-height: 80px;
+    }
+
+    .qa-form textarea:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .qa-submit {
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: var(--c-action);
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      align-self: flex-end;
+    }
+
+    .qa-submit:hover { opacity: 0.9; }
+
+    /* Settings Modal */
+    .settings-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .settings-modal.active { display: flex; }
+
+    .settings-content {
+      width: 100%;
+      max-width: 400px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 24px;
+      background: var(--c-bg);
+      padding: 24px;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .settings-header h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .settings-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      color: var(--c-content);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .settings-group {
+      margin-bottom: 20px;
+    }
+
+    .settings-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .theme-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .theme-option {
+      padding: 12px 8px;
+      border-radius: 10px;
+      background: var(--c-glass);
+      border: 2px solid var(--c-border);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .theme-option:hover { border-color: var(--c-action); }
+    .theme-option.active { border-color: var(--c-action); background: var(--c-action); color: white; }
+
+    .privacy-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      margin-bottom: 8px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      cursor: pointer;
+    }
+
+    .toggle-switch input { display: none; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 99px;
+      background: var(--c-border);
+      transition: background 200ms ease;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 200ms ease;
+    }
+
+    .toggle-switch input:checked + .toggle-track { background: var(--c-action); }
+    .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
+
+    .social-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .social-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .social-input-row i {
+      width: 24px;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .social-input-row input {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--c-border);
+      background: var(--c-glass);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--c-content);
+    }
+
+    .social-input-row input:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .settings-save {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--c-action);
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .settings-save:hover { opacity: 0.9; }
+
+    /* QR Code Modal */
+    .qr-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .qr-modal.active { display: flex; }
+
+    .qr-content {
+      width: 100%;
+      max-width: 340px;
+      border-radius: 24px;
+      background: var(--c-bg);
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .qr-content h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .qr-content p {
+      color: var(--c-muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .qr-code-wrapper {
+      background: white;
+      padding: 16px;
+      border-radius: 16px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .qr-timer {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--c-action);
+      margin-bottom: 20px;
+    }
+
+    .qr-close {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      color: var(--c-content);
+      font-weight: 600;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .qr-close:hover { border-color: var(--c-action); }
+
+    /* User Profile Full Page */
+    .user-profile-page {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--c-bg);
+      z-index: 250;
+      overflow-y: auto;
+    }
+
+    .user-profile-page.active {
+      display: block;
+      animation: slideIn 300ms ease;
+    }
+
+    .user-profile-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--c-glass);
+      border-bottom: 1px solid var(--c-border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .user-profile-body {
+      padding: 20px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* My Events */
+    .my-events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .my-event-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      cursor: pointer;
+    }
+
+    .my-event-item:hover { border-color: var(--c-action); }
+
+    .my-event-item img {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .my-event-info { flex: 1; }
+
+    .my-event-info h4 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .my-event-info p {
+      font-size: 0.85rem;
+      color: var(--c-muted);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--c-muted);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state p { font-size: 0.95rem; }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--c-border);
+      border-top-color: var(--c-action);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 12px 24px;
+      border-radius: 12px;
+      background: var(--c-content);
+      color: var(--c-bg);
+      font-weight: 500;
+      z-index: 1000;
+      opacity: 0;
+      transition: all 300ms ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Notification Popup */
+    .notification-popup {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      max-width: 320px;
+      padding: 16px 20px;
+      border-radius: 16px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      z-index: 1001;
+      transform: translateX(400px);
+      transition: transform 300ms ease;
+      cursor: pointer;
+    }
+
+    .notification-popup.show { transform: translateX(0); }
+
+    .notification-popup .notification-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .notification-popup .notification-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--c-action);
+      object-fit: cover;
+    }
+
+    .notification-popup .notification-text { flex: 1; }
+
+    .notification-popup .notification-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+
+    .notification-popup .notification-desc {
+      font-size: 0.85rem;
+      color: var(--c-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .glass-content { padding: 28px 20px; }
+      .page { padding: 80px 12px 20px; }
+      .quick-links { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .quick-link { padding: 16px; }
+      .quick-link i { font-size: 24px; }
+      .message { max-width: 85%; }
+      .notification-popup { right: 10px; left: 10px; max-width: none; }
+      .profile-buttons { grid-template-columns: 1fr; }
+      .theme-options { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div class="login-screen" id="loginScreen">
+    <div class="glass-form">
+      <div class="glass-content">
+        <!-- Google Login -->
+        <div id="googleLogin">
+          <div class="brand-logo">LENG</div>
+          <h3>Hos Geldin</h3>
+          <p class="subtitle">Sosyal platformumuza katil ve yeni insanlarla tanisarak baglanti kur</p>
+          <button class="google-btn" onclick="signInWithGoogle()">
+            <svg viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google ile Giris Yap
+          </button>
+        </div>
+
+        <!-- Setup Form -->
+        <div class="setup-form" id="setupForm">
+          <div class="brand-logo">LENG</div>
+          <h3>Profilini Olustur</h3>
+          <p class="subtitle">Hesabini tamamlamak icin bilgilerini gir</p>
+          
+          <div class="form-group">
+            <label>Isim Soyisim</label>
+            <input type="text" id="displayName" placeholder="Adin Soyadin">
+          </div>
+          
+          <div class="form-group">
+            <label>Kullanici Adi</label>
+            <div class="username-input-wrapper">
+              <span class="username-prefix">@</span>
+              <input type="text" id="username" class="with-prefix" placeholder="kullaniciadi" maxlength="20">
+            </div>
+            <p class="form-hint">Sadece harf, rakam ve alt cizgi kullanilabilir</p>
+            <p class="form-error" id="usernameError"></p>
+          </div>
+          
+          <div class="form-group">
+            <label>Dogum Tarihi</label>
+            <input type="date" id="birthDate">
+          </div>
+          
+          <button class="submit-btn" id="completeSetup" onclick="completeProfile()">Profili Tamamla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div class="app-container" id="appContainer">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <span class="header-logo">LENG</span>
+        <div class="header-user" onclick="navigateTo('profile')">
+          <img class="header-avatar" id="headerAvatar" src="https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff" alt="Avatar">
+          <span class="header-name" id="headerName">Kullanici</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Pages -->
+    <main>
+      <!-- Home Page -->
+      <div class="page active" id="homePage">
+        <div class="welcome-section">
+          <p class="welcome-greeting" id="welcomeGreeting">Merhaba!</p>
+          <p class="welcome-text">Bugun yeni insanlarla tanisabilir, arkadaslarinla sohbet edebilirsin.</p>
+        </div>
+
+        <!-- Events Carousel -->
+        <div class="carousel-section" id="carouselSection" style="display:none;">
+          <h3 class="carousel-title"><i class="fas fa-fire"></i> Yaklasan Etkinlikler</h3>
+          <div class="carousel-wrapper">
+            <div class="carousel-track" id="carouselTrack"></div>
+          </div>
+          <div class="carousel-dots" id="carouselDots"></div>
+        </div>
+
+        <h3 class="section-title"><i class="fas fa-compass"></i> Hizli Erisim</h3>
+        <div class="quick-links">
+          <div class="quick-link" onclick="navigateTo('search')">
+            <i class="fas fa-search"></i>
+            <span>Kullanici Ara</span>
+          </div>
+          <div class="quick-link" onclick="navigateTo('friends')">
+            <i class="fas fa-user-friends"></i>
+            <span>Arkadaslar</span>
+          </div>
+          <div class="quick-link" onclick="navigateTo('chat')">
+            <i class="fas fa-comments"></i>
+            <span>Mesajlar</span>
+          </div>
+          <div class="quick-link" onclick="navigateTo('profile')">
+            <i class="fas fa-user"></i>
+            <span>Profil</span>
+          </div>
+        </div>
+
+        <h3 class="section-title"><i class="fas fa-rocket"></i> Kesfet</h3>
+        <div class="quick-links">
+          <div class="quick-link" onclick="navigateTo('games')">
+            <i class="fas fa-gamepad"></i>
+            <span>Oyunlar</span>
+          </div>
+          <div class="quick-link" onclick="navigateTo('events')">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Etkinlikler</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Page -->
+      <div class="page" id="searchPage">
+        <h2 class="page-title">Kullanici Ara</h2>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Isim veya kullanici adi ara..." oninput="searchUsers()">
+        </div>
+        <div class="user-list" id="searchResults">
+          <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>Yeni insanlarla tanismak icin aramaya basla</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Friends Page -->
+      <div class="page" id="friendsPage">
+        <h2 class="page-title">Arkadaslar</h2>
+        <div class="tabs">
+          <button class="tab active" onclick="switchFriendsTab('friends')">Arkadaslar</button>
+          <button class="tab" onclick="switchFriendsTab('requests')">Istekler <span class="tab-badge" id="requestsBadge" style="display:none;">0</span></button>
+          <button class="tab" onclick="switchFriendsTab('sent')">Gonderilenler</button>
+        </div>
+        <div id="friendsContent">
+          <div class="user-list" id="friendsList"></div>
+        </div>
+      </div>
+
+      <!-- Chat Page -->
+      <div class="page" id="chatPage">
+        <h2 class="page-title">Mesajlar</h2>
+        <div class="chat-list" id="chatList">
+          <div class="empty-state">
+            <i class="fas fa-comment-dots"></i>
+            <p>Henuz bir sohbetin yok. Arkadaslarinla mesajlasmaya basla!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Games Page -->
+      <div class="page" id="gamesPage">
+        <h2 class="page-title">Oyunlar</h2>
+        <div class="games-grid" id="gamesGrid">
+          <div class="empty-state">
+            <i class="fas fa-gamepad"></i>
+            <p>Henuz oyun eklenmemis</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events Page -->
+      <div class="page" id="eventsPage">
+        <h2 class="page-title">Etkinlikler</h2>
+        <div class="events-list" id="eventsList">
+          <div class="empty-state">
+            <i class="fas fa-calendar-alt"></i>
+            <p>Henuz etkinlik eklenmemis</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Events Page -->
+      <div class="page" id="myEventsPage">
+        <h2 class="page-title">Katildigim Etkinlikler</h2>
+        <div class="my-events-list" id="myEventsList">
+          <div class="empty-state">
+            <i class="fas fa-calendar-check"></i>
+            <p>Henuz bir etkinlige katilmadiniz</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Page -->
+      <div class="page profile-full-page" id="profilePage">
+        <div class="profile-header">
+          <div class="profile-avatar-wrapper">
+            <img class="profile-avatar" id="profileAvatar" src="https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff&size=200" alt="Avatar">
+            <div class="profile-verified" id="profileVerified" style="display:none;">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+          <h2 class="profile-name" id="profileName">Kullanici</h2>
+          <p class="profile-username" id="profileUsername">@kullanici</p>
+          <div class="profile-stats">
+            <div class="stat">
+              <div class="stat-value" id="friendCount">0</div>
+              <div class="stat-label">Arkadas</div>
+            </div>
+          </div>
+          <div class="social-links" id="socialLinks" style="display:none;"></div>
+        </div>
+
+        <div class="profile-buttons">
+          <button class="profile-btn" onclick="navigateTo('myEvents')">
+            <i class="fas fa-calendar-check"></i> Etkinliklerim
+          </button>
+          <button class="profile-btn" onclick="openSettings()">
+            <i class="fas fa-cog"></i> Ayarlar
+          </button>
+          <button class="profile-btn" onclick="showQRCode()">
+            <i class="fas fa-qrcode"></i> QR Kodum
+          </button>
+          <button class="profile-btn" onclick="shareProfile()">
+            <i class="fas fa-share-alt"></i> Paylasim
+          </button>
+        </div>
+        
+        <div class="profile-section">
+          <h4>Bilgiler</h4>
+          <div class="profile-info-row">
+            <span class="profile-info-label">E-posta</span>
+            <span class="profile-info-value" id="profileEmail">-</span>
+          </div>
+          <div class="profile-info-row">
+            <span class="profile-info-label">Dogum Tarihi</span>
+            <span class="profile-info-value" id="profileBirthDate">-</span>
+          </div>
+          <div class="profile-info-row">
+            <span class="profile-info-label">Katilim Tarihi</span>
+            <span class="profile-info-value" id="profileJoinDate">-</span>
+          </div>
+        </div>
+
+        <button class="logout-btn" onclick="signOut()">
+          <i class="fas fa-sign-out-alt"></i> Cikis Yap
+        </button>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="nav-inner">
+        <div class="nav-item active" onclick="navigateTo('home')" data-page="home">
+          <i class="fas fa-home"></i>
+        </div>
+        <div class="nav-item" onclick="navigateTo('search')" data-page="search">
+          <i class="fas fa-search"></i>
+        </div>
+        <div class="nav-item" onclick="navigateTo('friends')" data-page="friends">
+          <i class="fas fa-user-friends"></i>
+          <span class="nav-badge" id="friendsNavBadge"></span>
+        </div>
+        <div class="nav-item" onclick="navigateTo('chat')" data-page="chat">
+          <i class="fas fa-comments"></i>
+          <span class="nav-badge" id="chatNavBadge"></span>
+        </div>
+        <div class="nav-item" onclick="navigateTo('profile')" data-page="profile">
+          <i class="fas fa-user"></i>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Chat View -->
+  <div class="chat-view" id="chatView">
+    <div class="chat-header">
+      <button class="chat-back" onclick="closeChatView()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <img class="chat-header-avatar" id="chatViewAvatar" src="https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff" alt="Avatar">
+      <div class="chat-header-info">
+        <h4 id="chatViewName">Kullanici</h4>
+        <p class="chat-header-status" id="chatViewStatus">Cevrimdisi</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="messageInput" placeholder="Mesaj yaz..." onkeypress="handleMessageKeypress(event)">
+      <button class="chat-send" onclick="sendMessage()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Event Modal -->
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <img id="eventModalImage" src="https://via.placeholder.com/500x200" alt="">
+        <button class="modal-close" onclick="closeEventModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h2 id="eventModalTitle">Etkinlik Adi</h2>
+        <span class="modal-event-date" id="eventModalDate">Tarih</span>
+        <p class="modal-event-desc" id="eventModalDesc">Aciklama</p>
+        
+        <button class="join-btn" id="eventJoinBtn" onclick="toggleEventJoin()">
+          <i class="fas fa-hand-paper"></i> Katilmak Istiyorum
+        </button>
+
+        <p class="event-participants" id="eventModalParticipants">0 kisi katiliyor</p>
+
+        <div class="qa-section">
+          <h4 class="modal-section-title"><i class="fas fa-question-circle"></i> Soru & Cevap</h4>
+          <div class="qa-list" id="eventQAList"></div>
+          <div class="qa-form">
+            <textarea id="questionInput" placeholder="Sorunuzu yazin..."></textarea>
+            <button class="qa-submit" onclick="submitQuestion()">Soru Sor</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h3>Ayarlar</h3>
+        <button class="settings-close" onclick="closeSettings()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="settings-group">
+        <label>Tema</label>
+        <div class="theme-options">
+          <div class="theme-option" data-theme="default" onclick="setTheme('default')">Acik</div>
+          <div class="theme-option" data-theme="dark" onclick="setTheme('dark')">Koyu</div>
+          <div class="theme-option" data-theme="midnight" onclick="setTheme('midnight')">Gece</div>
+          <div class="theme-option" data-theme="forest" onclick="setTheme('forest')">Orman</div>
+          <div class="theme-option" data-theme="sunset" onclick="setTheme('sunset')">Gunbatimi</div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <label>Gizlilik</label>
+        <div class="privacy-option">
+          <span>E-posta herkes gorebilsin</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="privacyEmail">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="privacy-option">
+          <span>Dogum tarihi herkes gorebilsin</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="privacyBirthDate">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <label>Sosyal Medya Hesaplari</label>
+        <div class="social-input-group">
+          <div class="social-input-row">
+            <i class="fab fa-instagram" style="color:#E4405F"></i>
+            <input type="text" id="instagramUsername" placeholder="Instagram kullanici adi">
+          </div>
+          <div class="social-input-row">
+            <i class="fab fa-tiktok"></i>
+            <input type="text" id="tiktokUsername" placeholder="TikTok kullanici adi">
+          </div>
+          <div class="social-input-row">
+            <i class="fab fa-x-twitter" style="color:#1DA1F2"></i>
+            <input type="text" id="twitterUsername" placeholder="X kullanici adi">
+          </div>
+        </div>
+      </div>
+
+      <button class="settings-save" onclick="saveSettings()">Kaydet</button>
+    </div>
+  </div>
+
+  <!-- QR Code Modal -->
+  <div class="qr-modal" id="qrModal">
+    <div class="qr-content">
+      <h3>QR Kodun</h3>
+      <p>Bu kodu etkinlik girisinde gosterin</p>
+      <div class="qr-code-wrapper">
+        <canvas id="qrCanvas"></canvas>
+      </div>
+      <div class="qr-timer" id="qrTimer">30</div>
+      <button class="qr-close" onclick="closeQRModal()">Kapat</button>
+    </div>
+  </div>
+
+  <!-- User Profile Full Page -->
+  <div class="user-profile-page" id="userProfilePage">
+    <div class="user-profile-header">
+      <button class="chat-back" onclick="closeUserProfilePage()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <span style="font-weight:600;">Profil</span>
+    </div>
+    <div class="user-profile-body">
+      <div class="profile-header">
+        <div class="profile-avatar-wrapper">
+          <img class="profile-avatar" id="userProfileAvatar" src="" alt="">
+          <div class="profile-verified" id="userProfileVerified" style="display:none;">
+            <i class="fas fa-check-circle"></i>
+          </div>
+        </div>
+        <h2 class="profile-name" id="userProfileName">Kullanici</h2>
+        <p class="profile-username" id="userProfileUsername">@kullanici</p>
+        <div class="profile-stats" style="margin-bottom:16px;">
+          <div class="stat">
+            <div class="stat-value" id="userProfileFriendCount">0</div>
+            <div class="stat-label">Arkadas</div>
+          </div>
+        </div>
+        <div class="social-links" id="userProfileSocialLinks" style="margin-bottom:16px;"></div>
+        <button class="user-card-action" id="userProfileActionBtn" style="width:100%;padding:14px;">Arkadas Ekle</button>
+      </div>
+      
+      <div class="profile-section" id="userProfileInfoSection">
+        <h4>Bilgiler</h4>
+        <div class="profile-info-row" id="userProfileEmailRow">
+          <span class="profile-info-label">E-posta</span>
+          <span class="profile-info-value" id="userProfileEmail">-</span>
+        </div>
+        <div class="profile-info-row" id="userProfileBirthDateRow">
+          <span class="profile-info-label">Dogum Tarihi</span>
+          <span class="profile-info-value" id="userProfileBirthDate">-</span>
+        </div>
+        <div class="profile-info-row">
+          <span class="profile-info-label">Katilim Tarihi</span>
+          <span class="profile-info-value" id="userProfileJoinDate">-</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Popup -->
+  <div class="notification-popup" id="notificationPopup" onclick="handleNotificationClick()">
+    <div class="notification-content">
+      <img class="notification-avatar" id="notificationAvatar" src="" alt="">
+      <div class="notification-text">
+        <div class="notification-title" id="notificationTitle"></div>
+        <div class="notification-desc" id="notificationDesc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithPopup, 
+      GoogleAuthProvider, 
+      onAuthStateChanged,
+      signOut as firebaseSignOut 
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      get, 
+      push, 
+      onValue, 
+      off,
+      query, 
+      orderByChild, 
+      equalTo,
+      update,
+      serverTimestamp,
+      limitToLast,
+      onChildAdded,
+      remove
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "maps-52b00",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentUser = null;
+    let currentUserData = null;
+    let currentChatUserId = null;
+    let chatListener = null;
+    let lastNotificationData = null;
+    let currentEventId = null;
+    let carouselIndex = 0;
+    let carouselInterval = null;
+    let qrInterval = null;
+
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+        
+        if (snapshot.exists() && snapshot.val().username) {
+          currentUserData = snapshot.val();
+          
+          if (currentUserData.banned) {
+            showToast("Hesabiniz engellenmis. Giris yapamazsiniz.");
+            await firebaseSignOut(auth);
+            return;
+          }
+          
+          showApp();
+          updateUserOnlineStatus(true);
+          loadFriendRequests();
+          loadChats();
+          loadFriendCountRealtime();
+          loadGames();
+          loadEvents();
+          loadTheme();
+          handleURLRouting();
+        } else {
+          showSetupForm(user);
+        }
+      } else {
+        currentUser = null;
+        currentUserData = null;
+        showLogin();
+      }
+    });
+
+    // Sign In
+    window.signInWithGoogle = async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Login error:", error);
+        showToast("Giris yapilamadi. Tekrar deneyin.");
+      }
+    };
+
+    // Sign Out
+    window.signOut = async () => {
+      try {
+        await updateUserOnlineStatus(false);
+        await firebaseSignOut(auth);
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    };
+
+    // Show Login
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('appContainer').classList.remove('active');
+    }
+
+    // Show Setup Form
+    function showSetupForm(user) {
+      document.getElementById('googleLogin').style.display = 'none';
+      document.getElementById('setupForm').classList.add('active');
+      document.getElementById('displayName').value = user.displayName || '';
+    }
+
+    // Show App
+    function showApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.add('active');
+      updateUIWithUserData();
+    }
+
+    // Update UI
+    function updateUIWithUserData() {
+      if (!currentUserData) return;
+      
+      const verifiedBadge = currentUserData.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+      
+      document.getElementById('headerAvatar').src = currentUserData.photoURL;
+      document.getElementById('headerName').innerHTML = currentUserData.displayName.split(' ')[0] + ' ' + verifiedBadge;
+      document.getElementById('welcomeGreeting').textContent = `Merhaba, ${currentUserData.displayName.split(' ')[0]}!`;
+      
+      document.getElementById('profileAvatar').src = currentUserData.photoURL;
+      document.getElementById('profileName').textContent = currentUserData.displayName;
+      document.getElementById('profileUsername').textContent = '@' + currentUserData.username;
+      document.getElementById('profileEmail').textContent = currentUserData.email;
+      document.getElementById('profileBirthDate').textContent = currentUserData.birthDate || '-';
+      document.getElementById('profileJoinDate').textContent = formatDate(currentUserData.createdAt);
+      
+      if (currentUserData.verified) {
+        document.getElementById('profileVerified').style.display = 'block';
+      } else {
+        document.getElementById('profileVerified').style.display = 'none';
+      }
+      
+      updateSocialLinks();
+    }
+
+    // Update Social Links
+    function updateSocialLinks() {
+      const container = document.getElementById('socialLinks');
+      let html = '';
+      let hasLinks = false;
+      
+      if (currentUserData.instagram) {
+        html += `<a href="https://www.instagram.com/${currentUserData.instagram}" target="_blank" class="social-link instagram"><i class="fab fa-instagram"></i></a>`;
+        hasLinks = true;
+      }
+      if (currentUserData.tiktok) {
+        html += `<a href="https://www.tiktok.com/@${currentUserData.tiktok}" target="_blank" class="social-link tiktok"><i class="fab fa-tiktok"></i></a>`;
+        hasLinks = true;
+      }
+      if (currentUserData.twitter) {
+        html += `<a href="https://www.x.com/${currentUserData.twitter}" target="_blank" class="social-link twitter"><i class="fab fa-x-twitter"></i></a>`;
+        hasLinks = true;
+      }
+      
+      container.innerHTML = html;
+      container.style.display = hasLinks ? 'flex' : 'none';
+    }
+
+    // Complete Profile - FIXED
+    window.completeProfile = async () => {
+      const displayName = document.getElementById('displayName').value.trim();
+      const username = document.getElementById('username').value.trim().toLowerCase();
+      const birthDate = document.getElementById('birthDate').value;
+      
+      // Clear previous errors
+      document.getElementById('usernameError').classList.remove('show');
+      
+      if (!displayName || !username || !birthDate) {
+        showToast("Lutfen tum alanlari doldurun");
+        return;
+      }
+      
+      if (!/^[a-z0-9_]+$/.test(username)) {
+        document.getElementById('usernameError').textContent = "Sadece kucuk harf, rakam ve alt cizgi kullanilabilir";
+        document.getElementById('usernameError').classList.add('show');
+        return;
+      }
+      
+      // Check username availability
+      try {
+        const usersSnapshot = await get(ref(db, 'users'));
+        let usernameExists = false;
+        
+        if (usersSnapshot.exists()) {
+          usersSnapshot.forEach((child) => {
+            if (child.val().username === username && child.key !== currentUser.uid) {
+              usernameExists = true;
+            }
+          });
+        }
+        
+        if (usernameExists) {
+          document.getElementById('usernameError').textContent = "Bu kullanici adi zaten alinmis";
+          document.getElementById('usernameError').classList.add('show');
+          return;
+        }
+        
+        const userData = {
+          uid: currentUser.uid,
+          email: currentUser.email,
+          displayName,
+          username,
+          birthDate,
+          photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3b82f6&color=fff`,
+          createdAt: Date.now(),
+          online: true,
+          lastSeen: Date.now(),
+          verified: false,
+          privacyEmail: false,
+          privacyBirthDate: false
+        };
+        
+        await set(ref(db, `users/${currentUser.uid}`), userData);
+        currentUserData = userData;
+        showApp();
+        loadFriendRequests();
+        loadChats();
+        loadFriendCountRealtime();
+        loadGames();
+        loadEvents();
+        showToast("Profil olusturuldu!");
+      } catch (error) {
+        console.error("Profile error:", error);
+        showToast("Bir hata olustu. Tekrar deneyin.");
+      }
+    };
+
+    // Update Online Status
+    async function updateUserOnlineStatus(isOnline) {
+      if (!currentUser) return;
+      try {
+        await update(ref(db, `users/${currentUser.uid}`), {
+          online: isOnline,
+          lastSeen: Date.now()
+        });
+      } catch (error) {
+        console.error("Status error:", error);
+      }
+    }
+
+    // URL Routing
+    function handleURLRouting() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#/user/')) {
+        const username = hash.replace('#/user/', '');
+        openUserProfileByUsername(username);
+      } else if (hash.startsWith('#/event/')) {
+        const eventId = hash.replace('#/event/', '');
+        openEventById(eventId);
+      } else if (hash.startsWith('#/game/')) {
+        const gameId = hash.replace('#/game/', '');
+        navigateTo('games');
+      }
+    }
+
+    window.addEventListener('hashchange', handleURLRouting);
+
+    // Open user profile by username
+    async function openUserProfileByUsername(username) {
+      const usersSnapshot = await get(ref(db, 'users'));
+      if (usersSnapshot.exists()) {
+        usersSnapshot.forEach((child) => {
+          if (child.val().username === username) {
+            openUserProfile(child.key);
+          }
+        });
+      }
+    }
+
+    // Open event by ID
+    async function openEventById(eventId) {
+      const snapshot = await get(ref(db, `events/${eventId}`));
+      if (snapshot.exists()) {
+        openEventModal(eventId);
+      }
+    }
+
+    // Navigation
+    window.navigateTo = (page) => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      document.getElementById(page + 'Page').classList.add('active');
+      const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+      if (navItem) navItem.classList.add('active');
+      
+      if (page === 'friends') {
+        loadFriends();
+      } else if (page === 'myEvents') {
+        loadMyEvents();
+      }
+      
+      // Update URL
+      if (page === 'profile' && currentUserData) {
+        window.location.hash = '/user/' + currentUserData.username;
+      }
+    };
+
+    // Search Users
+    window.searchUsers = async () => {
+      const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+      const container = document.getElementById('searchResults');
+      
+      if (!searchTerm) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>Yeni insanlarla tanismak icin aramaya basla</p></div>';
+        return;
+      }
+      
+      const snapshot = await get(ref(db, 'users'));
+      if (!snapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i><p>Kullanici bulunamadi</p></div>';
+        return;
+      }
+      
+      let html = '';
+      snapshot.forEach((child) => {
+        const user = child.val();
+        if (user.uid === currentUser.uid) return;
+        
+        if (user.displayName.toLowerCase().includes(searchTerm) || 
+            user.username.toLowerCase().includes(searchTerm)) {
+          const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="user-card" onclick="openUserProfile('${user.uid}')">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${user.photoURL}" alt="">
+                ${user.online ? '<div class="online-dot"></div>' : ''}
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${user.displayName} ${verifiedBadge}</div>
+                <div class="user-card-username">@${user.username}</div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      
+      container.innerHTML = html || '<div class="empty-state"><i class="fas fa-user-slash"></i><p>Kullanici bulunamadi</p></div>';
+    };
+
+    // Open User Profile (Full Page)
+    window.openUserProfile = async (userId) => {
+      const snapshot = await get(ref(db, `users/${userId}`));
+      if (!snapshot.exists()) return;
+      
+      const user = snapshot.val();
+      
+      // Update URL
+      window.location.hash = '/user/' + user.username;
+      
+      document.getElementById('userProfileAvatar').src = user.photoURL;
+      document.getElementById('userProfileName').textContent = user.displayName;
+      document.getElementById('userProfileUsername').textContent = '@' + user.username;
+      
+      if (user.verified) {
+        document.getElementById('userProfileVerified').style.display = 'block';
+      } else {
+        document.getElementById('userProfileVerified').style.display = 'none';
+      }
+      
+      // Friend count
+      const friendsSnapshot = await get(ref(db, `friends/${userId}`));
+      const friendCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
+      document.getElementById('userProfileFriendCount').textContent = friendCount;
+      
+      // Social links
+      const socialContainer = document.getElementById('userProfileSocialLinks');
+      let socialHtml = '';
+      if (user.instagram) {
+        socialHtml += `<a href="https://www.instagram.com/${user.instagram}" target="_blank" class="social-link instagram"><i class="fab fa-instagram"></i></a>`;
+      }
+      if (user.tiktok) {
+        socialHtml += `<a href="https://www.tiktok.com/@${user.tiktok}" target="_blank" class="social-link tiktok"><i class="fab fa-tiktok"></i></a>`;
+      }
+      if (user.twitter) {
+        socialHtml += `<a href="https://www.x.com/${user.twitter}" target="_blank" class="social-link twitter"><i class="fab fa-x-twitter"></i></a>`;
+      }
+      socialContainer.innerHTML = socialHtml;
+      socialContainer.style.display = socialHtml ? 'flex' : 'none';
+      
+      // Privacy - show/hide info based on settings
+      const emailRow = document.getElementById('userProfileEmailRow');
+      const birthDateRow = document.getElementById('userProfileBirthDateRow');
+      
+      if (user.privacyEmail || userId === currentUser.uid) {
+        emailRow.style.display = 'flex';
+        document.getElementById('userProfileEmail').textContent = user.email;
+      } else {
+        emailRow.style.display = 'none';
+      }
+      
+      if (user.privacyBirthDate || userId === currentUser.uid) {
+        birthDateRow.style.display = 'flex';
+        document.getElementById('userProfileBirthDate').textContent = user.birthDate || '-';
+      } else {
+        birthDateRow.style.display = 'none';
+      }
+      
+      document.getElementById('userProfileJoinDate').textContent = formatDate(user.createdAt);
+      
+      // Action button
+      const actionBtn = document.getElementById('userProfileActionBtn');
+      
+      if (userId === currentUser.uid) {
+        actionBtn.style.display = 'none';
+      } else {
+        actionBtn.style.display = 'block';
+        const isFriend = await checkFriendship(userId);
+        const isPending = await checkPendingRequest(userId);
+        
+        if (isFriend) {
+          actionBtn.textContent = 'Mesaj Gonder';
+          actionBtn.className = 'user-card-action friend';
+          actionBtn.onclick = () => { closeUserProfilePage(); openChat(userId); };
+        } else if (isPending) {
+          actionBtn.textContent = 'Istek Gonderildi';
+          actionBtn.className = 'user-card-action pending';
+          actionBtn.onclick = null;
+        } else {
+          actionBtn.textContent = 'Arkadas Ekle';
+          actionBtn.className = 'user-card-action';
+          actionBtn.onclick = () => { sendFriendRequest(userId); };
+        }
+      }
+      
+      document.getElementById('userProfilePage').classList.add('active');
+    };
+
+    window.closeUserProfilePage = () => {
+      document.getElementById('userProfilePage').classList.remove('active');
+      window.location.hash = '';
+    };
+
+    // Check friendship
+    async function checkFriendship(userId) {
+      const snapshot = await get(ref(db, `friends/${currentUser.uid}/${userId}`));
+      return snapshot.exists();
+    }
+
+    // Check pending request
+    async function checkPendingRequest(userId) {
+      const snapshot = await get(ref(db, `friendRequests/${userId}/${currentUser.uid}`));
+      return snapshot.exists();
+    }
+
+    // Send Friend Request
+    window.sendFriendRequest = async (toUserId) => {
+      try {
+        await set(ref(db, `friendRequests/${toUserId}/${currentUser.uid}`), {
+          from: currentUser.uid,
+          timestamp: Date.now()
+        });
+        showToast("Arkadas istegi gonderildi");
+        
+        // Update button
+        const actionBtn = document.getElementById('userProfileActionBtn');
+        actionBtn.textContent = 'Istek Gonderildi';
+        actionBtn.className = 'user-card-action pending';
+        actionBtn.onclick = null;
+      } catch (error) {
+        console.error("Request error:", error);
+        showToast("Bir hata olustu");
+      }
+    };
+
+    // Load Friend Requests
+    function loadFriendRequests() {
+      const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
+      
+      onChildAdded(requestsRef, async (snapshot) => {
+        const request = snapshot.val();
+        
+        if (lastNotificationData !== request.from) {
+          const senderSnapshot = await get(ref(db, `users/${request.from}`));
+          if (senderSnapshot.exists()) {
+            const sender = senderSnapshot.val();
+            showNotification(
+              sender.photoURL,
+              'Arkadas Istegi',
+              `${sender.displayName} size arkadas istegi gonderdi`
+            );
+            lastNotificationData = request.from;
+          }
+        }
+      });
+      
+      onValue(requestsRef, (snapshot) => {
+        const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        const badge = document.getElementById('requestsBadge');
+        const navBadge = document.getElementById('friendsNavBadge');
+        
+        if (count > 0) {
+          badge.textContent = count;
+          badge.style.display = 'flex';
+          navBadge.classList.add('show');
+        } else {
+          badge.style.display = 'none';
+          navBadge.classList.remove('show');
+        }
+      });
+    }
+
+    // Show Notification
+    function showNotification(avatar, title, desc) {
+      document.getElementById('notificationAvatar').src = avatar;
+      document.getElementById('notificationTitle').textContent = title;
+      document.getElementById('notificationDesc').textContent = desc;
+      document.getElementById('notificationPopup').classList.add('show');
+      
+      setTimeout(() => {
+        document.getElementById('notificationPopup').classList.remove('show');
+      }, 5000);
+    }
+
+    window.handleNotificationClick = () => {
+      document.getElementById('notificationPopup').classList.remove('show');
+      navigateTo('friends');
+      switchFriendsTab('requests');
+    };
+
+    // Friends Tab
+    window.switchFriendsTab = (tab) => {
+      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (tab === 'friends') {
+        loadFriends();
+      } else if (tab === 'requests') {
+        loadRequests();
+      } else if (tab === 'sent') {
+        loadSentRequests();
+      }
+    };
+
+    // Load Friends
+    async function loadFriends() {
+      const container = document.getElementById('friendsContent');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const friendsRef = ref(db, `friends/${currentUser.uid}`);
+      const snapshot = await get(friendsRef);
+      
+      if (!snapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-user-friends"></i><p>Henuz arkadasiniz yok</p></div>';
+        return;
+      }
+      
+      let html = '<div class="user-list">';
+      for (const [friendId, data] of Object.entries(snapshot.val())) {
+        const friendSnapshot = await get(ref(db, `users/${friendId}`));
+        if (friendSnapshot.exists()) {
+          const friend = friendSnapshot.val();
+          const verifiedBadge = friend.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="user-card" onclick="openUserProfile('${friendId}')">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${friend.photoURL}" alt="">
+                ${friend.online ? '<div class="online-dot"></div>' : ''}
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${friend.displayName} ${verifiedBadge}</div>
+                <div class="user-card-username">@${friend.username}</div>
+              </div>
+              <button class="user-card-action" onclick="event.stopPropagation(); openChat('${friendId}')">Mesaj</button>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // Load Requests
+    async function loadRequests() {
+      const container = document.getElementById('friendsContent');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
+      const snapshot = await get(requestsRef);
+      
+      if (!snapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Bekleyen istek yok</p></div>';
+        return;
+      }
+      
+      let html = '<div class="user-list">';
+      for (const [fromId, data] of Object.entries(snapshot.val())) {
+        const userSnapshot = await get(ref(db, `users/${fromId}`));
+        if (userSnapshot.exists()) {
+          const user = userSnapshot.val();
+          const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="request-card">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${user.photoURL}" alt="">
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${user.displayName} ${verifiedBadge}</div>
+                <div class="user-card-username">@${user.username}</div>
+              </div>
+              <div class="request-actions">
+                <button class="btn-accept" onclick="acceptRequest('${fromId}')"><i class="fas fa-check"></i></button>
+                <button class="btn-reject" onclick="rejectRequest('${fromId}')"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // Load Sent Requests
+    async function loadSentRequests() {
+      const container = document.getElementById('friendsContent');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const usersSnapshot = await get(ref(db, 'users'));
+      if (!usersSnapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>Gonderilen istek yok</p></div>';
+        return;
+      }
+      
+      let html = '<div class="user-list">';
+      let hasRequests = false;
+      
+      for (const [userId, user] of Object.entries(usersSnapshot.val())) {
+        if (userId === currentUser.uid) continue;
+        
+        const requestSnapshot = await get(ref(db, `friendRequests/${userId}/${currentUser.uid}`));
+        if (requestSnapshot.exists()) {
+          hasRequests = true;
+          const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="user-card">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${user.photoURL}" alt="">
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${user.displayName} ${verifiedBadge}</div>
+                <div class="user-card-username">@${user.username}</div>
+              </div>
+              <span class="user-card-action pending">Bekliyor</span>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+      
+      container.innerHTML = hasRequests ? html : '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>Gonderilen istek yok</p></div>';
+    }
+
+    // Accept Request
+    window.acceptRequest = async (fromId) => {
+      try {
+        await set(ref(db, `friends/${currentUser.uid}/${fromId}`), { since: Date.now() });
+        await set(ref(db, `friends/${fromId}/${currentUser.uid}`), { since: Date.now() });
+        await remove(ref(db, `friendRequests/${currentUser.uid}/${fromId}`));
+        
+        showToast("Arkadas eklendi");
+        loadRequests();
+      } catch (error) {
+        console.error("Accept error:", error);
+        showToast("Bir hata olustu");
+      }
+    };
+
+    // Reject Request
+    window.rejectRequest = async (fromId) => {
+      try {
+        await remove(ref(db, `friendRequests/${currentUser.uid}/${fromId}`));
+        showToast("Istek reddedildi");
+        loadRequests();
+      } catch (error) {
+        console.error("Reject error:", error);
+      }
+    };
+
+    // Load Friend Count Realtime
+    function loadFriendCountRealtime() {
+      const friendsRef = ref(db, `friends/${currentUser.uid}`);
+      onValue(friendsRef, (snapshot) => {
+        const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        document.getElementById('friendCount').textContent = count;
+      });
+    }
+
+    // Load Chats
+    function loadChats() {
+      const chatsRef = ref(db, `userChats/${currentUser.uid}`);
+      onValue(chatsRef, async (snapshot) => {
+        const container = document.getElementById('chatList');
+        
+        if (!snapshot.exists()) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Henuz bir sohbetin yok</p></div>';
+          return;
+        }
+        
+        let html = '';
+        const chats = [];
+        
+        for (const [odId, chatData] of Object.entries(snapshot.val())) {
+          const userSnapshot = await get(ref(db, `users/${odId}`));
+          if (userSnapshot.exists()) {
+            chats.push({
+              odId,
+              user: userSnapshot.val(),
+              ...chatData
+            });
+          }
+        }
+        
+        chats.sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+        
+        for (const chat of chats) {
+          const verifiedBadge = chat.user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="chat-item" onclick="openChat('${chat.odId}')">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${chat.user.photoURL}" alt="">
+                ${chat.user.online ? '<div class="online-dot"></div>' : ''}
+              </div>
+              <div class="chat-item-info">
+                <div class="chat-item-name">${chat.user.displayName} ${verifiedBadge}</div>
+                <div class="chat-item-preview">${chat.lastMessage || 'Mesaj yok'}</div>
+              </div>
+              <div class="chat-item-meta">
+                <div class="chat-item-time">${formatTime(chat.lastMessageTime)}</div>
+              </div>
+            </div>
+          `;
+        }
+        
+        container.innerHTML = html || '<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Henuz bir sohbetin yok</p></div>';
+      });
+    }
+
+    // Open Chat
+    window.openChat = async (userId) => {
+      currentChatUserId = userId;
+      
+      const userSnapshot = await get(ref(db, `users/${userId}`));
+      if (!userSnapshot.exists()) return;
+      
+      const user = userSnapshot.val();
+      const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+      
+      document.getElementById('chatViewAvatar').src = user.photoURL;
+      document.getElementById('chatViewName').innerHTML = user.displayName + ' ' + verifiedBadge;
+      document.getElementById('chatViewStatus').textContent = user.online ? 'Cevrimici' : 'Cevrimdisi';
+      
+      // Create chat entry for both users
+      const chatId = [currentUser.uid, userId].sort().join('_');
+      
+      await update(ref(db, `userChats/${currentUser.uid}/${userId}`), {
+        odId: userId,
+        chatId: chatId
+      });
+      
+      await update(ref(db, `userChats/${userId}/${currentUser.uid}`), {
+        odId: currentUser.uid,
+        chatId: chatId
+      });
+      
+      document.getElementById('chatView').classList.add('active');
+      loadMessages(chatId);
+    };
+
+    // Close Chat View
+    window.closeChatView = () => {
+      document.getElementById('chatView').classList.remove('active');
+      if (chatListener) {
+        off(ref(db, `messages/${[currentUser.uid, currentChatUserId].sort().join('_')}`));
+        chatListener = null;
+      }
+      currentChatUserId = null;
+    };
+
+    // Load Messages
+    function loadMessages(chatId) {
+      const messagesRef = ref(db, `messages/${chatId}`);
+      
+      if (chatListener) {
+        off(messagesRef);
+      }
+      
+      chatListener = onValue(messagesRef, (snapshot) => {
+        const container = document.getElementById('chatMessages');
+        
+        if (!snapshot.exists()) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-comments"></i><p>Mesaj yok. Ilk mesaji sen gonder!</p></div>';
+          return;
+        }
+        
+        let html = '';
+        const messages = [];
+        
+        snapshot.forEach((child) => {
+          messages.push({ id: child.key, ...child.val() });
+        });
+        
+        messages.sort((a, b) => a.timestamp - b.timestamp);
+        
+        for (const msg of messages) {
+          const isSent = msg.senderId === currentUser.uid;
+          html += `
+            <div class="message ${isSent ? 'sent' : 'received'}">
+              ${msg.text}
+              <div class="message-time">${formatTime(msg.timestamp)}</div>
+            </div>
+          `;
+        }
+        
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+
+    // Send Message
+    window.sendMessage = async () => {
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      
+      if (!text || !currentChatUserId) return;
+      
+      const chatId = [currentUser.uid, currentChatUserId].sort().join('_');
+      
+      try {
+        const messageData = {
+          senderId: currentUser.uid,
+          text,
+          timestamp: Date.now()
+        };
+        
+        await push(ref(db, `messages/${chatId}`), messageData);
+        
+        // Update chat metadata for both users
+        await update(ref(db, `userChats/${currentUser.uid}/${currentChatUserId}`), {
+          lastMessage: text,
+          lastMessageTime: Date.now()
+        });
+        
+        await update(ref(db, `userChats/${currentChatUserId}/${currentUser.uid}`), {
+          lastMessage: text,
+          lastMessageTime: Date.now()
+        });
+        
+        input.value = '';
+      } catch (error) {
+        console.error("Send error:", error);
+        showToast("Mesaj gonderilemedi");
+      }
+    };
+
+    window.handleMessageKeypress = (e) => {
+      if (e.key === 'Enter') sendMessage();
+    };
+
+    // Load Games
+    function loadGames() {
+      const gamesRef = ref(db, 'games');
+      onValue(gamesRef, (snapshot) => {
+        const container = document.getElementById('gamesGrid');
+        
+        if (!snapshot.exists()) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-gamepad"></i><p>Henuz oyun eklenmemis</p></div>';
+          return;
+        }
+        
+        let html = '';
+        snapshot.forEach((child) => {
+          const game = child.val();
+          const gameId = child.key;
+          const iconHtml = game.iconUrl 
+            ? `<img class="game-card-icon" src="${game.iconUrl}" alt="${game.name}">`
+            : `<i class="fas fa-gamepad"></i>`;
+          
+          html += `
+            <div class="game-card" onclick="openGame('${gameId}', '${game.url || ''}')">
+              ${iconHtml}
+              <h4>${game.name}</h4>
+              <p>${game.description || ''}</p>
+            </div>
+          `;
+        });
+        
+        container.innerHTML = html;
+      });
+    }
+
+    window.openGame = (gameId, url) => {
+      window.location.hash = '/game/' + gameId;
+      if (url) {
+        window.open(url, '_blank');
+      }
+    };
+
+    // Load Events
+    function loadEvents() {
+      const eventsRef = ref(db, 'events');
+      onValue(eventsRef, (snapshot) => {
+        const container = document.getElementById('eventsList');
+        const carouselSection = document.getElementById('carouselSection');
+        const carouselTrack = document.getElementById('carouselTrack');
+        const carouselDots = document.getElementById('carouselDots');
+        
+        if (!snapshot.exists()) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>Henuz etkinlik eklenmemis</p></div>';
+          carouselSection.style.display = 'none';
+          return;
+        }
+        
+        let html = '';
+        let carouselHtml = '';
+        let dotsHtml = '';
+        let index = 0;
+        const events = [];
+        
+        snapshot.forEach((child) => {
+          events.push({ id: child.key, ...child.val() });
+        });
+        
+        // Sort by date
+        events.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        for (const event of events) {
+          const participantCount = event.participants ? Object.keys(event.participants).length : 0;
+          
+          html += `
+            <div class="event-card" onclick="openEventModal('${event.id}')">
+              ${event.imageUrl ? `<img class="event-card-image" src="${event.imageUrl}" alt="">` : ''}
+              <div class="event-card-content">
+                <span class="event-date">${formatEventDate(event.date)}</span>
+                <h4>${event.title}</h4>
+                <p>${event.description || ''}</p>
+                <div class="event-card-footer">
+                  <span class="event-participants"><i class="fas fa-users"></i> ${participantCount} katilimci</span>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // Carousel (first 5 events)
+          if (index < 5) {
+            carouselHtml += `
+              <div class="carousel-slide" onclick="openEventModal('${event.id}')">
+                <img src="${event.imageUrl || 'https://via.placeholder.com/600x180?text=Etkinlik'}" alt="">
+                <div class="carousel-overlay">
+                  <h4>${event.title}</h4>
+                  <p>${formatEventDate(event.date)}</p>
+                </div>
+              </div>
+            `;
+            dotsHtml += `<div class="carousel-dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})"></div>`;
+          }
+          
+          index++;
+        }
+        
+        container.innerHTML = html;
+        
+        if (events.length > 0) {
+          carouselSection.style.display = 'block';
+          carouselTrack.innerHTML = carouselHtml;
+          carouselDots.innerHTML = dotsHtml;
+          startCarousel(Math.min(events.length, 5));
+        } else {
+          carouselSection.style.display = 'none';
+        }
+      });
+    }
+
+    // Carousel Functions
+    function startCarousel(slideCount) {
+      if (carouselInterval) clearInterval(carouselInterval);
+      
+      carouselInterval = setInterval(() => {
+        carouselIndex = (carouselIndex + 1) % slideCount;
+        updateCarousel();
+      }, 4000);
+    }
+
+    function updateCarousel() {
+      const track = document.getElementById('carouselTrack');
+      const dots = document.querySelectorAll('.carousel-dot');
+      
+      track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+      
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === carouselIndex);
+      });
+    }
+
+    window.goToSlide = (index) => {
+      carouselIndex = index;
+      updateCarousel();
+    };
+
+    // Open Event Modal
+    window.openEventModal = async (eventId) => {
+      currentEventId = eventId;
+      window.location.hash = '/event/' + eventId;
+      
+      const snapshot = await get(ref(db, `events/${eventId}`));
+      if (!snapshot.exists()) return;
+      
+      const event = snapshot.val();
+      
+      document.getElementById('eventModalImage').src = event.imageUrl || 'https://via.placeholder.com/500x200?text=Etkinlik';
+      document.getElementById('eventModalTitle').textContent = event.title;
+      document.getElementById('eventModalDate').textContent = formatEventDate(event.date);
+      document.getElementById('eventModalDesc').textContent = event.description || '';
+      
+      const participantCount = event.participants ? Object.keys(event.participants).length : 0;
+      document.getElementById('eventModalParticipants').textContent = `${participantCount} kisi katiliyor`;
+      
+      // Check if user joined
+      const isJoined = event.participants && event.participants[currentUser.uid];
+      const joinBtn = document.getElementById('eventJoinBtn');
+      
+      if (isJoined) {
+        joinBtn.innerHTML = '<i class="fas fa-check"></i> Katiliyorsun';
+        joinBtn.classList.add('joined');
+      } else {
+        joinBtn.innerHTML = '<i class="fas fa-hand-paper"></i> Katilmak Istiyorum';
+        joinBtn.classList.remove('joined');
+      }
+      
+      // Load Q&A
+      loadEventQA(eventId);
+      
+      document.getElementById('eventModal').classList.add('active');
+    };
+
+    window.closeEventModal = () => {
+      document.getElementById('eventModal').classList.remove('active');
+      currentEventId = null;
+      window.location.hash = '';
+    };
+
+    // Toggle Event Join
+    window.toggleEventJoin = async () => {
+      if (!currentEventId) return;
+      
+      const eventRef = ref(db, `events/${currentEventId}/participants/${currentUser.uid}`);
+      const snapshot = await get(eventRef);
+      
+      try {
+        if (snapshot.exists()) {
+          await remove(eventRef);
+          showToast("Katilim iptal edildi");
+        } else {
+          await set(eventRef, {
+            joinedAt: Date.now(),
+            userId: currentUser.uid
+          });
+          showToast("Etkinlige katildin!");
+        }
+        
+        openEventModal(currentEventId);
+      } catch (error) {
+        console.error("Join error:", error);
+        showToast("Bir hata olustu");
+      }
+    };
+
+    // Load Event Q&A
+    async function loadEventQA(eventId) {
+      const container = document.getElementById('eventQAList');
+      const qaSnapshot = await get(ref(db, `eventQA/${eventId}`));
+      
+      if (!qaSnapshot.exists()) {
+        container.innerHTML = '<p style="color:var(--c-muted);text-align:center;">Henuz soru sorulmamis</p>';
+        return;
+      }
+      
+      let html = '';
+      qaSnapshot.forEach((child) => {
+        const qa = child.val();
+        html += `
+          <div class="qa-item">
+            <div class="qa-question">
+              <i class="fas fa-question-circle"></i>
+              <span>${qa.question}</span>
+            </div>
+            ${qa.answer ? `
+              <div class="qa-answer">
+                <div class="qa-answerer">
+                  <i class="fas fa-check-circle verified-badge"></i>
+                  ${qa.answeredBy || 'Admin'}
+                </div>
+                ${qa.answer}
+              </div>
+            ` : '<div class="qa-answer" style="font-style:italic;">Henuz cevaplanmadi</div>'}
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    // Submit Question
+    window.submitQuestion = async () => {
+      const input = document.getElementById('questionInput');
+      const question = input.value.trim();
+      
+      if (!question || !currentEventId) return;
+      
+      try {
+        await push(ref(db, `eventQA/${currentEventId}`), {
+          question,
+          askedBy: currentUser.uid,
+          askedByName: currentUserData.displayName,
+          askedAt: Date.now()
+        });
+        
+        input.value = '';
+        showToast("Sorunuz gonderildi");
+        loadEventQA(currentEventId);
+      } catch (error) {
+        console.error("Question error:", error);
+        showToast("Bir hata olustu");
+      }
+    };
+
+    // Load My Events
+    async function loadMyEvents() {
+      const container = document.getElementById('myEventsList');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const eventsSnapshot = await get(ref(db, 'events'));
+      
+      if (!eventsSnapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-check"></i><p>Henuz bir etkinlige katilmadiniz</p></div>';
+        return;
+      }
+      
+      let html = '';
+      let hasEvents = false;
+      
+      eventsSnapshot.forEach((child) => {
+        const event = child.val();
+        const eventId = child.key;
+        
+        if (event.participants && event.participants[currentUser.uid]) {
+          hasEvents = true;
+          html += `
+            <div class="my-event-item" onclick="openEventModal('${eventId}')">
+              <img src="${event.imageUrl || 'https://via.placeholder.com/60?text=E'}" alt="">
+              <div class="my-event-info">
+                <h4>${event.title}</h4>
+                <p>${formatEventDate(event.date)}</p>
+              </div>
+            </div>
+          `;
+        }
+      });
+      
+      container.innerHTML = hasEvents ? html : '<div class="empty-state"><i class="fas fa-calendar-check"></i><p>Henuz bir etkinlige katilmadiniz</p></div>';
+    }
+
+    // Settings
+    window.openSettings = () => {
+      // Load current settings
+      document.getElementById('instagramUsername').value = currentUserData.instagram || '';
+      document.getElementById('tiktokUsername').value = currentUserData.tiktok || '';
+      document.getElementById('twitterUsername').value = currentUserData.twitter || '';
+      document.getElementById('privacyEmail').checked = currentUserData.privacyEmail || false;
+      document.getElementById('privacyBirthDate').checked = currentUserData.privacyBirthDate || false;
+      
+      // Mark current theme
+      const currentTheme = localStorage.getItem('lengTheme') || 'default';
+      document.querySelectorAll('.theme-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.theme === currentTheme);
+      });
+      
+      document.getElementById('settingsModal').classList.add('active');
+    };
+
+    window.closeSettings = () => {
+      document.getElementById('settingsModal').classList.remove('active');
+    };
+
+    window.setTheme = (theme) => {
+      document.body.className = '';
+      if (theme !== 'default') {
+        document.body.classList.add('theme-' + theme);
+      }
+      localStorage.setItem('lengTheme', theme);
+      
+      document.querySelectorAll('.theme-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.theme === theme);
+      });
+    };
+
+    function loadTheme() {
+      const theme = localStorage.getItem('lengTheme') || 'default';
+      if (theme !== 'default') {
+        document.body.classList.add('theme-' + theme);
+      }
+    }
+
+    window.saveSettings = async () => {
+      const instagram = document.getElementById('instagramUsername').value.trim();
+      const tiktok = document.getElementById('tiktokUsername').value.trim();
+      const twitter = document.getElementById('twitterUsername').value.trim();
+      const privacyEmail = document.getElementById('privacyEmail').checked;
+      const privacyBirthDate = document.getElementById('privacyBirthDate').checked;
+      
+      try {
+        await update(ref(db, `users/${currentUser.uid}`), {
+          instagram,
+          tiktok,
+          twitter,
+          privacyEmail,
+          privacyBirthDate
+        });
+        
+        currentUserData.instagram = instagram;
+        currentUserData.tiktok = tiktok;
+        currentUserData.twitter = twitter;
+        currentUserData.privacyEmail = privacyEmail;
+        currentUserData.privacyBirthDate = privacyBirthDate;
+        
+        updateSocialLinks();
+        showToast("Ayarlar kaydedildi");
+        closeSettings();
+      } catch (error) {
+        console.error("Settings error:", error);
+        showToast("Bir hata olustu");
+      }
+    };
+
+    // QR Code
+    window.showQRCode = () => {
+      generateQRCode();
+      document.getElementById('qrModal').classList.add('active');
+    };
+
+    window.closeQRModal = () => {
+      document.getElementById('qrModal').classList.remove('active');
+      if (qrInterval) {
+        clearInterval(qrInterval);
+        qrInterval = null;
+      }
+    };
+
+    async function generateQRCode() {
+      const canvas = document.getElementById('qrCanvas');
+      const timerEl = document.getElementById('qrTimer');
+      
+      // Generate unique code
+      const timestamp = Date.now();
+      const uniqueCode = `LENG_${currentUser.uid}_${timestamp}`;
+      
+      // Save to Firebase
+      await set(ref(db, `qrCodes/${currentUser.uid}`), {
+        code: uniqueCode,
+        createdAt: timestamp,
+        expiresAt: timestamp + 30000,
+        userId: currentUser.uid,
+        userName: currentUserData.displayName
+      });
+      
+      // Generate QR
+      QRCode.toCanvas(canvas, uniqueCode, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      });
+      
+      // Timer
+      let seconds = 30;
+      timerEl.textContent = seconds;
+      
+      if (qrInterval) clearInterval(qrInterval);
+      
+      qrInterval = setInterval(() => {
+        seconds--;
+        timerEl.textContent = seconds;
+        
+        if (seconds <= 0) {
+          generateQRCode();
+        }
+      }, 1000);
+    }
+
+    // Share Profile
+    window.shareProfile = () => {
+      const url = window.location.origin + window.location.pathname + '#/user/' + currentUserData.username;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: currentUserData.displayName + ' - LENG',
+          url: url
+        });
+      } else {
+        navigator.clipboard.writeText(url);
+        showToast("Link kopyalandi!");
+      }
+    };
+
+    // Utility Functions
+    function formatDate(timestamp) {
+      if (!timestamp) return '-';
+      return new Date(timestamp).toLocaleDateString('tr-TR');
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return '';
+      const date = new Date(timestamp);
+      const now = new Date();
+      
+      if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      }
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    }
+
+    function formatEventDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
