@@ -27,6 +27,7 @@
       --c-success: #6b9b6b;
       --c-error: #c97070;
       --c-online: #7cb97c;
+      --c-verified: #1da1f2;
     }
 
     body {
@@ -36,6 +37,19 @@
       min-height: 100vh;
       min-height: 100dvh;
       overflow-x: hidden;
+    }
+
+    body.dark-theme {
+      --c-bg: #1a1a2e;
+      --c-content: #eaeaea;
+      --c-action: #e94560;
+      --c-glass: #16213e;
+      --c-light: #0f0f1a;
+      --c-dark: #ffffff;
+      --c-success: #4ecca3;
+      --c-error: #e94560;
+      --c-online: #4ecca3;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     }
 
     body::before {
@@ -195,7 +209,7 @@
       opacity: 0.9;
     }
 
-    .form-group input {
+    .form-group input, .form-group textarea, .form-group select {
       width: 100%;
       padding: 14px 16px;
       background: rgba(255, 255, 255, 0.5);
@@ -207,7 +221,7 @@
       transition: all 250ms ease;
     }
 
-    .form-group input:focus {
+    .form-group input:focus, .form-group textarea:focus {
       outline: none;
       background: rgba(255, 255, 255, 0.8);
       border-color: var(--c-action);
@@ -345,6 +359,14 @@
     .header-name {
       font-weight: 600;
       font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .verified-badge {
+      color: var(--c-verified);
+      font-size: 14px;
     }
 
     /* Bottom Navigation */
@@ -585,6 +607,9 @@
     .user-card-name {
       font-weight: 600;
       margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .user-card-username {
@@ -741,6 +766,9 @@
     .chat-item-name {
       font-weight: 600;
       margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .chat-item-preview {
@@ -782,6 +810,10 @@
       background: linear-gradient(135deg, #f5e6d3 0%, #f0dcc4 50%, #f8ead8 100%);
       z-index: 200;
       flex-direction: column;
+    }
+
+    body.dark-theme .chat-view {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     }
 
     .chat-view.active {
@@ -832,6 +864,9 @@
     .chat-header-info h4 {
       font-size: 1rem;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .chat-header-status {
@@ -932,6 +967,11 @@
       margin-bottom: 24px;
     }
 
+    .profile-avatar-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
     .profile-avatar {
       width: 100px;
       height: 100px;
@@ -941,10 +981,28 @@
       margin-bottom: 16px;
     }
 
+    .profile-verified {
+      position: absolute;
+      bottom: 12px;
+      right: -4px;
+      background: white;
+      border-radius: 50%;
+      padding: 2px;
+    }
+
+    .profile-verified i {
+      color: var(--c-verified);
+      font-size: 24px;
+    }
+
     .profile-name {
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
     .profile-username {
@@ -974,6 +1032,36 @@
       font-size: 0.8rem;
       opacity: 0.7;
     }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-content);
+      font-size: 18px;
+      text-decoration: none;
+      transition: all 200ms ease;
+    }
+
+    .social-link:hover {
+      background: rgba(255, 255, 255, 0.8);
+      transform: scale(1.1);
+    }
+
+    .social-link.instagram { color: #E4405F; }
+    .social-link.tiktok { color: #000000; }
+    .social-link.twitter { color: #1DA1F2; }
 
     .profile-section {
       padding: 20px;
@@ -1005,6 +1093,34 @@
       font-weight: 600;
     }
 
+    .profile-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .profile-btn {
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.4);
+      border: none;
+      color: var(--c-content);
+      font-weight: 600;
+      font-size: 0.9rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 200ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .profile-btn:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
     .logout-btn {
       width: 100%;
       padding: 14px;
@@ -1022,6 +1138,556 @@
 
     .logout-btn:hover {
       background: rgba(201, 112, 112, 0.5);
+    }
+
+    /* Games Page */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .game-card {
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      text-align: center;
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .game-card:hover {
+      background: rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .game-card-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      object-fit: cover;
+      margin: 0 auto 12px;
+      display: block;
+    }
+
+    .game-card i {
+      font-size: 36px;
+      color: var(--c-action);
+      margin-bottom: 12px;
+    }
+
+    .game-card h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .game-card p {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    /* Events Page */
+    .events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .event-card {
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .event-card:hover {
+      background: rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .event-card-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .event-card-content {
+      padding: 20px;
+    }
+
+    .event-card .event-date {
+      display: inline-block;
+      padding: 6px 12px;
+      background: rgba(212, 165, 116, 0.4);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .event-card h4 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .event-card p {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      line-height: 1.4;
+    }
+
+    .event-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(212, 165, 116, 0.2);
+    }
+
+    .event-participants {
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    /* Event Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 24px;
+      background: var(--c-bg);
+      animation: modalIn 300ms ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      position: relative;
+    }
+
+    .modal-header img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-body h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .modal-event-date {
+      display: inline-block;
+      padding: 6px 12px;
+      background: rgba(212, 165, 116, 0.4);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .modal-event-desc {
+      line-height: 1.6;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+
+    .modal-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .join-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(212, 165, 116, 0.5);
+      border: none;
+      color: var(--c-content);
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 200ms ease;
+      margin-bottom: 20px;
+    }
+
+    .join-btn:hover {
+      background: rgba(212, 165, 116, 0.7);
+    }
+
+    .join-btn.joined {
+      background: rgba(107, 155, 107, 0.4);
+    }
+
+    /* Q&A Section */
+    .qa-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(212, 165, 116, 0.2);
+    }
+
+    .qa-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .qa-item {
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .qa-question {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .qa-question i {
+      color: var(--c-action);
+      margin-top: 2px;
+    }
+
+    .qa-answer {
+      padding-left: 24px;
+      opacity: 0.85;
+      line-height: 1.5;
+    }
+
+    .qa-answerer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--c-action);
+      margin-bottom: 4px;
+    }
+
+    .qa-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .qa-form textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(212, 165, 116, 0.3);
+      background: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--c-content);
+      resize: none;
+      min-height: 80px;
+    }
+
+    .qa-form textarea:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .qa-submit {
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: rgba(212, 165, 116, 0.4);
+      border: none;
+      color: var(--c-content);
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      align-self: flex-end;
+    }
+
+    .qa-submit:hover {
+      background: rgba(212, 165, 116, 0.6);
+    }
+
+    /* Settings Modal */
+    .settings-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .settings-modal.active {
+      display: flex;
+    }
+
+    .settings-content {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 24px;
+      background: var(--c-bg);
+      padding: 24px;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .settings-header h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .settings-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(212, 165, 116, 0.2);
+      border: none;
+      color: var(--c-content);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .settings-group {
+      margin-bottom: 20px;
+    }
+
+    .settings-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .toggle-track {
+      width: 48px;
+      height: 28px;
+      border-radius: 99px;
+      background: rgba(212, 165, 116, 0.3);
+      position: relative;
+      transition: background 200ms ease;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 200ms ease;
+    }
+
+    .toggle-switch input:checked + .toggle-track {
+      background: var(--c-action);
+    }
+
+    .toggle-switch input:checked + .toggle-track::after {
+      transform: translateX(20px);
+    }
+
+    .social-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .social-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .social-input-row i {
+      width: 24px;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .social-input-row input {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(212, 165, 116, 0.3);
+      background: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--c-content);
+    }
+
+    .social-input-row input:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .settings-save {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(212, 165, 116, 0.5);
+      border: none;
+      color: var(--c-content);
+      font-weight: 600;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .settings-save:hover {
+      background: rgba(212, 165, 116, 0.7);
+    }
+
+    /* User Profile Modal */
+    .user-profile-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .user-profile-modal.active {
+      display: flex;
+    }
+
+    .user-profile-content {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 24px;
+      background: var(--c-bg);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .user-profile-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(212, 165, 116, 0.2);
+      border: none;
+      color: var(--c-content);
+      cursor: pointer;
+    }
+
+    /* My Events Page */
+    .my-events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .my-event-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+    }
+
+    .my-event-item img {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .my-event-info {
+      flex: 1;
+    }
+
+    .my-event-info h4 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .my-event-info p {
+      font-size: 0.85rem;
+      opacity: 0.7;
     }
 
     /* Empty State */
@@ -1127,87 +1793,13 @@
       font-weight: 600;
       font-size: 0.95rem;
       margin-bottom: 2px;
+      color: var(--c-content);
     }
 
     .notification-popup .notification-desc {
       font-size: 0.85rem;
       opacity: 0.7;
-    }
-
-    /* Games Page */
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .game-card {
-      padding: 20px;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.4);
-      backdrop-filter: blur(8px);
-      text-align: center;
-      cursor: pointer;
-      transition: all 250ms ease;
-    }
-
-    .game-card:hover {
-      background: rgba(255, 255, 255, 0.6);
-      transform: translateY(-2px);
-    }
-
-    .game-card i {
-      font-size: 36px;
-      color: var(--c-action);
-      margin-bottom: 12px;
-    }
-
-    .game-card h4 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .game-card p {
-      font-size: 0.8rem;
-      opacity: 0.7;
-    }
-
-    /* Events Page */
-    .event-card {
-      padding: 20px;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.4);
-      backdrop-filter: blur(8px);
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: all 250ms ease;
-    }
-
-    .event-card:hover {
-      background: rgba(255, 255, 255, 0.6);
-    }
-
-    .event-card .event-date {
-      display: inline-block;
-      padding: 6px 12px;
-      background: rgba(212, 165, 116, 0.4);
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .event-card h4 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .event-card p {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      line-height: 1.4;
+      color: var(--c-content);
     }
 
     /* Responsive */
@@ -1219,6 +1811,7 @@
       .quick-link i { font-size: 24px; }
       .message { max-width: 85%; }
       .notification-popup { right: 10px; left: 10px; max-width: none; }
+      .profile-buttons { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -1317,7 +1910,7 @@
           </div>
         </div>
 
-        <h3 class="section-title"><i class="fas fa-rocket"></i> Yaklasanlar</h3>
+        <h3 class="section-title"><i class="fas fa-rocket"></i> Kesfet</h3>
         <div class="quick-links">
           <div class="quick-link" onclick="navigateTo('games')">
             <i class="fas fa-gamepad"></i>
@@ -1383,7 +1976,7 @@
       <!-- Events Page -->
       <div class="page" id="eventsPage">
         <h2 class="page-title">Etkinlikler</h2>
-        <div id="eventsList">
+        <div class="events-list" id="eventsList">
           <div class="empty-state">
             <i class="fas fa-calendar-alt"></i>
             <p>Henuz etkinlik eklenmemis</p>
@@ -1391,10 +1984,26 @@
         </div>
       </div>
 
+      <!-- My Events Page -->
+      <div class="page" id="myEventsPage">
+        <h2 class="page-title">Katildigim Etkinlikler</h2>
+        <div class="my-events-list" id="myEventsList">
+          <div class="empty-state">
+            <i class="fas fa-calendar-check"></i>
+            <p>Henuz bir etkinlige katilmadiniz</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Profile Page -->
       <div class="page" id="profilePage">
         <div class="profile-header">
-          <img class="profile-avatar" id="profileAvatar" src="https://ui-avatars.com/api/?name=U&background=d4a574&color=3d2f1f&size=200" alt="Avatar">
+          <div class="profile-avatar-wrapper">
+            <img class="profile-avatar" id="profileAvatar" src="https://ui-avatars.com/api/?name=U&background=d4a574&color=3d2f1f&size=200" alt="Avatar">
+            <div class="profile-verified" id="profileVerified" style="display:none;">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
           <h2 class="profile-name" id="profileName">Kullanici</h2>
           <p class="profile-username" id="profileUsername">@kullanici</p>
           <div class="profile-stats">
@@ -1403,6 +2012,16 @@
               <div class="stat-label">Arkadas</div>
             </div>
           </div>
+          <div class="social-links" id="socialLinks" style="display:none;"></div>
+        </div>
+
+        <div class="profile-buttons">
+          <button class="profile-btn" onclick="navigateTo('myEvents')">
+            <i class="fas fa-calendar-check"></i> Etkinliklerim
+          </button>
+          <button class="profile-btn" onclick="openSettings()">
+            <i class="fas fa-cog"></i> Ayarlar
+          </button>
         </div>
         
         <div class="profile-section">
@@ -1472,6 +2091,104 @@
     </div>
   </div>
 
+  <!-- Event Modal -->
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <img id="eventModalImage" src="https://via.placeholder.com/500x200" alt="">
+        <button class="modal-close" onclick="closeEventModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h2 id="eventModalTitle">Etkinlik Adi</h2>
+        <span class="modal-event-date" id="eventModalDate">Tarih</span>
+        <p class="modal-event-desc" id="eventModalDesc">Aciklama</p>
+        
+        <button class="join-btn" id="eventJoinBtn" onclick="toggleEventJoin()">
+          <i class="fas fa-hand-paper"></i> Katilmak Istiyorum
+        </button>
+
+        <p class="event-participants" id="eventModalParticipants">0 kisi katiliyor</p>
+
+        <div class="qa-section">
+          <h4 class="modal-section-title"><i class="fas fa-question-circle"></i> Soru & Cevap</h4>
+          <div class="qa-list" id="eventQAList"></div>
+          <div class="qa-form">
+            <textarea id="questionInput" placeholder="Sorunuzu yazin..."></textarea>
+            <button class="qa-submit" onclick="submitQuestion()">Soru Sor</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h3>Ayarlar</h3>
+        <button class="settings-close" onclick="closeSettings()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="settings-group">
+        <label>Tema</label>
+        <div class="toggle-switch" onclick="toggleTheme()">
+          <span>Karanlik Tema</span>
+          <input type="checkbox" id="darkThemeToggle">
+          <div class="toggle-track"></div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <label>Sosyal Medya Hesaplari</label>
+        <div class="social-input-group">
+          <div class="social-input-row">
+            <i class="fab fa-instagram" style="color:#E4405F"></i>
+            <input type="text" id="instagramUsername" placeholder="Instagram kullanici adi">
+          </div>
+          <div class="social-input-row">
+            <i class="fab fa-tiktok" style="color:#000"></i>
+            <input type="text" id="tiktokUsername" placeholder="TikTok kullanici adi">
+          </div>
+          <div class="social-input-row">
+            <i class="fab fa-x-twitter" style="color:#1DA1F2"></i>
+            <input type="text" id="twitterUsername" placeholder="X kullanici adi">
+          </div>
+        </div>
+      </div>
+
+      <button class="settings-save" onclick="saveSettings()">Kaydet</button>
+    </div>
+  </div>
+
+  <!-- User Profile Modal -->
+  <div class="user-profile-modal" id="userProfileModal">
+    <div class="user-profile-content">
+      <button class="settings-close" onclick="closeUserProfile()" style="position:absolute;top:12px;right:12px;">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="profile-avatar-wrapper">
+        <img class="profile-avatar" id="userProfileAvatar" src="" alt="">
+        <div class="profile-verified" id="userProfileVerified" style="display:none;">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+      <h2 class="profile-name" id="userProfileName">Kullanici</h2>
+      <p class="profile-username" id="userProfileUsername">@kullanici</p>
+      <div class="profile-stats" style="margin-bottom:16px;">
+        <div class="stat">
+          <div class="stat-value" id="userProfileFriendCount">0</div>
+          <div class="stat-label">Arkadas</div>
+        </div>
+      </div>
+      <div class="social-links" id="userProfileSocialLinks" style="margin-bottom:16px;"></div>
+      <button class="user-card-action" id="userProfileActionBtn" style="width:100%;padding:14px;">Arkadas Ekle</button>
+    </div>
+  </div>
+
   <!-- Notification Popup -->
   <div class="notification-popup" id="notificationPopup" onclick="handleNotificationClick()">
     <div class="notification-content">
@@ -1510,7 +2227,8 @@
       update,
       serverTimestamp,
       limitToLast,
-      onChildAdded
+      onChildAdded,
+      remove
     } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
     // Firebase Config
@@ -1537,6 +2255,7 @@
     let requestsListener = null;
     let friendsCountListener = null;
     let lastNotificationData = null;
+    let currentEventId = null;
 
     // Auth State
     onAuthStateChanged(auth, async (user) => {
@@ -1547,6 +2266,14 @@
         
         if (snapshot.exists() && snapshot.val().username) {
           currentUserData = snapshot.val();
+          
+          // Check if banned
+          if (currentUserData.banned) {
+            showToast("Hesabiniz engellenmi. Giris yapamazsiniz.");
+            await firebaseSignOut(auth);
+            return;
+          }
+          
           showApp();
           updateUserOnlineStatus(true);
           loadFriendRequests();
@@ -1554,6 +2281,7 @@
           loadFriendCountRealtime();
           loadGames();
           loadEvents();
+          loadTheme();
         } else {
           showSetupForm(user);
         }
@@ -1584,6 +2312,12 @@
       }
     };
 
+    // Show Login
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('appContainer').classList.remove('active');
+    }
+
     // Show Setup Form
     function showSetupForm(user) {
       document.getElementById('googleLogin').style.display = 'none';
@@ -1591,114 +2325,130 @@
       document.getElementById('displayName').value = user.displayName || '';
     }
 
+    // Show App
+    function showApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.add('active');
+      updateUIWithUserData();
+    }
+
+    // Update UI
+    function updateUIWithUserData() {
+      if (!currentUserData) return;
+      
+      const verifiedBadge = currentUserData.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+      
+      document.getElementById('headerAvatar').src = currentUserData.photoURL;
+      document.getElementById('headerName').innerHTML = currentUserData.displayName.split(' ')[0] + ' ' + verifiedBadge;
+      document.getElementById('welcomeGreeting').textContent = `Merhaba, ${currentUserData.displayName.split(' ')[0]}!`;
+      
+      document.getElementById('profileAvatar').src = currentUserData.photoURL;
+      document.getElementById('profileName').textContent = currentUserData.displayName;
+      document.getElementById('profileUsername').textContent = '@' + currentUserData.username;
+      document.getElementById('profileEmail').textContent = currentUserData.email;
+      document.getElementById('profileBirthDate').textContent = currentUserData.birthDate || '-';
+      document.getElementById('profileJoinDate').textContent = formatDate(currentUserData.createdAt);
+      
+      // Verified badge
+      if (currentUserData.verified) {
+        document.getElementById('profileVerified').style.display = 'block';
+      } else {
+        document.getElementById('profileVerified').style.display = 'none';
+      }
+      
+      // Social links
+      updateSocialLinks();
+    }
+
+    // Update Social Links
+    function updateSocialLinks() {
+      const container = document.getElementById('socialLinks');
+      let html = '';
+      let hasLinks = false;
+      
+      if (currentUserData.instagram) {
+        html += `<a href="https://www.instagram.com/${currentUserData.instagram}" target="_blank" class="social-link instagram"><i class="fab fa-instagram"></i></a>`;
+        hasLinks = true;
+      }
+      if (currentUserData.tiktok) {
+        html += `<a href="https://www.tiktok.com/@${currentUserData.tiktok}" target="_blank" class="social-link tiktok"><i class="fab fa-tiktok"></i></a>`;
+        hasLinks = true;
+      }
+      if (currentUserData.twitter) {
+        html += `<a href="https://www.x.com/${currentUserData.twitter}" target="_blank" class="social-link twitter"><i class="fab fa-x-twitter"></i></a>`;
+        hasLinks = true;
+      }
+      
+      container.innerHTML = html;
+      container.style.display = hasLinks ? 'flex' : 'none';
+    }
+
     // Complete Profile
     window.completeProfile = async () => {
       const displayName = document.getElementById('displayName').value.trim();
       const username = document.getElementById('username').value.trim().toLowerCase();
       const birthDate = document.getElementById('birthDate').value;
-      const errorEl = document.getElementById('usernameError');
-
+      
       if (!displayName || !username || !birthDate) {
         showToast("Lutfen tum alanlari doldurun");
         return;
       }
-
-      if (!/^[a-z0-9_]{3,20}$/.test(username)) {
-        errorEl.textContent = "Kullanici adi 3-20 karakter, sadece harf, rakam ve _ icermeli";
-        errorEl.classList.add('show');
+      
+      if (!/^[a-z0-9_]+$/.test(username)) {
+        document.getElementById('usernameError').textContent = "Sadece kucuk harf, rakam ve alt cizgi kullanilabilir";
+        document.getElementById('usernameError').classList.add('show');
         return;
       }
-
-      // Check username uniqueness
-      const usernameRef = ref(db, 'usernames/' + username);
-      const usernameSnapshot = await get(usernameRef);
+      
+      // Check username availability
+      const usernameQuery = query(ref(db, 'users'), orderByChild('username'), equalTo(username));
+      const usernameSnapshot = await get(usernameQuery);
       
       if (usernameSnapshot.exists()) {
-        errorEl.textContent = "Bu kullanici adi zaten alinmis";
-        errorEl.classList.add('show');
+        document.getElementById('usernameError').textContent = "Bu kullanici adi zaten alinmi";
+        document.getElementById('usernameError').classList.add('show');
         return;
       }
-
-      errorEl.classList.remove('show');
-
+      
       try {
-        const btn = document.getElementById('completeSetup');
-        btn.disabled = true;
-        btn.textContent = "Kaydediliyor...";
-
-        // Save username reservation
-        await set(usernameRef, currentUser.uid);
-
-        // Save user data
         const userData = {
           uid: currentUser.uid,
-          displayName: displayName,
-          username: username,
           email: currentUser.email,
-          photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=d4a574&color=3d2f1f&size=200`,
-          birthDate: birthDate,
+          displayName,
+          username,
+          birthDate,
+          photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=d4a574&color=3d2f1f`,
           createdAt: Date.now(),
           online: true,
-          lastSeen: Date.now()
+          lastSeen: Date.now(),
+          verified: false
         };
-
+        
         await set(ref(db, `users/${currentUser.uid}`), userData);
         currentUserData = userData;
         showApp();
-        showToast("Profil olusturuldu!");
+        loadFriendRequests();
+        loadChats();
+        loadFriendCountRealtime();
+        loadGames();
+        loadEvents();
       } catch (error) {
-        console.error("Profile save error:", error);
-        showToast("Bir hata olustu");
-        document.getElementById('completeSetup').disabled = false;
-        document.getElementById('completeSetup').textContent = "Profili Tamamla";
+        console.error("Profile error:", error);
+        showToast("Bir hata olustu. Tekrar deneyin.");
       }
     };
 
     // Update Online Status
-    async function updateUserOnlineStatus(online) {
+    async function updateUserOnlineStatus(isOnline) {
       if (!currentUser) return;
       try {
         await update(ref(db, `users/${currentUser.uid}`), {
-          online: online,
+          online: isOnline,
           lastSeen: Date.now()
         });
-      } catch (e) {}
-    }
-
-    // Show Login
-    function showLogin() {
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('appContainer').classList.remove('active');
-      document.getElementById('googleLogin').style.display = 'block';
-      document.getElementById('setupForm').classList.remove('active');
-    }
-
-    // Show App
-    function showApp() {
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('appContainer').classList.add('active');
-      updateUI();
-    }
-
-    // Update UI
-    function updateUI() {
-      if (!currentUserData) return;
-      
-      document.getElementById('headerAvatar').src = currentUserData.photoURL;
-      document.getElementById('headerName').textContent = currentUserData.displayName.split(' ')[0];
-      document.getElementById('welcomeGreeting').textContent = `Merhaba, ${currentUserData.displayName.split(' ')[0]}!`;
-      document.getElementById('profileAvatar').src = currentUserData.photoURL;
-      document.getElementById('profileName').textContent = currentUserData.displayName;
-      document.getElementById('profileUsername').textContent = `@${currentUserData.username}`;
-      document.getElementById('profileEmail').textContent = currentUserData.email;
-      document.getElementById('profileBirthDate').textContent = formatDate(currentUserData.birthDate);
-      document.getElementById('profileJoinDate').textContent = formatDate(new Date(currentUserData.createdAt).toISOString().split('T')[0]);
-    }
-
-    // Format Date
-    function formatDate(dateStr) {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+      } catch (error) {
+        console.error("Status error:", error);
+      }
     }
 
     // Navigation
@@ -1707,490 +2457,434 @@
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       
       document.getElementById(page + 'Page').classList.add('active');
-      document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
-
+      const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+      if (navItem) navItem.classList.add('active');
+      
       if (page === 'friends') {
-        switchFriendsTab('friends');
+        loadFriends();
+      } else if (page === 'myEvents') {
+        loadMyEvents();
       }
     };
 
     // Search Users
     window.searchUsers = async () => {
       const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-      const resultsEl = document.getElementById('searchResults');
-
-      if (searchTerm.length < 2) {
-        resultsEl.innerHTML = `
-          <div class="empty-state">
-            <i class="fas fa-users"></i>
-            <p>Yeni insanlarla tanismak icin aramaya basla</p>
-          </div>
-        `;
+      const container = document.getElementById('searchResults');
+      
+      if (!searchTerm) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>Yeni insanlarla tanismak icin aramaya basla</p></div>';
         return;
       }
-
-      resultsEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
-      try {
-        const usersRef = ref(db, 'users');
-        const snapshot = await get(usersRef);
-        
-        if (!snapshot.exists()) {
-          resultsEl.innerHTML = '<div class="empty-state"><p>Kullanici bulunamadi</p></div>';
-          return;
-        }
-
-        const users = [];
-        snapshot.forEach((child) => {
-          const user = child.val();
-          if (user.uid !== currentUser.uid) {
-            if (user.displayName.toLowerCase().includes(searchTerm) || 
-                user.username.toLowerCase().includes(searchTerm)) {
-              users.push(user);
-            }
-          }
-        });
-
-        if (users.length === 0) {
-          resultsEl.innerHTML = '<div class="empty-state"><p>Kullanici bulunamadi</p></div>';
-          return;
-        }
-
-        // Get friendship status for each user
-        let html = '';
-        for (const user of users) {
-          const status = await getFriendshipStatus(user.uid);
-          html += createUserCard(user, status);
-        }
-        resultsEl.innerHTML = html;
-      } catch (error) {
-        console.error("Search error:", error);
-        resultsEl.innerHTML = '<div class="empty-state"><p>Arama sirasinda hata olustu</p></div>';
+      
+      const snapshot = await get(ref(db, 'users'));
+      if (!snapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i><p>Kullanici bulunamadi</p></div>';
+        return;
       }
+      
+      let html = '';
+      snapshot.forEach((child) => {
+        const user = child.val();
+        if (user.uid === currentUser.uid) return;
+        
+        if (user.displayName.toLowerCase().includes(searchTerm) || 
+            user.username.toLowerCase().includes(searchTerm)) {
+          const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="user-card" onclick="openUserProfile('${user.uid}')">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${user.photoURL}" alt="">
+                ${user.online ? '<div class="online-dot"></div>' : ''}
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${user.displayName} ${verifiedBadge}</div>
+                <div class="user-card-username">@${user.username}</div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      
+      container.innerHTML = html || '<div class="empty-state"><i class="fas fa-user-slash"></i><p>Kullanici bulunamadi</p></div>';
     };
 
-    // Get Friendship Status
-    async function getFriendshipStatus(userId) {
-      const friendRef = ref(db, `friends/${currentUser.uid}/${userId}`);
-      const friendSnapshot = await get(friendRef);
-      if (friendSnapshot.exists()) return 'friend';
+    // Open User Profile
+    window.openUserProfile = async (userId) => {
+      const snapshot = await get(ref(db, `users/${userId}`));
+      if (!snapshot.exists()) return;
+      
+      const user = snapshot.val();
+      
+      document.getElementById('userProfileAvatar').src = user.photoURL;
+      document.getElementById('userProfileName').textContent = user.displayName;
+      document.getElementById('userProfileUsername').textContent = '@' + user.username;
+      
+      // Verified badge
+      if (user.verified) {
+        document.getElementById('userProfileVerified').style.display = 'block';
+      } else {
+        document.getElementById('userProfileVerified').style.display = 'none';
+      }
+      
+      // Friend count
+      const friendsSnapshot = await get(ref(db, `friends/${userId}`));
+      const friendCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
+      document.getElementById('userProfileFriendCount').textContent = friendCount;
+      
+      // Social links
+      const socialContainer = document.getElementById('userProfileSocialLinks');
+      let socialHtml = '';
+      if (user.instagram) {
+        socialHtml += `<a href="https://www.instagram.com/${user.instagram}" target="_blank" class="social-link instagram"><i class="fab fa-instagram"></i></a>`;
+      }
+      if (user.tiktok) {
+        socialHtml += `<a href="https://www.tiktok.com/@${user.tiktok}" target="_blank" class="social-link tiktok"><i class="fab fa-tiktok"></i></a>`;
+      }
+      if (user.twitter) {
+        socialHtml += `<a href="https://www.x.com/${user.twitter}" target="_blank" class="social-link twitter"><i class="fab fa-x-twitter"></i></a>`;
+      }
+      socialContainer.innerHTML = socialHtml;
+      socialContainer.style.display = socialHtml ? 'flex' : 'none';
+      
+      // Action button
+      const actionBtn = document.getElementById('userProfileActionBtn');
+      const isFriend = await checkFriendship(userId);
+      const isPending = await checkPendingRequest(userId);
+      
+      if (isFriend) {
+        actionBtn.textContent = 'Mesaj Gonder';
+        actionBtn.className = 'user-card-action friend';
+        actionBtn.onclick = () => { closeUserProfile(); openChat(userId); };
+      } else if (isPending) {
+        actionBtn.textContent = 'Istek Gonderildi';
+        actionBtn.className = 'user-card-action pending';
+        actionBtn.onclick = null;
+      } else {
+        actionBtn.textContent = 'Arkadas Ekle';
+        actionBtn.className = 'user-card-action';
+        actionBtn.onclick = () => { sendFriendRequest(userId); };
+      }
+      
+      document.getElementById('userProfileModal').classList.add('active');
+    };
 
-      const sentRef = ref(db, `friendRequests/${userId}/${currentUser.uid}`);
-      const sentSnapshot = await get(sentRef);
-      if (sentSnapshot.exists()) return 'pending';
+    window.closeUserProfile = () => {
+      document.getElementById('userProfileModal').classList.remove('active');
+    };
 
-      const receivedRef = ref(db, `friendRequests/${currentUser.uid}/${userId}`);
-      const receivedSnapshot = await get(receivedRef);
-      if (receivedSnapshot.exists()) return 'received';
-
-      return 'none';
+    // Check friendship
+    async function checkFriendship(userId) {
+      const snapshot = await get(ref(db, `friends/${currentUser.uid}/${userId}`));
+      return snapshot.exists();
     }
 
-    // Create User Card
-    function createUserCard(user, status) {
-      let actionBtn = '';
-      switch(status) {
-        case 'friend':
-          actionBtn = `<button class="user-card-action friend" onclick="openChat('${user.uid}')">Mesaj</button>`;
-          break;
-        case 'pending':
-          actionBtn = `<button class="user-card-action pending" disabled>Bekleniyor</button>`;
-          break;
-        case 'received':
-          actionBtn = `<button class="user-card-action" onclick="acceptFriendRequest('${user.uid}')">Kabul Et</button>`;
-          break;
-        default:
-          actionBtn = `<button class="user-card-action" onclick="sendFriendRequest('${user.uid}')">Arkadas Ekle</button>`;
-      }
-
-      return `
-        <div class="user-card">
-          <div class="avatar-wrapper">
-            <img class="user-card-avatar" src="${user.photoURL}" alt="${user.displayName}">
-            ${user.online ? '<span class="online-dot"></span>' : ''}
-          </div>
-          <div class="user-card-info">
-            <div class="user-card-name">${user.displayName}</div>
-            <div class="user-card-username">@${user.username}</div>
-          </div>
-          ${actionBtn}
-        </div>
-      `;
+    // Check pending request
+    async function checkPendingRequest(userId) {
+      const snapshot = await get(ref(db, `friendRequests/${userId}/${currentUser.uid}`));
+      return snapshot.exists();
     }
 
     // Send Friend Request
-    window.sendFriendRequest = async (userId) => {
+    window.sendFriendRequest = async (toUserId) => {
       try {
-        await set(ref(db, `friendRequests/${userId}/${currentUser.uid}`), {
+        await set(ref(db, `friendRequests/${toUserId}/${currentUser.uid}`), {
           from: currentUser.uid,
           timestamp: Date.now()
         });
         showToast("Arkadas istegi gonderildi");
-        searchUsers();
+        closeUserProfile();
       } catch (error) {
-        console.error("Friend request error:", error);
-        showToast("Istek gonderilemedi");
+        console.error("Request error:", error);
+        showToast("Bir hata olustu");
       }
     };
 
-    // Accept Friend Request
-    window.acceptFriendRequest = async (userId) => {
+    // Load Friend Requests with realtime notifications
+    function loadFriendRequests() {
+      if (requestsListener) off(ref(db, `friendRequests/${currentUser.uid}`));
+      
+      const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
+      
+      // Listen for new requests
+      onChildAdded(requestsRef, async (snapshot) => {
+        const request = snapshot.val();
+        
+        // Show notification for new requests
+        if (lastNotificationData !== request.from) {
+          const senderSnapshot = await get(ref(db, `users/${request.from}`));
+          if (senderSnapshot.exists()) {
+            const sender = senderSnapshot.val();
+            showNotification(
+              sender.photoURL,
+              'Arkadas Istegi',
+              `${sender.displayName} size arkadas istegi gonderdi`
+            );
+            lastNotificationData = request.from;
+          }
+        }
+      });
+      
+      // Update badge count
+      onValue(requestsRef, (snapshot) => {
+        const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        const badge = document.getElementById('requestsBadge');
+        const navBadge = document.getElementById('friendsNavBadge');
+        
+        if (count > 0) {
+          badge.textContent = count;
+          badge.style.display = 'flex';
+          navBadge.classList.add('show');
+        } else {
+          badge.style.display = 'none';
+          navBadge.classList.remove('show');
+        }
+      });
+      
+      requestsListener = requestsRef;
+    }
+
+    // Show Notification
+    function showNotification(avatar, title, desc) {
+      document.getElementById('notificationAvatar').src = avatar;
+      document.getElementById('notificationTitle').textContent = title;
+      document.getElementById('notificationDesc').textContent = desc;
+      document.getElementById('notificationPopup').classList.add('show');
+      
+      setTimeout(() => {
+        document.getElementById('notificationPopup').classList.remove('show');
+      }, 5000);
+    }
+
+    window.handleNotificationClick = () => {
+      document.getElementById('notificationPopup').classList.remove('show');
+      navigateTo('friends');
+      switchFriendsTab('requests');
+    };
+
+    // Friends Tab
+    window.switchFriendsTab = (tab) => {
+      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (tab === 'friends') {
+        loadFriends();
+      } else if (tab === 'requests') {
+        loadRequests();
+      } else if (tab === 'sent') {
+        loadSentRequests();
+      }
+    };
+
+    // Load Friends
+    async function loadFriends() {
+      const container = document.getElementById('friendsContent');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const friendsRef = ref(db, `friends/${currentUser.uid}`);
+      const snapshot = await get(friendsRef);
+      
+      if (!snapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-user-friends"></i><p>Henuz arkadasiniz yok</p></div>';
+        return;
+      }
+      
+      let html = '<div class="user-list">';
+      for (const [friendId, data] of Object.entries(snapshot.val())) {
+        const friendSnapshot = await get(ref(db, `users/${friendId}`));
+        if (friendSnapshot.exists()) {
+          const friend = friendSnapshot.val();
+          const verifiedBadge = friend.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="user-card" onclick="openUserProfile('${friendId}')">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${friend.photoURL}" alt="">
+                ${friend.online ? '<div class="online-dot"></div>' : ''}
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${friend.displayName} ${verifiedBadge}</div>
+                <div class="user-card-username">@${friend.username}</div>
+              </div>
+              <button class="user-card-action" onclick="event.stopPropagation(); openChat('${friendId}')">Mesaj</button>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // Load Requests
+    async function loadRequests() {
+      const container = document.getElementById('friendsContent');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
+      const snapshot = await get(requestsRef);
+      
+      if (!snapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Bekleyen istek yok</p></div>';
+        return;
+      }
+      
+      let html = '<div class="user-list">';
+      for (const [fromId, data] of Object.entries(snapshot.val())) {
+        const userSnapshot = await get(ref(db, `users/${fromId}`));
+        if (userSnapshot.exists()) {
+          const user = userSnapshot.val();
+          const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="request-card">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${user.photoURL}" alt="">
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${user.displayName} ${verifiedBadge}</div>
+                <div class="user-card-username">@${user.username}</div>
+              </div>
+              <div class="request-actions">
+                <button class="btn-accept" onclick="acceptRequest('${fromId}')"><i class="fas fa-check"></i></button>
+                <button class="btn-reject" onclick="rejectRequest('${fromId}')"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // Load Sent Requests
+    async function loadSentRequests() {
+      const container = document.getElementById('friendsContent');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const usersSnapshot = await get(ref(db, 'users'));
+      if (!usersSnapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>Gonderilen istek yok</p></div>';
+        return;
+      }
+      
+      let html = '<div class="user-list">';
+      let hasRequests = false;
+      
+      for (const [userId, user] of Object.entries(usersSnapshot.val())) {
+        if (userId === currentUser.uid) continue;
+        
+        const requestSnapshot = await get(ref(db, `friendRequests/${userId}/${currentUser.uid}`));
+        if (requestSnapshot.exists()) {
+          hasRequests = true;
+          const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="user-card">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${user.photoURL}" alt="">
+              </div>
+              <div class="user-card-info">
+                <div class="user-card-name">${user.displayName} ${verifiedBadge}</div>
+                <div class="user-card-username">@${user.username}</div>
+              </div>
+              <span class="user-card-action pending">Bekliyor</span>
+            </div>
+          `;
+        }
+      }
+      html += '</div>';
+      
+      container.innerHTML = hasRequests ? html : '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>Gonderilen istek yok</p></div>';
+    }
+
+    // Accept Request
+    window.acceptRequest = async (fromId) => {
       try {
-        // Add to friends (both ways)
-        await set(ref(db, `friends/${currentUser.uid}/${userId}`), {
-          timestamp: Date.now()
-        });
-        await set(ref(db, `friends/${userId}/${currentUser.uid}`), {
-          timestamp: Date.now()
-        });
+        // Add to both friends lists
+        await set(ref(db, `friends/${currentUser.uid}/${fromId}`), { since: Date.now() });
+        await set(ref(db, `friends/${fromId}/${currentUser.uid}`), { since: Date.now() });
         
         // Remove request
-        await set(ref(db, `friendRequests/${currentUser.uid}/${userId}`), null);
+        await remove(ref(db, `friendRequests/${currentUser.uid}/${fromId}`));
         
-        showToast("Arkadas istegi kabul edildi");
-        loadFriendRequests();
-        searchUsers();
+        showToast("Arkadas eklendi");
+        loadRequests();
       } catch (error) {
         console.error("Accept error:", error);
-        showToast("Istek kabul edilemedi");
+        showToast("Bir hata olustu");
       }
     };
 
-    // Reject Friend Request
-    window.rejectFriendRequest = async (userId) => {
+    // Reject Request
+    window.rejectRequest = async (fromId) => {
       try {
-        await set(ref(db, `friendRequests/${currentUser.uid}/${userId}`), null);
+        await remove(ref(db, `friendRequests/${currentUser.uid}/${fromId}`));
         showToast("Istek reddedildi");
-        loadFriendRequests();
+        loadRequests();
       } catch (error) {
         console.error("Reject error:", error);
       }
     };
 
-    // Show Notification Popup
-    async function showNotificationPopup(type, userId) {
-      try {
-        const userSnapshot = await get(ref(db, `users/${userId}`));
-        if (!userSnapshot.exists()) return;
-        
-        const user = userSnapshot.val();
-        const popup = document.getElementById('notificationPopup');
-        
-        document.getElementById('notificationAvatar').src = user.photoURL;
-        
-        if (type === 'friendRequest') {
-          document.getElementById('notificationTitle').textContent = 'Yeni Arkadas Istegi';
-          document.getElementById('notificationDesc').textContent = `${user.displayName} sana arkadas istegi gonderdi`;
-          lastNotificationData = { type: 'friendRequest', userId };
-        } else if (type === 'message') {
-          document.getElementById('notificationTitle').textContent = 'Yeni Mesaj';
-          document.getElementById('notificationDesc').textContent = `${user.displayName} sana mesaj gonderdi`;
-          lastNotificationData = { type: 'message', userId };
-        }
-        
-        popup.classList.add('show');
-        
-        setTimeout(() => {
-          popup.classList.remove('show');
-        }, 5000);
-      } catch (e) {
-        console.error("Notification error:", e);
-      }
-    }
-
-    // Handle Notification Click
-    window.handleNotificationClick = () => {
-      const popup = document.getElementById('notificationPopup');
-      popup.classList.remove('show');
-      
-      if (lastNotificationData) {
-        if (lastNotificationData.type === 'friendRequest') {
-          navigateTo('friends');
-          setTimeout(() => switchFriendsTab('requests'), 100);
-        } else if (lastNotificationData.type === 'message') {
-          openChat(lastNotificationData.userId);
-        }
-      }
-    };
-
-    // Load Friend Requests with real-time notifications
-    function loadFriendRequests() {
-      const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
-      
-      // Track existing requests to detect new ones
-      let existingRequests = new Set();
-      let isInitialLoad = true;
-      
-      onValue(requestsRef, async (snapshot) => {
-        const badge = document.getElementById('requestsBadge');
-        const navBadge = document.getElementById('friendsNavBadge');
-        
-        if (snapshot.exists()) {
-          const requests = snapshot.val();
-          const requestIds = Object.keys(requests);
-          const count = requestIds.length;
-          
-          badge.textContent = count;
-          badge.style.display = count > 0 ? 'flex' : 'none';
-          navBadge.classList.toggle('show', count > 0);
-          
-          // Check for new requests (not initial load)
-          if (!isInitialLoad) {
-            for (const requesterId of requestIds) {
-              if (!existingRequests.has(requesterId)) {
-                // New friend request - show notification
-                showNotificationPopup('friendRequest', requesterId);
-              }
-            }
-          }
-          
-          // Update existing requests set
-          existingRequests = new Set(requestIds);
-        } else {
-          badge.style.display = 'none';
-          navBadge.classList.remove('show');
-          existingRequests.clear();
-        }
-        
-        isInitialLoad = false;
-      });
-    }
-
-    // Load Friend Count in real-time
+    // Load Friend Count Realtime
     function loadFriendCountRealtime() {
       const friendsRef = ref(db, `friends/${currentUser.uid}`);
-      
-      if (friendsCountListener) {
-        off(friendsRef);
-      }
-      
-      friendsCountListener = onValue(friendsRef, (snapshot) => {
+      onValue(friendsRef, (snapshot) => {
         const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
         document.getElementById('friendCount').textContent = count;
       });
     }
 
-    // Switch Friends Tab
-    window.switchFriendsTab = async (tab) => {
-      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-      event?.target?.classList.add('active');
-
-      const contentEl = document.getElementById('friendsContent');
-      contentEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
-      if (tab === 'friends') {
-        await loadFriendsList();
-      } else if (tab === 'requests') {
-        await loadRequestsList();
-      } else if (tab === 'sent') {
-        await loadSentRequests();
-      }
-    };
-
-    // Load Friends List
-    async function loadFriendsList() {
-      const contentEl = document.getElementById('friendsContent');
-      const friendsRef = ref(db, `friends/${currentUser.uid}`);
-      const snapshot = await get(friendsRef);
-
-      if (!snapshot.exists()) {
-        contentEl.innerHTML = '<div class="empty-state"><i class="fas fa-user-friends"></i><p>Henuz arkadasin yok</p></div>';
-        return;
-      }
-
-      let html = '<div class="user-list">';
-      for (const [friendId, data] of Object.entries(snapshot.val())) {
-        const userSnapshot = await get(ref(db, `users/${friendId}`));
-        if (userSnapshot.exists()) {
-          const user = userSnapshot.val();
-          html += `
-            <div class="user-card" onclick="openChat('${user.uid}')">
-              <div class="avatar-wrapper">
-                <img class="user-card-avatar" src="${user.photoURL}" alt="${user.displayName}">
-                ${user.online ? '<span class="online-dot"></span>' : ''}
-              </div>
-              <div class="user-card-info">
-                <div class="user-card-name">${user.displayName}</div>
-                <div class="user-card-username">@${user.username}</div>
-              </div>
-              <button class="user-card-action friend">Mesaj</button>
-            </div>
-          `;
-        }
-      }
-      html += '</div>';
-      contentEl.innerHTML = html;
-    }
-
-    // Load Requests List
-    async function loadRequestsList() {
-      const contentEl = document.getElementById('friendsContent');
-      const requestsRef = ref(db, `friendRequests/${currentUser.uid}`);
-      const snapshot = await get(requestsRef);
-
-      if (!snapshot.exists()) {
-        contentEl.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Arkadas istegi yok</p></div>';
-        return;
-      }
-
-      let html = '<div class="friend-requests">';
-      for (const [fromId, data] of Object.entries(snapshot.val())) {
-        const userSnapshot = await get(ref(db, `users/${fromId}`));
-        if (userSnapshot.exists()) {
-          const user = userSnapshot.val();
-          html += `
-            <div class="request-card">
-              <img class="user-card-avatar" src="${user.photoURL}" alt="${user.displayName}">
-              <div class="user-card-info">
-                <div class="user-card-name">${user.displayName}</div>
-                <div class="user-card-username">@${user.username}</div>
-              </div>
-              <div class="request-actions">
-                <button class="btn-accept" onclick="acceptFriendRequest('${user.uid}')">
-                  <i class="fas fa-check"></i>
-                </button>
-                <button class="btn-reject" onclick="rejectFriendRequest('${user.uid}')">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          `;
-        }
-      }
-      html += '</div>';
-      contentEl.innerHTML = html;
-    }
-
-    // Load Sent Requests
-    async function loadSentRequests() {
-      const contentEl = document.getElementById('friendsContent');
-      const usersRef = ref(db, 'users');
-      const usersSnapshot = await get(usersRef);
-      
-      if (!usersSnapshot.exists()) {
-        contentEl.innerHTML = '<div class="empty-state"><p>Gonderilen istek yok</p></div>';
-        return;
-      }
-
-      let html = '<div class="user-list">';
-      let found = false;
-
-      for (const [userId, userData] of Object.entries(usersSnapshot.val())) {
-        if (userId === currentUser.uid) continue;
-        
-        const requestRef = ref(db, `friendRequests/${userId}/${currentUser.uid}`);
-        const requestSnapshot = await get(requestRef);
-        
-        if (requestSnapshot.exists()) {
-          found = true;
-          html += `
-            <div class="user-card">
-              <img class="user-card-avatar" src="${userData.photoURL}" alt="${userData.displayName}">
-              <div class="user-card-info">
-                <div class="user-card-name">${userData.displayName}</div>
-                <div class="user-card-username">@${userData.username}</div>
-              </div>
-              <button class="user-card-action pending" disabled>Bekleniyor</button>
-            </div>
-          `;
-        }
-      }
-      html += '</div>';
-
-      if (!found) {
-        contentEl.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>Gonderilen istek yok</p></div>';
-      } else {
-        contentEl.innerHTML = html;
-      }
-    }
-
-    // Load Chats with real-time updates
+    // Load Chats
     function loadChats() {
       const chatsRef = ref(db, `userChats/${currentUser.uid}`);
-      
-      let existingChats = {};
-      let isInitialLoad = true;
-      
       onValue(chatsRef, async (snapshot) => {
-        const chatListEl = document.getElementById('chatList');
+        const container = document.getElementById('chatList');
         
         if (!snapshot.exists()) {
-          chatListEl.innerHTML = '<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Henuz bir sohbetin yok</p></div>';
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Henuz bir sohbetin yok</p></div>';
           return;
         }
-
-        const chats = snapshot.val();
+        
         let html = '';
-        let totalUnread = 0;
-
-        // Check for new messages
-        if (!isInitialLoad) {
-          for (const [chatId, chatData] of Object.entries(chats)) {
-            const oldChat = existingChats[chatId];
-            if (oldChat && chatData.lastTime > oldChat.lastTime && chatData.unread > 0) {
-              // New message received
-              const otherUserId = chatId.split('_').find(id => id !== currentUser.uid);
-              if (otherUserId !== currentChatUserId) {
-                showNotificationPopup('message', otherUserId);
-              }
-            }
-          }
-        }
-
-        // Sort chats by lastTime
-        const sortedChats = Object.entries(chats).sort((a, b) => (b[1].lastTime || 0) - (a[1].lastTime || 0));
-
-        for (const [chatId, chatData] of sortedChats) {
-          const otherUserId = chatId.split('_').find(id => id !== currentUser.uid);
-          const userSnapshot = await get(ref(db, `users/${otherUserId}`));
-          
+        const chats = [];
+        
+        for (const [oderId, chatData] of Object.entries(snapshot.val())) {
+          const userSnapshot = await get(ref(db, `users/${chatData.oderId || oderId}`));
           if (userSnapshot.exists()) {
-            const user = userSnapshot.val();
-            const unread = chatData.unread || 0;
-            totalUnread += unread;
-            
-            html += `
-              <div class="chat-item" onclick="openChat('${otherUserId}')">
-                <div class="avatar-wrapper">
-                  <img class="user-card-avatar" src="${user.photoURL}" alt="${user.displayName}">
-                  ${user.online ? '<span class="online-dot"></span>' : ''}
-                </div>
-                <div class="chat-item-info">
-                  <div class="chat-item-name">${user.displayName}</div>
-                  <div class="chat-item-preview">${chatData.lastMessage || ''}</div>
-                </div>
-                <div class="chat-item-meta">
-                  <div class="chat-item-time">${chatData.lastTime ? formatTime(chatData.lastTime) : ''}</div>
-                  ${unread > 0 ? `<div class="chat-unread">${unread}</div>` : ''}
-                </div>
-              </div>
-            `;
+            chats.push({
+              oderId: chatData.oderId || oderId,
+              user: userSnapshot.val(),
+              lastMessage: chatData.lastMessage || '',
+              timestamp: chatData.timestamp || 0
+            });
           }
         }
-
-        chatListEl.innerHTML = html || '<div class="empty-state"><p>Henuz bir sohbetin yok</p></div>';
         
-        // Update existing chats
-        existingChats = JSON.parse(JSON.stringify(chats));
-        isInitialLoad = false;
+        // Sort by timestamp
+        chats.sort((a, b) => b.timestamp - a.timestamp);
         
-        const chatNavBadge = document.getElementById('chatNavBadge');
-        chatNavBadge.classList.toggle('show', totalUnread > 0);
+        chats.forEach(chat => {
+          const verifiedBadge = chat.user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+          html += `
+            <div class="chat-item" onclick="openChat('${chat.oderId}')">
+              <div class="avatar-wrapper">
+                <img class="user-card-avatar" src="${chat.user.photoURL}" alt="">
+                ${chat.user.online ? '<div class="online-dot"></div>' : ''}
+              </div>
+              <div class="chat-item-info">
+                <div class="chat-item-name">${chat.user.displayName} ${verifiedBadge}</div>
+                <div class="chat-item-preview">${chat.lastMessage}</div>
+              </div>
+              <div class="chat-item-meta">
+                <div class="chat-item-time">${formatTime(chat.timestamp)}</div>
+              </div>
+            </div>
+          `;
+        });
+        
+        container.innerHTML = html || '<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Henuz bir sohbetin yok</p></div>';
       });
     }
 
-    // Format Time
-    function formatTime(timestamp) {
-      const date = new Date(timestamp);
-      const now = new Date();
-      
-      if (date.toDateString() === now.toDateString()) {
-        return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-      }
-      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-    }
-
-    // Open Chat - FIXED: Now creates chat entry when opening
+    // Open Chat
     window.openChat = async (userId) => {
       currentChatUserId = userId;
       
@@ -2198,59 +2892,46 @@
       if (!userSnapshot.exists()) return;
       
       const user = userSnapshot.val();
+      const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+      
       document.getElementById('chatViewAvatar').src = user.photoURL;
-      document.getElementById('chatViewName').textContent = user.displayName;
+      document.getElementById('chatViewName').innerHTML = user.displayName + ' ' + verifiedBadge;
       document.getElementById('chatViewStatus').textContent = user.online ? 'Cevrimici' : 'Cevrimdisi';
       
       document.getElementById('chatView').classList.add('active');
       
-      // Generate chat ID
+      // Create chat entry for both users
       const chatId = [currentUser.uid, userId].sort().join('_');
       
-      // Create chat entry for current user if it doesn't exist
-      const currentUserChatRef = ref(db, `userChats/${currentUser.uid}/${chatId}`);
-      const currentUserChatSnapshot = await get(currentUserChatRef);
-      if (!currentUserChatSnapshot.exists()) {
-        await set(currentUserChatRef, {
-          lastMessage: '',
-          lastTime: Date.now(),
-          unread: 0
-        });
-      } else {
-        // Clear unread
-        await update(currentUserChatRef, { unread: 0 });
-      }
+      // Set userChats for current user
+      await update(ref(db, `userChats/${currentUser.uid}/${chatId}`), {
+        oderId: userId,
+        timestamp: Date.now()
+      });
       
-      // Load messages
+      // Set userChats for oer user
+      await update(ref(db, `userChats/${userId}/${chatId}`), {
+        oderId: currentUser.uid,
+        timestamp: Date.now()
+      });
+      
       loadMessages(chatId);
-    };
-
-    // Close Chat View
-    window.closeChatView = () => {
-      document.getElementById('chatView').classList.remove('active');
-      if (chatListener) {
-        off(ref(db, `messages/${[currentUser.uid, currentChatUserId].sort().join('_')}`));
-        chatListener = null;
-      }
-      currentChatUserId = null;
     };
 
     // Load Messages
     function loadMessages(chatId) {
-      const messagesRef = query(ref(db, `messages/${chatId}`), limitToLast(100));
+      const messagesRef = ref(db, `messages/${chatId}`);
       
-      if (chatListener) {
-        off(ref(db, `messages/${chatId}`));
-      }
+      if (chatListener) off(chatListener);
       
-      chatListener = onValue(messagesRef, (snapshot) => {
-        const messagesEl = document.getElementById('chatMessages');
+      onValue(messagesRef, (snapshot) => {
+        const container = document.getElementById('chatMessages');
         
         if (!snapshot.exists()) {
-          messagesEl.innerHTML = '<div class="empty-state"><p>Henuz mesaj yok. Ilk mesaji sen gonder!</p></div>';
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-comments"></i><p>Mesaj yok. Sohbete basla!</p></div>';
           return;
         }
-
+        
         let html = '';
         snapshot.forEach((child) => {
           const msg = child.val();
@@ -2262,138 +2943,380 @@
             </div>
           `;
         });
-
-        messagesEl.innerHTML = html;
-        messagesEl.scrollTop = messagesEl.scrollHeight;
+        
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
       });
+      
+      chatListener = messagesRef;
     }
 
-    // Send Message - FIXED: Creates chat entries for both users
+    // Send Message
     window.sendMessage = async () => {
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
       
       if (!text || !currentChatUserId) return;
       
-      input.value = '';
-      
       const chatId = [currentUser.uid, currentChatUserId].sort().join('_');
-      const messagesRef = ref(db, `messages/${chatId}`);
       
       try {
-        await push(messagesRef, {
-          text: text,
+        await push(ref(db, `messages/${chatId}`), {
           senderId: currentUser.uid,
+          text,
           timestamp: Date.now()
         });
-
-        // Update chat metadata for current user
+        
+        // Update last message for both users
         await update(ref(db, `userChats/${currentUser.uid}/${chatId}`), {
           lastMessage: text,
-          lastTime: Date.now(),
-          unread: 0
+          timestamp: Date.now(),
+          oderId: currentChatUserId
         });
-
-        // Get current unread count for other user and create/update their chat entry
-        const otherUserChatRef = ref(db, `userChats/${currentChatUserId}/${chatId}`);
-        const otherChatSnapshot = await get(otherUserChatRef);
-        const currentUnread = otherChatSnapshot.exists() ? (otherChatSnapshot.val().unread || 0) : 0;
-
-        await set(otherUserChatRef, {
+        
+        await update(ref(db, `userChats/${currentChatUserId}/${chatId}`), {
           lastMessage: text,
-          lastTime: Date.now(),
-          unread: currentUnread + 1
+          timestamp: Date.now(),
+          oderId: currentUser.uid
         });
+        
+        input.value = '';
       } catch (error) {
-        console.error("Send message error:", error);
-        showToast("Mesaj gonderilemedi");
+        console.error("Message error:", error);
       }
     };
 
-    // Handle Message Keypress
     window.handleMessageKeypress = (e) => {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
+      if (e.key === 'Enter') sendMessage();
+    };
+
+    window.closeChatView = () => {
+      document.getElementById('chatView').classList.remove('active');
+      if (chatListener) off(chatListener);
+      currentChatUserId = null;
     };
 
     // Load Games
-    async function loadGames() {
+    function loadGames() {
       const gamesRef = ref(db, 'games');
       onValue(gamesRef, (snapshot) => {
-        const gamesGrid = document.getElementById('gamesGrid');
+        const container = document.getElementById('gamesGrid');
         
         if (!snapshot.exists()) {
-          gamesGrid.innerHTML = '<div class="empty-state"><i class="fas fa-gamepad"></i><p>Henuz oyun eklenmemis</p></div>';
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-gamepad"></i><p>Henuz oyun eklenmemis</p></div>';
           return;
         }
-
+        
         let html = '';
         snapshot.forEach((child) => {
           const game = child.val();
+          const iconHtml = game.iconUrl 
+            ? `<img class="game-card-icon" src="${game.iconUrl}" alt="${game.name}">`
+            : `<i class="${game.icon || 'fas fa-gamepad'}"></i>`;
+          
           html += `
-            <div class="game-card" onclick="window.open('${game.url || '#'}', '_blank')">
-              <i class="${game.icon || 'fas fa-gamepad'}"></i>
+            <div class="game-card" onclick="${game.url ? `window.open('${game.url}', '_blank')` : ''}">
+              ${iconHtml}
               <h4>${game.name}</h4>
               <p>${game.description || ''}</p>
             </div>
           `;
         });
-
-        gamesGrid.innerHTML = html || '<div class="empty-state"><i class="fas fa-gamepad"></i><p>Henuz oyun eklenmemis</p></div>';
+        
+        container.innerHTML = html;
       });
     }
 
     // Load Events
-    async function loadEvents() {
+    function loadEvents() {
       const eventsRef = ref(db, 'events');
       onValue(eventsRef, (snapshot) => {
-        const eventsList = document.getElementById('eventsList');
+        const container = document.getElementById('eventsList');
         
         if (!snapshot.exists()) {
-          eventsList.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>Henuz etkinlik eklenmemis</p></div>';
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>Henuz etkinlik eklenmemis</p></div>';
           return;
         }
-
+        
         let html = '';
-        const events = [];
         snapshot.forEach((child) => {
-          events.push({ id: child.key, ...child.val() });
-        });
-
-        // Sort by date
-        events.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        events.forEach(event => {
+          const event = child.val();
+          const eventId = child.key;
+          const participantCount = event.participants ? Object.keys(event.participants).length : 0;
+          
           html += `
-            <div class="event-card">
-              <span class="event-date">${formatDate(event.date)}</span>
-              <h4>${event.title}</h4>
-              <p>${event.description || ''}</p>
+            <div class="event-card" onclick="openEventDetail('${eventId}')">
+              ${event.imageUrl ? `<img class="event-card-image" src="${event.imageUrl}" alt="">` : ''}
+              <div class="event-card-content">
+                <span class="event-date"><i class="fas fa-calendar"></i> ${formatEventDate(event.date)}</span>
+                <h4>${event.title}</h4>
+                <p>${event.description ? event.description.substring(0, 100) + '...' : ''}</p>
+                <div class="event-card-footer">
+                  <span class="event-participants"><i class="fas fa-users"></i> ${participantCount} katilimci</span>
+                </div>
+              </div>
             </div>
           `;
         });
-
-        eventsList.innerHTML = html || '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>Henuz etkinlik eklenmemis</p></div>';
+        
+        container.innerHTML = html;
       });
     }
 
-    // Show Toast
-    window.showToast = (message) => {
+    // Open Event Detail
+    window.openEventDetail = async (eventId) => {
+      currentEventId = eventId;
+      
+      const snapshot = await get(ref(db, `events/${eventId}`));
+      if (!snapshot.exists()) return;
+      
+      const event = snapshot.val();
+      
+      document.getElementById('eventModalImage').src = event.imageUrl || 'https://via.placeholder.com/500x200/d4a574/3d2f1f?text=Etkinlik';
+      document.getElementById('eventModalTitle').textContent = event.title;
+      document.getElementById('eventModalDate').textContent = formatEventDate(event.date);
+      document.getElementById('eventModalDesc').textContent = event.description || '';
+      
+      const participantCount = event.participants ? Object.keys(event.participants).length : 0;
+      document.getElementById('eventModalParticipants').textContent = `${participantCount} kisi katiliyor`;
+      
+      // Check if user joined
+      const isJoined = event.participants && event.participants[currentUser.uid];
+      const joinBtn = document.getElementById('eventJoinBtn');
+      
+      if (isJoined) {
+        joinBtn.innerHTML = '<i class="fas fa-check"></i> Katiliyorsunuz';
+        joinBtn.classList.add('joined');
+      } else {
+        joinBtn.innerHTML = '<i class="fas fa-hand-paper"></i> Katilmak Istiyorum';
+        joinBtn.classList.remove('joined');
+      }
+      
+      // Load Q&A
+      loadEventQA(eventId);
+      
+      document.getElementById('eventModal').classList.add('active');
+    };
+
+    window.closeEventModal = () => {
+      document.getElementById('eventModal').classList.remove('active');
+      currentEventId = null;
+    };
+
+    // Toggle Event Join
+    window.toggleEventJoin = async () => {
+      if (!currentEventId) return;
+      
+      const participantRef = ref(db, `events/${currentEventId}/participants/${currentUser.uid}`);
+      const snapshot = await get(participantRef);
+      
+      if (snapshot.exists()) {
+        await remove(participantRef);
+        showToast("Katilim iptal edildi");
+      } else {
+        await set(participantRef, {
+          joinedAt: Date.now(),
+          displayName: currentUserData.displayName
+        });
+        showToast("Etkinlige katildiniz");
+      }
+      
+      openEventDetail(currentEventId);
+    };
+
+    // Load Event Q&A
+    async function loadEventQA(eventId) {
+      const container = document.getElementById('eventQAList');
+      const qaRef = ref(db, `eventQA/${eventId}`);
+      const snapshot = await get(qaRef);
+      
+      if (!snapshot.exists()) {
+        container.innerHTML = '<p style="opacity:0.7;text-align:center;">Henuz soru sorulmamis</p>';
+        return;
+      }
+      
+      let html = '';
+      snapshot.forEach((child) => {
+        const qa = child.val();
+        html += `
+          <div class="qa-item">
+            <div class="qa-question">
+              <i class="fas fa-question-circle"></i>
+              <span>${qa.question}</span>
+            </div>
+            ${qa.answer ? `
+              <div class="qa-answer">
+                <div class="qa-answerer">
+                  <i class="fas fa-check-circle"></i> ${qa.answeredBy || 'Yetkili'}
+                </div>
+                ${qa.answer}
+              </div>
+            ` : '<div class="qa-answer" style="opacity:0.5;">Henuz cevaplanmadi</div>'}
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    // Submit Question
+    window.submitQuestion = async () => {
+      if (!currentEventId) return;
+      
+      const input = document.getElementById('questionInput');
+      const question = input.value.trim();
+      
+      if (!question) {
+        showToast("Lutfen bir soru yazin");
+        return;
+      }
+      
+      try {
+        await push(ref(db, `eventQA/${currentEventId}`), {
+          question,
+          askedBy: currentUser.uid,
+          askedByName: currentUserData.displayName,
+          timestamp: Date.now(),
+          answer: null,
+          answeredBy: null
+        });
+        
+        input.value = '';
+        showToast("Sorunuz gonderildi");
+        loadEventQA(currentEventId);
+      } catch (error) {
+        console.error("Question error:", error);
+        showToast("Bir hata olustu");
+      }
+    };
+
+    // Load My Events
+    async function loadMyEvents() {
+      const container = document.getElementById('myEventsList');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const eventsSnapshot = await get(ref(db, 'events'));
+      if (!eventsSnapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-check"></i><p>Henuz bir etkinlige katilmadiniz</p></div>';
+        return;
+      }
+      
+      let html = '';
+      eventsSnapshot.forEach((child) => {
+        const event = child.val();
+        const eventId = child.key;
+        
+        if (event.participants && event.participants[currentUser.uid]) {
+          html += `
+            <div class="my-event-item" onclick="openEventDetail('${eventId}')">
+              <img src="${event.imageUrl || 'https://via.placeholder.com/60/d4a574/3d2f1f?text=E'}" alt="">
+              <div class="my-event-info">
+                <h4>${event.title}</h4>
+                <p><i class="fas fa-calendar"></i> ${formatEventDate(event.date)}</p>
+              </div>
+              <i class="fas fa-chevron-right" style="opacity:0.5;"></i>
+            </div>
+          `;
+        }
+      });
+      
+      container.innerHTML = html || '<div class="empty-state"><i class="fas fa-calendar-check"></i><p>Henuz bir etkinlige katilmadiniz</p></div>';
+    }
+
+    // Settings
+    window.openSettings = () => {
+      // Load current settings
+      document.getElementById('darkThemeToggle').checked = document.body.classList.contains('dark-theme');
+      document.getElementById('instagramUsername').value = currentUserData.instagram || '';
+      document.getElementById('tiktokUsername').value = currentUserData.tiktok || '';
+      document.getElementById('twitterUsername').value = currentUserData.twitter || '';
+      
+      document.getElementById('settingsModal').classList.add('active');
+    };
+
+    window.closeSettings = () => {
+      document.getElementById('settingsModal').classList.remove('active');
+    };
+
+    window.toggleTheme = () => {
+      const toggle = document.getElementById('darkThemeToggle');
+      toggle.checked = !toggle.checked;
+    };
+
+    window.saveSettings = async () => {
+      const darkTheme = document.getElementById('darkThemeToggle').checked;
+      const instagram = document.getElementById('instagramUsername').value.trim();
+      const tiktok = document.getElementById('tiktokUsername').value.trim();
+      const twitter = document.getElementById('twitterUsername').value.trim();
+      
+      try {
+        await update(ref(db, `users/${currentUser.uid}`), {
+          darkTheme,
+          instagram,
+          tiktok,
+          twitter
+        });
+        
+        currentUserData.darkTheme = darkTheme;
+        currentUserData.instagram = instagram;
+        currentUserData.tiktok = tiktok;
+        currentUserData.twitter = twitter;
+        
+        if (darkTheme) {
+          document.body.classList.add('dark-theme');
+        } else {
+          document.body.classList.remove('dark-theme');
+        }
+        
+        localStorage.setItem('darkTheme', darkTheme);
+        
+        updateSocialLinks();
+        showToast("Ayarlar kaydedildi");
+        closeSettings();
+      } catch (error) {
+        console.error("Settings error:", error);
+        showToast("Bir hata olustu");
+      }
+    };
+
+    function loadTheme() {
+      if (currentUserData.darkTheme) {
+        document.body.classList.add('dark-theme');
+      }
+    }
+
+    // Utility Functions
+    function formatDate(timestamp) {
+      if (!timestamp) return '-';
+      return new Date(timestamp).toLocaleDateString('tr-TR');
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return '';
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatEventDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function showToast(message) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
-    };
+    }
 
-    // Handle visibility change for online status
+    // Handle page visibility
     document.addEventListener('visibilitychange', () => {
       if (currentUser) {
         updateUserOnlineStatus(!document.hidden);
       }
     });
 
-    // Handle before unload
     window.addEventListener('beforeunload', () => {
       if (currentUser) {
         updateUserOnlineStatus(false);
