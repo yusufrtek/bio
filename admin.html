@@ -1,185 +1,3054 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Panel — Presence (Realtime DB)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LENG Admin Panel</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <style>
-    body { font-family: system-ui, Arial; max-width: 1100px; margin: 24px auto; padding: 0 12px; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    button { padding:10px 12px; cursor:pointer; }
-    .card { border:1px solid #ddd; border-radius:12px; padding:14px; margin-top:14px; }
-    .muted { color:#666; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; vertical-align:top; }
-    .pill { display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; }
-    .ok { color: #0a7; }
-    .bad { color: #c33; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --bg-tertiary: #f1f3f4;
+      --text-primary: #1a1a1a;
+      --text-secondary: #5f6368;
+      --text-muted: #9aa0a6;
+      --border-color: #e8eaed;
+      --border-dark: #dadce0;
+      --accent: #1a1a1a;
+      --accent-light: #f1f3f4;
+      --success: #34a853;
+      --warning: #fbbc04;
+      --danger: #ea4335;
+      --info: #4285f4;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Login Screen */
+    .login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+    }
+
+    .login-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    .login-logo {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+
+    .login-subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+      background: var(--bg-secondary);
+    }
+
+    .login-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-primary);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .login-btn:hover {
+      background: #333;
+    }
+
+    .login-error {
+      background: #fef2f2;
+      color: var(--danger);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      font-size: 13px;
+      display: none;
+    }
+
+    /* Main Layout */
+    .admin-container {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .admin-container.active {
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border-color);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      margin-bottom: 24px;
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0 12px;
+      margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+      width: 20px;
+    }
+
+    .nav-item .badge {
+      margin-left: auto;
+      background: var(--danger);
+      color: white;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .nav-item.active .badge {
+      background: white;
+      color: var(--accent);
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .admin-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+    }
+
+    .admin-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .admin-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .admin-name {
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .admin-role {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      min-height: 100vh;
+    }
+
+    /* Top Header */
+    .top-header {
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .menu-toggle:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .header-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .header-btn .dot {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: var(--danger);
+      border-radius: 50%;
+    }
+
+    /* Page Content */
+    .page-content {
+      padding: 32px;
+    }
+
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .stat-icon.users { background: #e8f5e9; color: var(--success); }
+    .stat-icon.events { background: #e3f2fd; color: var(--info); }
+    .stat-icon.games { background: #fff3e0; color: #f57c00; }
+    .stat-icon.clubs { background: #f3e5f5; color: #9c27b0; }
+
+    .stat-change {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .stat-change.positive { background: #e8f5e9; color: var(--success); }
+    .stat-change.negative { background: #fef2f2; color: var(--danger); }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* Card Component */
+    .card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* Search & Filters */
+    .filters-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 14px 10px 42px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      background: var(--bg-secondary);
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-primary);
+    }
+
+    .filter-select {
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      min-width: 140px;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table th {
+      background: var(--bg-secondary);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .data-table tr:hover td {
+      background: var(--bg-secondary);
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--bg-tertiary);
+    }
+
+    .user-avatar-placeholder {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .user-name {
+      font-weight: 500;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .badge-success { background: #e8f5e9; color: var(--success); }
+    .badge-warning { background: #fff3e0; color: #f57c00; }
+    .badge-danger { background: #fef2f2; color: var(--danger); }
+    .badge-info { background: #e3f2fd; color: var(--info); }
+    .badge-default { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+    /* Action Buttons */
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 16px;
+    }
+
+    .action-btn.view {
+      background: #e3f2fd;
+      color: var(--info);
+    }
+
+    .action-btn.edit {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .action-btn.delete {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .action-btn.success {
+      background: #e8f5e9;
+      color: var(--success);
+    }
+
+    .action-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #333;
+    }
+
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #d32f2f;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+
+    .modal-close:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      transition: all 0.2s;
+      background: var(--bg-secondary);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-primary);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .form-checkbox input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    /* User Detail View */
+    .user-detail {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 24px;
+    }
+
+    .user-detail-sidebar {
+      text-align: center;
+    }
+
+    .user-detail-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 16px;
+      border: 4px solid var(--border-color);
+    }
+
+    .user-detail-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .user-detail-username {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .user-detail-info {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .user-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .user-detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .user-detail-label {
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .user-detail-value {
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      background: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent);
+      color: white;
+      padding: 14px 24px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    /* Club Card */
+    .club-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .club-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .club-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .club-cover {
+      height: 120px;
+      background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+      position: relative;
+    }
+
+    .club-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .club-badge-preview {
+      position: absolute;
+      bottom: -24px;
+      left: 20px;
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: white;
+      border: 3px solid white;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .club-badge-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .club-content {
+      padding: 32px 20px 20px;
+    }
+
+    .club-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .club-owner {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .club-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .club-stat {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .club-actions {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .quick-action {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-action:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+    }
+
+    .quick-action-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .quick-action-text h4 {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .quick-action-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Mobile Sidebar Overlay */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .user-detail {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .top-header {
+        padding: 12px 16px;
+      }
+
+      .page-content {
+        padding: 16px;
+      }
+
+      .page-title {
+        font-size: 18px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .stat-card {
+        padding: 16px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+      }
+
+      .card-header {
+        padding: 16px;
+      }
+
+      .card-body {
+        padding: 16px;
+      }
+
+      .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-box {
+        max-width: none;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 12px 10px;
+        font-size: 13px;
+      }
+
+      .modal {
+        max-width: 100%;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        max-height: 85vh;
+      }
+
+      .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .club-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-right {
+        gap: 8px;
+      }
+
+      .tabs {
+        flex-direction: column;
+      }
+
+      .action-btns {
+        flex-direction: column;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-dark);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Activity Log */
+    .activity-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-text {
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .activity-time {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: var(--border-dark);
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: var(--accent);
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    /* Image Preview */
+    .image-preview {
+      width: 100%;
+      max-width: 200px;
+      height: 120px;
+      border-radius: var(--radius-md);
+      border: 2px dashed var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .image-preview:hover {
+      border-color: var(--accent);
+    }
+
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-preview-placeholder {
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .image-preview-placeholder i {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    /* Realtime Indicator */
+    .realtime-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .realtime-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
   </style>
 </head>
 <body>
-
-  <h1>Admin Panel — Online/Aktif Kullanıcılar</h1>
-  <p class="muted">
-    Bu panel <span class="pill">Realtime Database</span> içindeki <span class="pill">/presence</span> yolunu dinler.
-    Firestore ile ilgisi yok.
-  </p>
-
-  <div class="card row">
-    <button id="loginBtn">Google ile giriş</button>
-    <button id="logoutBtn" disabled>Çıkış</button>
-    <span id="me" class="muted">Giriş yok</span>
-    <span id="status" class="pill">Hazır</span>
-  </div>
-
-  <div class="card" id="panel" style="display:none;">
-    <div class="row" style="justify-content:space-between;">
-      <h2 style="margin:0;">Presence</h2>
-      <span class="pill" id="count">0 kişi</span>
+  <!-- Login Screen -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">LENG</div>
+      <div class="login-subtitle">Admin Panel</div>
+      <div class="login-error" id="loginError"></div>
+      <input type="email" class="login-input" id="adminEmail" placeholder="E-posta">
+      <input type="password" class="login-input" id="adminPassword" placeholder="Parola">
+      <button class="login-btn" onclick="adminLogin()">
+        <span id="loginBtnText">Giris Yap</span>
+      </button>
     </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Ad</th>
-          <th>Room</th>
-          <th>Online</th>
-          <th>Last seen</th>
-          <th>UID</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-
-    <p class="muted" style="margin-top:10px;">
-      Not: “aktif” için istersen şu filtreyi uygularız:
-      <span class="pill">online=true</span> ve <span class="pill">Date.now()-lastSeen &lt; 30000</span>
-    </p>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-    import {
-      getDatabase,
-      ref,
-      onValue
-    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+  <!-- Admin Container -->
+  <div class="admin-container" id="adminContainer">
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-    // ✅ Realtime Database URL'ini EKLEDİM (kritik)
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">LENG</div>
+        <div class="sidebar-label">Admin Panel</div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Genel</div>
+          <div class="nav-item active" data-section="dashboard">
+            <i class="ri-dashboard-line"></i>
+            <span>Dashboard</span>
+          </div>
+          <div class="nav-item" data-section="users">
+            <i class="ri-user-line"></i>
+            <span>Kullanicilar</span>
+            <span class="badge" id="usersBadge">0</span>
+          </div>
+          <div class="nav-item" data-section="events">
+            <i class="ri-calendar-event-line"></i>
+            <span>Etkinlikler</span>
+          </div>
+          <div class="nav-item" data-section="games">
+            <i class="ri-gamepad-line"></i>
+            <span>Oyunlar</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Topluluk</div>
+          <div class="nav-item" data-section="clubs">
+            <i class="ri-team-line"></i>
+            <span>Kulupler</span>
+          </div>
+          <div class="nav-item" data-section="verifications">
+            <i class="ri-verified-badge-line"></i>
+            <span>Onay Bekleyenler</span>
+            <span class="badge" id="verificationBadge">0</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Yonetim</div>
+          <div class="nav-item" data-section="banned">
+            <i class="ri-user-forbid-line"></i>
+            <span>Engellenenler</span>
+          </div>
+          <div class="nav-item" data-section="reports">
+            <i class="ri-flag-line"></i>
+            <span>Raporlar</span>
+          </div>
+          <div class="nav-item" data-section="settings">
+            <i class="ri-settings-3-line"></i>
+            <span>Ayarlar</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="admin-avatar" id="adminAvatar">A</div>
+          <div class="admin-info">
+            <div class="admin-name" id="adminName">Admin</div>
+            <div class="admin-role">Super Admin</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="ri-menu-line"></i>
+          </button>
+          <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="header-right">
+          <div class="realtime-indicator">
+            <div class="realtime-dot"></div>
+            Canli
+          </div>
+          <button class="header-btn" onclick="refreshData()">
+            <i class="ri-refresh-line"></i>
+          </button>
+          <button class="header-btn" onclick="adminLogout()">
+            <i class="ri-logout-box-line"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Dashboard Section -->
+        <section class="page-section active" id="dashboardSection">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-icon users"><i class="ri-user-line"></i></div>
+                <span class="stat-change positive">+12%</span>
+              </div>
+              <div class="stat-value" id="totalUsers">0</div>
+              <div class="stat-label">Toplam Kullanici</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-icon events"><i class="ri-calendar-event-line"></i></div>
+              </div>
+              <div class="stat-value" id="totalEvents">0</div>
+              <div class="stat-label">Aktif Etkinlik</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-icon games"><i class="ri-gamepad-line"></i></div>
+              </div>
+              <div class="stat-value" id="totalGames">0</div>
+              <div class="stat-label">Toplam Oyun</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-icon clubs"><i class="ri-team-line"></i></div>
+              </div>
+              <div class="stat-value" id="totalClubs">0</div>
+              <div class="stat-label">Aktif Kulup</div>
+            </div>
+          </div>
+
+          <div class="quick-actions">
+            <div class="quick-action" onclick="showSection('users')">
+              <div class="quick-action-icon" style="background:#e8f5e9;color:var(--success)">
+                <i class="ri-user-add-line"></i>
+              </div>
+              <div class="quick-action-text">
+                <h4>Kullanicilari Yonet</h4>
+                <p>Kullanici islemlerini gerceklestir</p>
+              </div>
+            </div>
+            <div class="quick-action" onclick="showSection('verifications')">
+              <div class="quick-action-icon" style="background:#e3f2fd;color:var(--info)">
+                <i class="ri-verified-badge-line"></i>
+              </div>
+              <div class="quick-action-text">
+                <h4>Onay Bekleyenler</h4>
+                <p>Dogrulama isteklerini incele</p>
+              </div>
+            </div>
+            <div class="quick-action" onclick="showSection('clubs')">
+              <div class="quick-action-icon" style="background:#f3e5f5;color:#9c27b0">
+                <i class="ri-team-line"></i>
+              </div>
+              <div class="quick-action-text">
+                <h4>Kulupleri Yonet</h4>
+                <p>Kulup islemlerini gerceklestir</p>
+              </div>
+            </div>
+            <div class="quick-action" onclick="showSection('banned')">
+              <div class="quick-action-icon" style="background:#fef2f2;color:var(--danger)">
+                <i class="ri-user-forbid-line"></i>
+              </div>
+              <div class="quick-action-text">
+                <h4>Engellenenler</h4>
+                <p>Engellenen kullanicilari yonet</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Son Kullanicilar</h3>
+              </div>
+              <div class="card-body" id="recentUsersContainer">
+                <div class="loading"><div class="spinner"></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Son Aktiviteler</h3>
+              </div>
+              <div class="card-body">
+                <div class="activity-list" id="activityList">
+                  <div class="loading"><div class="spinner"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Users Section -->
+        <section class="page-section" id="usersSection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Tum Kullanicilar</h3>
+              <div class="filters-bar">
+                <div class="search-box">
+                  <i class="ri-search-line"></i>
+                  <input type="text" id="userSearch" placeholder="Kullanici ara..." oninput="filterUsers()">
+                </div>
+                <select class="filter-select" id="userFilter" onchange="filterUsers()">
+                  <option value="all">Tum Kullanicilar</option>
+                  <option value="verified">Onaylilar</option>
+                  <option value="unverified">Onaysizlar</option>
+                  <option value="online">Cevrimici</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Kullanici</th>
+                    <th>Kullanici Adi</th>
+                    <th>Kayit Tarihi</th>
+                    <th>Son Giris</th>
+                    <th>Durum</th>
+                    <th>Islemler</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr>
+                    <td colspan="6">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Events Section -->
+        <section class="page-section" id="eventsSection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Tum Etkinlikler</h3>
+              <div class="filters-bar">
+                <div class="search-box">
+                  <i class="ri-search-line"></i>
+                  <input type="text" id="eventSearch" placeholder="Etkinlik ara..." oninput="filterEvents()">
+                </div>
+                <select class="filter-select" id="eventFilter" onchange="filterEvents()">
+                  <option value="all">Tum Etkinlikler</option>
+                  <option value="upcoming">Yaklasan</option>
+                  <option value="past">Gecmis</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Etkinlik</th>
+                    <th>Organizator</th>
+                    <th>Tarih</th>
+                    <th>Konum</th>
+                    <th>Katilimci</th>
+                    <th>Islemler</th>
+                  </tr>
+                </thead>
+                <tbody id="eventsTableBody">
+                  <tr>
+                    <td colspan="6">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Games Section -->
+        <section class="page-section" id="gamesSection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Tum Oyunlar</h3>
+              <button class="btn btn-primary" onclick="showAddGameModal()">
+                <i class="ri-add-line"></i> Oyun Ekle
+              </button>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Oyun</th>
+                    <th>Platform</th>
+                    <th>Kategori</th>
+                    <th>Oyuncu Sayisi</th>
+                    <th>Islemler</th>
+                  </tr>
+                </thead>
+                <tbody id="gamesTableBody">
+                  <tr>
+                    <td colspan="5">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Clubs Section -->
+        <section class="page-section" id="clubsSection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Tum Kulupler</h3>
+              <div class="filters-bar">
+                <div class="search-box">
+                  <i class="ri-search-line"></i>
+                  <input type="text" id="clubSearch" placeholder="Kulup ara..." oninput="filterClubs()">
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="club-grid" id="clubsGrid">
+                <div class="loading"><div class="spinner"></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Verifications Section -->
+        <section class="page-section" id="verificationsSection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Onay Bekleyen Kullanicilar</h3>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Kullanici</th>
+                    <th>Kullanici Adi</th>
+                    <th>Talep Tarihi</th>
+                    <th>Aciklama</th>
+                    <th>Islemler</th>
+                  </tr>
+                </thead>
+                <tbody id="verificationsTableBody">
+                  <tr>
+                    <td colspan="5">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Banned Section -->
+        <section class="page-section" id="bannedSection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Engellenen Kullanicilar</h3>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Kullanici</th>
+                    <th>Engelleme Tarihi</th>
+                    <th>Sebep</th>
+                    <th>Islemler</th>
+                  </tr>
+                </thead>
+                <tbody id="bannedTableBody">
+                  <tr>
+                    <td colspan="4">
+                      <div class="empty-state">
+                        <i class="ri-user-forbid-line"></i>
+                        <h3>Engellenen kullanici yok</h3>
+                        <p>Henuz kimse engellenmemis</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section class="page-section" id="reportsSection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Kullanici Raporlari</h3>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Raporlayan</th>
+                    <th>Raporlanan</th>
+                    <th>Sebep</th>
+                    <th>Tarih</th>
+                    <th>Islemler</th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                  <tr>
+                    <td colspan="5">
+                      <div class="empty-state">
+                        <i class="ri-flag-line"></i>
+                        <h3>Rapor yok</h3>
+                        <p>Henuz rapor bulunmuyor</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section class="page-section" id="settingsSection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Sistem Ayarlari</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Duyuru Metni</label>
+                <textarea class="form-input form-textarea" id="announcementText" placeholder="Tum kullanicilara gosterilecek duyuru..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="maintenanceMode">
+                  <span>Bakim Modu</span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="registrationEnabled" checked>
+                  <span>Yeni Kayitlara Izin Ver</span>
+                </label>
+              </div>
+              <button class="btn btn-primary" onclick="saveSettings()">
+                <i class="ri-save-line"></i> Ayarlari Kaydet
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- User Detail Modal -->
+  <div class="modal-overlay" id="userDetailModal">
+    <div class="modal" style="max-width:700px">
+      <div class="modal-header">
+        <h3 class="modal-title">Kullanici Detayi</h3>
+        <button class="modal-close" onclick="closeModal('userDetailModal')">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="userDetailContent">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('userDetailModal')">Kapat</button>
+        <button class="btn btn-danger" id="banUserBtn" onclick="banUser()">
+          <i class="ri-user-forbid-line"></i> Engelle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ban Modal -->
+  <div class="modal-overlay" id="banModal">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header">
+        <h3 class="modal-title">Kullaniciyi Engelle</h3>
+        <button class="modal-close" onclick="closeModal('banModal')">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Engelleme Sebebi</label>
+          <textarea class="form-input form-textarea" id="banReason" placeholder="Engelleme sebebini yazin..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('banModal')">Iptal</button>
+        <button class="btn btn-danger" onclick="confirmBan()">
+          <i class="ri-user-forbid-line"></i> Engelle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Club Detail Modal -->
+  <div class="modal-overlay" id="clubDetailModal">
+    <div class="modal" style="max-width:700px">
+      <div class="modal-header">
+        <h3 class="modal-title">Kulup Detayi</h3>
+        <button class="modal-close" onclick="closeModal('clubDetailModal')">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="clubDetailContent">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('clubDetailModal')">Kapat</button>
+        <button class="btn btn-danger" id="deleteClubBtn">
+          <i class="ri-delete-bin-line"></i> Kulubu Sil
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Game Modal -->
+  <div class="modal-overlay" id="addGameModal">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-header">
+        <h3 class="modal-title">Yeni Oyun Ekle</h3>
+        <button class="modal-close" onclick="closeModal('addGameModal')">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Oyun Adi</label>
+          <input type="text" class="form-input" id="gameName" placeholder="Oyun adi">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Platform</label>
+          <select class="form-input" id="gamePlatform">
+            <option value="PC">PC</option>
+            <option value="PlayStation">PlayStation</option>
+            <option value="Xbox">Xbox</option>
+            <option value="Mobile">Mobile</option>
+            <option value="Nintendo">Nintendo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kategori</label>
+          <input type="text" class="form-input" id="gameCategory" placeholder="FPS, RPG, MOBA...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Oyun Gorseli URL</label>
+          <input type="text" class="form-input" id="gameImage" placeholder="https://...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('addGameModal')">Iptal</button>
+        <button class="btn btn-primary" onclick="addGame()">
+          <i class="ri-add-line"></i> Ekle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Firebase Config
     const firebaseConfig = {
-      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
-      authDomain: "maps-52b00.firebaseapp.com",
-      projectId: "maps-52b00",
-      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
-      storageBucket: "maps-52b00.firebasestorage.app",
-      messagingSenderId: "485125559932",
-      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
-      measurementId: "G-YHHXDYCCG7"
+      apiKey: "AIzaSyDixvAihFLj0xpTqc3P9Ej2vT09cSt3aRA",
+      authDomain: "leng-proje.firebaseapp.com",
+      databaseURL: "https://leng-proje-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "leng-proje",
+      storageBucket: "leng-proje.appspot.com",
+      messagingSenderId: "227663692952",
+      appId: "1:227663692952:web:ee95f3e6c2b6e6c6ebc03e"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const rtdb = getDatabase(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const storage = firebase.storage();
 
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const me = document.getElementById("me");
-    const panel = document.getElementById("panel");
-    const tbody = document.getElementById("tbody");
-    const count = document.getElementById("count");
-    const status = document.getElementById("status");
+    // State
+    let currentAdmin = null;
+    let allUsers = [];
+    let allEvents = [];
+    let allGames = [];
+    let allClubs = [];
+    let selectedUserId = null;
+    let selectedClubId = null;
 
-    function esc(s) {
-      return String(s ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;");
-    }
+    // Admin emails
+    const adminEmails = ['admin@leng.com', 'superadmin@leng.com'];
 
-    function setStatus(text, ok = true) {
-      status.textContent = text;
-      status.className = "pill " + (ok ? "ok" : "bad");
-    }
-
-    loginBtn.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, new GoogleAuthProvider());
-      } catch (e) {
-        console.error(e);
-        alert("Giriş başarısız: " + (e?.message || e));
+    // Auth State
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // Check if user is admin
+        const userSnap = await db.ref('users/' + user.uid).once('value');
+        const userData = userSnap.val();
+        
+        if (userData && (userData.isAdmin || adminEmails.includes(user.email))) {
+          currentAdmin = { ...userData, uid: user.uid };
+          showAdminPanel();
+          loadAllData();
+          setupRealtimeListeners();
+        } else {
+          showToast('Yetkiniz yok!', 'error');
+          auth.signOut();
+        }
+      } else {
+        showLoginScreen();
       }
     });
 
-    logoutBtn.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-      } catch (e) {
-        console.error(e);
-        alert("Çıkış başarısız: " + (e?.message || e));
-      }
-    });
+    // Login
+    async function adminLogin() {
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      const errorEl = document.getElementById('loginError');
+      const btnText = document.getElementById('loginBtnText');
 
-    function renderPresence(obj) {
-      const entries = Object.values(obj || {});
-      entries.sort((a, b) => (b.online === true) - (a.online === true));
-
-      tbody.innerHTML = "";
-      count.textContent = `${entries.length} kayıt`;
-
-      for (const p of entries) {
-        const last = p.lastSeen ? new Date(p.lastSeen).toLocaleString() : "-";
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${esc(p.name)}</td>
-          <td>${esc(p.roomId)}</td>
-          <td>${p.online ? "✅" : "❌"}</td>
-          <td>${esc(last)}</td>
-          <td>${esc(p.uid)}</td>
-        `;
-        tbody.appendChild(tr);
-      }
-    }
-
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        loginBtn.disabled = false;
-        logoutBtn.disabled = true;
-        me.textContent = "Giriş yok";
-        panel.style.display = "none";
-        setStatus("Giriş bekleniyor", true);
+      if (!email || !password) {
+        errorEl.textContent = 'Lutfen tum alanlari doldurun';
+        errorEl.style.display = 'block';
         return;
       }
 
-      loginBtn.disabled = true;
-      logoutBtn.disabled = false;
-      me.textContent = `Giriş: ${user.email} (uid: ${user.uid})`;
-      panel.style.display = "block";
+      btnText.textContent = 'Giris yapiliyor...';
 
-      // 🔥 Realtime Database: /presence dinle
-      const presenceRef = ref(rtdb, "presence");
-      setStatus("Realtime bağlanıyor...", true);
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (error) {
+        errorEl.textContent = 'Giris basarisiz: ' + error.message;
+        errorEl.style.display = 'block';
+        btnText.textContent = 'Giris Yap';
+      }
+    }
 
-      onValue(
-        presenceRef,
-        (snap) => {
-          const val = snap.val();
-          console.log("PRESENCE RAW =", val);
-          renderPresence(val);
-          setStatus("Realtime bağlı ✅", true);
-        },
-        (err) => {
-          console.error("RTDB READ ERROR:", err);
-          setStatus("Realtime okunamadı ❌", false);
-          alert("Realtime Database okunamadı. (Rules/URL) Hata: " + (err?.message || err));
+    // Logout
+    function adminLogout() {
+      auth.signOut();
+    }
+
+    // Show/Hide Screens
+    function showLoginScreen() {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('adminContainer').classList.remove('active');
+    }
+
+    function showAdminPanel() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminContainer').classList.add('active');
+      
+      if (currentAdmin) {
+        document.getElementById('adminName').textContent = currentAdmin.displayName || 'Admin';
+        document.getElementById('adminAvatar').textContent = (currentAdmin.displayName || 'A')[0].toUpperCase();
+      }
+    }
+
+    // Sidebar Toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    // Navigation
+    document.querySelectorAll('.nav-item[data-section]').forEach(item => {
+      item.addEventListener('click', () => {
+        const section = item.dataset.section;
+        showSection(section);
+        
+        // Close sidebar on mobile
+        if (window.innerWidth <= 1024) {
+          toggleSidebar();
         }
+      });
+    });
+
+    function showSection(sectionName) {
+      // Update nav items
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.section === sectionName);
+      });
+
+      // Update sections
+      document.querySelectorAll('.page-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(sectionName + 'Section').classList.add('active');
+
+      // Update title
+      const titles = {
+        dashboard: 'Dashboard',
+        users: 'Kullanicilar',
+        events: 'Etkinlikler',
+        games: 'Oyunlar',
+        clubs: 'Kulupler',
+        verifications: 'Onay Bekleyenler',
+        banned: 'Engellenenler',
+        reports: 'Raporlar',
+        settings: 'Ayarlar'
+      };
+      document.getElementById('pageTitle').textContent = titles[sectionName] || sectionName;
+    }
+
+    // Load All Data
+    async function loadAllData() {
+      await Promise.all([
+        loadUsers(),
+        loadEvents(),
+        loadGames(),
+        loadClubs(),
+        loadVerifications(),
+        loadBannedUsers()
+      ]);
+      updateDashboardStats();
+      loadRecentUsers();
+      loadActivityLog();
+    }
+
+    // Refresh Data
+    function refreshData() {
+      loadAllData();
+      showToast('Veriler yenilendi', 'success');
+    }
+
+    // Realtime Listeners
+    function setupRealtimeListeners() {
+      // Users
+      db.ref('users').on('value', (snap) => {
+        processUsers(snap.val() || {});
+      });
+
+      // Events
+      db.ref('events').on('value', (snap) => {
+        processEvents(snap.val() || {});
+      });
+
+      // Games
+      db.ref('games').on('value', (snap) => {
+        processGames(snap.val() || {});
+      });
+
+      // Clubs
+      db.ref('clubs').on('value', (snap) => {
+        processClubs(snap.val() || {});
+      });
+
+      // Banned Users
+      db.ref('bannedUsers').on('value', (snap) => {
+        renderBannedUsers(snap.val() || {});
+      });
+    }
+
+    // Process Users
+    function processUsers(usersData) {
+      allUsers = Object.entries(usersData).map(([uid, data]) => ({
+        uid,
+        ...data
+      }));
+      renderUsers(allUsers);
+      document.getElementById('usersBadge').textContent = allUsers.length;
+      document.getElementById('totalUsers').textContent = allUsers.length;
+    }
+
+    // Load Users
+    async function loadUsers() {
+      const snap = await db.ref('users').once('value');
+      processUsers(snap.val() || {});
+    }
+
+    // Render Users
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      
+      if (users.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="ri-user-line"></i>
+                <h3>Kullanici bulunamadi</h3>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = users.map(user => `
+        <tr>
+          <td>
+            <div class="user-cell">
+              ${user.profilePhoto 
+                ? `<img src="${user.profilePhoto}" class="user-avatar" alt="">`
+                : `<div class="user-avatar-placeholder">${(user.displayName || 'U')[0].toUpperCase()}</div>`
+              }
+              <div>
+                <div class="user-name">${user.displayName || 'Isimsiz'}</div>
+                <div class="user-email">${user.email || '-'}</div>
+              </div>
+            </div>
+          </td>
+          <td>@${user.username || '-'}</td>
+          <td>${formatDate(user.createdAt)}</td>
+          <td>${formatDate(user.lastLogin)}</td>
+          <td>
+            ${user.isVerified 
+              ? '<span class="badge badge-success"><i class="ri-verified-badge-fill"></i> Onayli</span>'
+              : '<span class="badge badge-default">Onaysiz</span>'
+            }
+          </td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn view" onclick="viewUser('${user.uid}')" title="Detay">
+                <i class="ri-eye-line"></i>
+              </button>
+              <button class="action-btn edit" onclick="editUser('${user.uid}')" title="Duzenle">
+                <i class="ri-edit-line"></i>
+              </button>
+              <button class="action-btn delete" onclick="showBanModal('${user.uid}')" title="Engelle">
+                <i class="ri-user-forbid-line"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Filter Users
+    function filterUsers() {
+      const search = document.getElementById('userSearch').value.toLowerCase();
+      const filter = document.getElementById('userFilter').value;
+
+      let filtered = allUsers.filter(user => {
+        const matchesSearch = 
+          (user.displayName || '').toLowerCase().includes(search) ||
+          (user.username || '').toLowerCase().includes(search) ||
+          (user.email || '').toLowerCase().includes(search);
+
+        if (!matchesSearch) return false;
+
+        switch (filter) {
+          case 'verified': return user.isVerified;
+          case 'unverified': return !user.isVerified;
+          case 'online': return user.isOnline;
+          default: return true;
+        }
+      });
+
+      renderUsers(filtered);
+    }
+
+    // View User
+    function viewUser(uid) {
+      selectedUserId = uid;
+      const user = allUsers.find(u => u.uid === uid);
+      
+      if (!user) return;
+
+      const content = document.getElementById('userDetailContent');
+      content.innerHTML = `
+        <div class="user-detail">
+          <div class="user-detail-sidebar">
+            ${user.profilePhoto 
+              ? `<img src="${user.profilePhoto}" class="user-detail-avatar" alt="">`
+              : `<div class="user-detail-avatar" style="background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:600">${(user.displayName || 'U')[0].toUpperCase()}</div>`
+            }
+            <div class="user-detail-name">${user.displayName || 'Isimsiz'}</div>
+            <div class="user-detail-username">@${user.username || '-'}</div>
+            <div style="margin-bottom:16px">
+              ${user.isVerified 
+                ? '<span class="badge badge-success"><i class="ri-verified-badge-fill"></i> Onayli Hesap</span>'
+                : '<span class="badge badge-default">Onaysiz Hesap</span>'
+              }
+            </div>
+          </div>
+          <div>
+            <div class="user-detail-info">
+              <div class="user-detail-row">
+                <span class="user-detail-label">E-posta</span>
+                <span class="user-detail-value">${user.email || '-'}</span>
+              </div>
+              <div class="user-detail-row">
+                <span class="user-detail-label">Telefon</span>
+                <span class="user-detail-value">${user.phone || '-'}</span>
+              </div>
+              <div class="user-detail-row">
+                <span class="user-detail-label">Bolum</span>
+                <span class="user-detail-value">${user.department || '-'}</span>
+              </div>
+              <div class="user-detail-row">
+                <span class="user-detail-label">Sinif</span>
+                <span class="user-detail-value">${user.grade || '-'}</span>
+              </div>
+              <div class="user-detail-row">
+                <span class="user-detail-label">Kayit Tarihi</span>
+                <span class="user-detail-value">${formatDate(user.createdAt)}</span>
+              </div>
+              <div class="user-detail-row">
+                <span class="user-detail-label">Son Giris</span>
+                <span class="user-detail-value">${formatDate(user.lastLogin)}</span>
+              </div>
+              <div class="user-detail-row">
+                <span class="user-detail-label">Kulup Olusturabilir</span>
+                <span class="user-detail-value">
+                  <label class="toggle-switch">
+                    <input type="checkbox" ${user.canCreateClub ? 'checked' : ''} onchange="toggleClubPermission('${uid}', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </span>
+              </div>
+              <div class="user-detail-row">
+                <span class="user-detail-label">Onayli Hesap</span>
+                <span class="user-detail-value">
+                  <label class="toggle-switch">
+                    <input type="checkbox" ${user.isVerified ? 'checked' : ''} onchange="toggleVerification('${uid}', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </span>
+              </div>
+            </div>
+            ${user.bio ? `
+              <div style="margin-top:16px">
+                <strong style="font-size:13px;color:var(--text-secondary)">Biyografi</strong>
+                <p style="margin-top:8px">${user.bio}</p>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      openModal('userDetailModal');
+    }
+
+    // Edit User
+    function editUser(uid) {
+      viewUser(uid);
+    }
+
+    // Toggle Club Permission
+    async function toggleClubPermission(uid, value) {
+      try {
+        await db.ref('users/' + uid + '/canCreateClub').set(value);
+        showToast(value ? 'Kulup olusturma yetkisi verildi' : 'Kulup olusturma yetkisi kaldirildi', 'success');
+      } catch (error) {
+        showToast('Hata: ' + error.message, 'error');
+      }
+    }
+
+    // Toggle Verification
+    async function toggleVerification(uid, value) {
+      try {
+        await db.ref('users/' + uid + '/isVerified').set(value);
+        showToast(value ? 'Hesap onaylandi' : 'Onay kaldirildi', 'success');
+      } catch (error) {
+        showToast('Hata: ' + error.message, 'error');
+      }
+    }
+
+    // Ban User
+    function showBanModal(uid) {
+      selectedUserId = uid;
+      openModal('banModal');
+    }
+
+    async function confirmBan() {
+      if (!selectedUserId) return;
+
+      const reason = document.getElementById('banReason').value.trim();
+      const user = allUsers.find(u => u.uid === selectedUserId);
+
+      if (!user) return;
+
+      try {
+        // Add to banned users
+        await db.ref('bannedUsers/' + selectedUserId).set({
+          uid: selectedUserId,
+          displayName: user.displayName || 'Isimsiz',
+          username: user.username || '',
+          email: user.email || '',
+          profilePhoto: user.profilePhoto || '',
+          reason: reason || 'Sebep belirtilmedi',
+          bannedAt: firebase.database.ServerValue.TIMESTAMP,
+          bannedBy: currentAdmin.uid
+        });
+
+        // Set user as banned
+        await db.ref('users/' + selectedUserId + '/isBanned').set(true);
+
+        // Force logout the user by updating their session
+        await db.ref('users/' + selectedUserId + '/forceLogout').set(Date.now());
+
+        closeModal('banModal');
+        closeModal('userDetailModal');
+        document.getElementById('banReason').value = '';
+        showToast('Kullanici engellendi', 'success');
+      } catch (error) {
+        showToast('Hata: ' + error.message, 'error');
+      }
+    }
+
+    // Load Banned Users
+    async function loadBannedUsers() {
+      const snap = await db.ref('bannedUsers').once('value');
+      renderBannedUsers(snap.val() || {});
+    }
+
+    function renderBannedUsers(bannedData) {
+      const tbody = document.getElementById('bannedTableBody');
+      const banned = Object.entries(bannedData).map(([uid, data]) => ({ uid, ...data }));
+
+      if (banned.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4">
+              <div class="empty-state">
+                <i class="ri-user-forbid-line"></i>
+                <h3>Engellenen kullanici yok</h3>
+                <p>Henuz kimse engellenmemis</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = banned.map(user => `
+        <tr>
+          <td>
+            <div class="user-cell">
+              ${user.profilePhoto 
+                ? `<img src="${user.profilePhoto}" class="user-avatar" alt="">`
+                : `<div class="user-avatar-placeholder">${(user.displayName || 'U')[0].toUpperCase()}</div>`
+              }
+              <div>
+                <div class="user-name">${user.displayName || 'Isimsiz'}</div>
+                <div class="user-email">@${user.username || '-'}</div>
+              </div>
+            </div>
+          </td>
+          <td>${formatDate(user.bannedAt)}</td>
+          <td>${user.reason || '-'}</td>
+          <td>
+            <button class="action-btn success" onclick="unbanUser('${user.uid}')" title="Engeli Kaldir">
+              <i class="ri-user-follow-line"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Unban User
+    async function unbanUser(uid) {
+      try {
+        await db.ref('bannedUsers/' + uid).remove();
+        await db.ref('users/' + uid + '/isBanned').set(false);
+        showToast('Engel kaldirildi', 'success');
+      } catch (error) {
+        showToast('Hata: ' + error.message, 'error');
+      }
+    }
+
+    // Load Events
+    async function loadEvents() {
+      const snap = await db.ref('events').once('value');
+      processEvents(snap.val() || {});
+    }
+
+    function processEvents(eventsData) {
+      allEvents = Object.entries(eventsData).map(([id, data]) => ({
+        id,
+        ...data
+      }));
+      renderEvents(allEvents);
+      document.getElementById('totalEvents').textContent = allEvents.length;
+    }
+
+    function renderEvents(events) {
+      const tbody = document.getElementById('eventsTableBody');
+      
+      if (events.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="ri-calendar-event-line"></i>
+                <h3>Etkinlik bulunamadi</h3>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = events.map(event => `
+        <tr>
+          <td>
+            <div class="user-cell">
+              ${event.image 
+                ? `<img src="${event.image}" class="user-avatar" style="border-radius:8px" alt="">`
+                : `<div class="user-avatar-placeholder" style="border-radius:8px"><i class="ri-calendar-event-line"></i></div>`
+              }
+              <div>
+                <div class="user-name">${event.title || 'Isimsiz Etkinlik'}</div>
+                <div class="user-email">${event.category || '-'}</div>
+              </div>
+            </div>
+          </td>
+          <td>${event.organizerName || '-'}</td>
+          <td>${formatDate(event.date)}</td>
+          <td>${event.location || '-'}</td>
+          <td>${event.participants ? Object.keys(event.participants).length : 0} kisi</td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn view" onclick="viewEvent('${event.id}')" title="Detay">
+                <i class="ri-eye-line"></i>
+              </button>
+              <button class="action-btn delete" onclick="deleteEvent('${event.id}')" title="Sil">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterEvents() {
+      const search = document.getElementById('eventSearch').value.toLowerCase();
+      const filter = document.getElementById('eventFilter').value;
+      const now = Date.now();
+
+      let filtered = allEvents.filter(event => {
+        const matchesSearch = (event.title || '').toLowerCase().includes(search);
+        if (!matchesSearch) return false;
+
+        const eventDate = new Date(event.date).getTime();
+        switch (filter) {
+          case 'upcoming': return eventDate > now;
+          case 'past': return eventDate < now;
+          default: return true;
+        }
+      });
+
+      renderEvents(filtered);
+    }
+
+    function viewEvent(id) {
+      const event = allEvents.find(e => e.id === id);
+      if (event) {
+        showToast('Etkinlik: ' + event.title);
+      }
+    }
+
+    async function deleteEvent(id) {
+      if (confirm('Bu etkinligi silmek istediginizden emin misiniz?')) {
+        try {
+          await db.ref('events/' + id).remove();
+          showToast('Etkinlik silindi', 'success');
+        } catch (error) {
+          showToast('Hata: ' + error.message, 'error');
+        }
+      }
+    }
+
+    // Load Games
+    async function loadGames() {
+      const snap = await db.ref('games').once('value');
+      processGames(snap.val() || {});
+    }
+
+    function processGames(gamesData) {
+      allGames = Object.entries(gamesData).map(([id, data]) => ({
+        id,
+        ...data
+      }));
+      renderGames(allGames);
+      document.getElementById('totalGames').textContent = allGames.length;
+    }
+
+    function renderGames(games) {
+      const tbody = document.getElementById('gamesTableBody');
+      
+      if (games.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="ri-gamepad-line"></i>
+                <h3>Oyun bulunamadi</h3>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = games.map(game => `
+        <tr>
+          <td>
+            <div class="user-cell">
+              ${game.image 
+                ? `<img src="${game.image}" class="user-avatar" style="border-radius:8px" alt="">`
+                : `<div class="user-avatar-placeholder" style="border-radius:8px"><i class="ri-gamepad-line"></i></div>`
+              }
+              <div>
+                <div class="user-name">${game.name || 'Isimsiz Oyun'}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-info">${game.platform || '-'}</span></td>
+          <td>${game.category || '-'}</td>
+          <td>${game.playerCount || 0} oyuncu</td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn edit" onclick="editGame('${game.id}')" title="Duzenle">
+                <i class="ri-edit-line"></i>
+              </button>
+              <button class="action-btn delete" onclick="deleteGame('${game.id}')" title="Sil">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function showAddGameModal() {
+      openModal('addGameModal');
+    }
+
+    async function addGame() {
+      const name = document.getElementById('gameName').value.trim();
+      const platform = document.getElementById('gamePlatform').value;
+      const category = document.getElementById('gameCategory').value.trim();
+      const image = document.getElementById('gameImage').value.trim();
+
+      if (!name) {
+        showToast('Oyun adi gerekli', 'error');
+        return;
+      }
+
+      try {
+        const newGameRef = db.ref('games').push();
+        await newGameRef.set({
+          name,
+          platform,
+          category,
+          image,
+          playerCount: 0,
+          createdAt: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        closeModal('addGameModal');
+        document.getElementById('gameName').value = '';
+        document.getElementById('gameCategory').value = '';
+        document.getElementById('gameImage').value = '';
+        showToast('Oyun eklendi', 'success');
+      } catch (error) {
+        showToast('Hata: ' + error.message, 'error');
+      }
+    }
+
+    function editGame(id) {
+      showToast('Oyun duzenleme yakinda eklenecek');
+    }
+
+    async function deleteGame(id) {
+      if (confirm('Bu oyunu silmek istediginizden emin misiniz?')) {
+        try {
+          await db.ref('games/' + id).remove();
+          showToast('Oyun silindi', 'success');
+        } catch (error) {
+          showToast('Hata: ' + error.message, 'error');
+        }
+      }
+    }
+
+    // Load Clubs
+    async function loadClubs() {
+      const snap = await db.ref('clubs').once('value');
+      processClubs(snap.val() || {});
+    }
+
+    function processClubs(clubsData) {
+      allClubs = Object.entries(clubsData).map(([id, data]) => ({
+        id,
+        ...data
+      }));
+      renderClubs(allClubs);
+      document.getElementById('totalClubs').textContent = allClubs.length;
+    }
+
+    function renderClubs(clubs) {
+      const grid = document.getElementById('clubsGrid');
+      
+      if (clubs.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1">
+            <i class="ri-team-line"></i>
+            <h3>Kulup bulunamadi</h3>
+            <p>Henuz kulup olusturulmamis</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = clubs.map(club => `
+        <div class="club-card">
+          <div class="club-cover">
+            ${club.coverImage ? `<img src="${club.coverImage}" alt="">` : ''}
+            <div class="club-badge-preview">
+              ${club.badge ? `<img src="${club.badge}" alt="">` : `<i class="ri-team-line" style="font-size:24px;color:var(--text-muted)"></i>`}
+            </div>
+          </div>
+          <div class="club-content">
+            <div class="club-name">${club.name || 'Isimsiz Kulup'}</div>
+            <div class="club-owner">Sahip: ${club.ownerName || '-'}</div>
+            <div class="club-stats">
+              <div class="club-stat">
+                <i class="ri-user-line"></i>
+                ${club.members ? Object.keys(club.members).length : 0} uye
+              </div>
+              <div class="club-stat">
+                <i class="ri-chat-3-line"></i>
+                ${club.messageCount || 0} mesaj
+              </div>
+            </div>
+          </div>
+          <div class="club-actions">
+            <button class="btn btn-secondary" style="flex:1" onclick="viewClub('${club.id}')">
+              <i class="ri-eye-line"></i> Detay
+            </button>
+            <button class="action-btn delete" onclick="deleteClub('${club.id}')" title="Sil">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterClubs() {
+      const search = document.getElementById('clubSearch').value.toLowerCase();
+      const filtered = allClubs.filter(club => 
+        (club.name || '').toLowerCase().includes(search)
       );
+      renderClubs(filtered);
+    }
+
+    function viewClub(id) {
+      selectedClubId = id;
+      const club = allClubs.find(c => c.id === id);
+      
+      if (!club) return;
+
+      const content = document.getElementById('clubDetailContent');
+      const memberCount = club.members ? Object.keys(club.members).length : 0;
+
+      content.innerHTML = `
+        <div style="text-align:center;margin-bottom:24px">
+          ${club.coverImage 
+            ? `<img src="${club.coverImage}" style="width:100%;height:150px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:16px" alt="">`
+            : ''
+          }
+          <div style="display:inline-flex;align-items:center;gap:12px;margin-bottom:8px">
+            ${club.badge ? `<img src="${club.badge}" style="width:48px;height:48px;border-radius:8px" alt="">` : ''}
+            <h2 style="font-size:24px">${club.name || 'Isimsiz Kulup'}</h2>
+          </div>
+          <p style="color:var(--text-muted)">${club.description || 'Aciklama yok'}</p>
+        </div>
+
+        <div class="user-detail-info">
+          <div class="user-detail-row">
+            <span class="user-detail-label">Sahip</span>
+            <span class="user-detail-value">${club.ownerName || '-'}</span>
+          </div>
+          <div class="user-detail-row">
+            <span class="user-detail-label">Uye Sayisi</span>
+            <span class="user-detail-value">${memberCount}</span>
+          </div>
+          <div class="user-detail-row">
+            <span class="user-detail-label">Olusturulma Tarihi</span>
+            <span class="user-detail-value">${formatDate(club.createdAt)}</span>
+          </div>
+          <div class="user-detail-row">
+            <span class="user-detail-label">Sohbet Rengi</span>
+            <span class="user-detail-value">
+              <span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:${club.chatColor || '#1a1a1a'}"></span>
+            </span>
+          </div>
+        </div>
+
+        ${memberCount > 0 ? `
+          <div style="margin-top:20px">
+            <strong style="font-size:13px;color:var(--text-secondary)">Uyeler</strong>
+            <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
+              ${Object.entries(club.members || {}).map(([uid, member]) => `
+                <span class="badge badge-default">${member.displayName || 'Uye'}</span>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      document.getElementById('deleteClubBtn').onclick = () => deleteClub(id);
+      openModal('clubDetailModal');
+    }
+
+    async function deleteClub(id) {
+      if (confirm('Bu kulubu silmek istediginizden emin misiniz?')) {
+        try {
+          await db.ref('clubs/' + id).remove();
+          closeModal('clubDetailModal');
+          showToast('Kulup silindi', 'success');
+        } catch (error) {
+          showToast('Hata: ' + error.message, 'error');
+        }
+      }
+    }
+
+    // Load Verifications
+    async function loadVerifications() {
+      const snap = await db.ref('verificationRequests').once('value');
+      const requests = snap.val() || {};
+      
+      const pending = Object.entries(requests)
+        .filter(([_, req]) => req.status === 'pending')
+        .map(([id, data]) => ({ id, ...data }));
+      
+      renderVerifications(pending);
+      document.getElementById('verificationBadge').textContent = pending.length;
+    }
+
+    function renderVerifications(requests) {
+      const tbody = document.getElementById('verificationsTableBody');
+      
+      if (requests.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="ri-verified-badge-line"></i>
+                <h3>Onay bekleyen yok</h3>
+                <p>Tum talepler islendi</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = requests.map(req => `
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-placeholder">${(req.displayName || 'U')[0].toUpperCase()}</div>
+              <div>
+                <div class="user-name">${req.displayName || 'Isimsiz'}</div>
+                <div class="user-email">${req.email || '-'}</div>
+              </div>
+            </div>
+          </td>
+          <td>@${req.username || '-'}</td>
+          <td>${formatDate(req.requestedAt)}</td>
+          <td>${req.reason || '-'}</td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn success" onclick="approveVerification('${req.id}', '${req.userId}')" title="Onayla">
+                <i class="ri-check-line"></i>
+              </button>
+              <button class="action-btn delete" onclick="rejectVerification('${req.id}')" title="Reddet">
+                <i class="ri-close-line"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function approveVerification(requestId, userId) {
+      try {
+        await db.ref('users/' + userId + '/isVerified').set(true);
+        await db.ref('users/' + userId + '/canCreateClub').set(true);
+        await db.ref('verificationRequests/' + requestId + '/status').set('approved');
+        loadVerifications();
+        showToast('Kullanici onaylandi', 'success');
+      } catch (error) {
+        showToast('Hata: ' + error.message, 'error');
+      }
+    }
+
+    async function rejectVerification(requestId) {
+      try {
+        await db.ref('verificationRequests/' + requestId + '/status').set('rejected');
+        loadVerifications();
+        showToast('Talep reddedildi', 'success');
+      } catch (error) {
+        showToast('Hata: ' + error.message, 'error');
+      }
+    }
+
+    // Dashboard Stats
+    function updateDashboardStats() {
+      document.getElementById('totalUsers').textContent = allUsers.length;
+      document.getElementById('totalEvents').textContent = allEvents.length;
+      document.getElementById('totalGames').textContent = allGames.length;
+      document.getElementById('totalClubs').textContent = allClubs.length;
+    }
+
+    // Recent Users
+    function loadRecentUsers() {
+      const container = document.getElementById('recentUsersContainer');
+      const recent = [...allUsers]
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 5);
+
+      if (recent.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>Henuz kullanici yok</p></div>';
+        return;
+      }
+
+      container.innerHTML = recent.map(user => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color)">
+          ${user.profilePhoto 
+            ? `<img src="${user.profilePhoto}" style="width:40px;height:40px;border-radius:50%;object-fit:cover" alt="">`
+            : `<div style="width:40px;height:40px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-weight:600">${(user.displayName || 'U')[0].toUpperCase()}</div>`
+          }
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:500">${user.displayName || 'Isimsiz'}</div>
+            <div style="font-size:12px;color:var(--text-muted)">@${user.username || '-'}</div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted)">${formatDate(user.createdAt)}</div>
+        </div>
+      `).join('');
+    }
+
+    // Activity Log
+    function loadActivityLog() {
+      const container = document.getElementById('activityList');
+      
+      // Simulated activity - in real app, this would come from a separate collection
+      const activities = [
+        { type: 'user', text: 'Yeni kullanici kaydoldu', time: Date.now() - 300000, icon: 'ri-user-add-line', color: '#e8f5e9' },
+        { type: 'event', text: 'Yeni etkinlik olusturuldu', time: Date.now() - 600000, icon: 'ri-calendar-event-line', color: '#e3f2fd' },
+        { type: 'club', text: 'Yeni kulup kuruldu', time: Date.now() - 900000, icon: 'ri-team-line', color: '#f3e5f5' },
+      ];
+
+      container.innerHTML = activities.map(act => `
+        <div class="activity-item">
+          <div class="activity-icon" style="background:${act.color}">
+            <i class="${act.icon}"></i>
+          </div>
+          <div class="activity-content">
+            <div class="activity-text">${act.text}</div>
+            <div class="activity-time">${formatRelativeTime(act.time)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Settings
+    async function saveSettings() {
+      const announcement = document.getElementById('announcementText').value;
+      const maintenance = document.getElementById('maintenanceMode').checked;
+      const registration = document.getElementById('registrationEnabled').checked;
+
+      try {
+        await db.ref('settings').update({
+          announcement,
+          maintenanceMode: maintenance,
+          registrationEnabled: registration,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+        showToast('Ayarlar kaydedildi', 'success');
+      } catch (error) {
+        showToast('Hata: ' + error.message, 'error');
+      }
+    }
+
+    // Modal Functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Utility Functions
+    function formatDate(timestamp) {
+      if (!timestamp) return '-';
+      return new Date(timestamp).toLocaleDateString('tr-TR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function formatRelativeTime(timestamp) {
+      const diff = Date.now() - timestamp;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 1) return 'Az once';
+      if (minutes < 60) return minutes + ' dakika once';
+      if (hours < 24) return hours + ' saat once';
+      return days + ' gun once';
+    }
+
+    function showToast(message, type = 'default') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show';
+      if (type === 'error') toast.classList.add('error');
+      if (type === 'success') toast.classList.add('success');
+      setTimeout(() => toast.className = 'toast', 3000);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+          modal.classList.remove('active');
+        });
+        document.body.style.overflow = '';
+      }
+    });
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
     });
   </script>
 </body>
