@@ -4,12 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LENG Admin Panel</title>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -82,40 +79,6 @@
       font-size: 14px;
     }
 
-    .login-input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      font-size: 15px;
-      margin-bottom: 16px;
-      transition: all 0.2s;
-      background: var(--bg-secondary);
-    }
-
-    .login-input:focus {
-      outline: none;
-      border-color: var(--accent);
-      background: var(--bg-primary);
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 14px;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: var(--radius-md);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .login-btn:hover {
-      background: #333;
-    }
-
     .login-error {
       background: #fef2f2;
       color: var(--danger);
@@ -124,6 +87,33 @@
       margin-bottom: 16px;
       font-size: 13px;
       display: none;
+    }
+
+    .google-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 24px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .google-btn:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+    }
+
+    .google-btn svg {
+      width: 20px;
+      height: 20px;
     }
 
     /* Main Layout */
@@ -257,6 +247,13 @@
       align-items: center;
       justify-content: center;
       font-weight: 600;
+      overflow: hidden;
+    }
+
+    .admin-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .admin-info {
@@ -349,16 +346,6 @@
       color: var(--text-primary);
     }
 
-    .header-btn .dot {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 8px;
-      height: 8px;
-      background: var(--danger);
-      border-radius: 50%;
-    }
-
     /* Page Content */
     .page-content {
       padding: 32px;
@@ -409,16 +396,6 @@
     .stat-icon.events { background: #e3f2fd; color: var(--info); }
     .stat-icon.games { background: #fff3e0; color: #f57c00; }
     .stat-icon.clubs { background: #f3e5f5; color: #9c27b0; }
-
-    .stat-change {
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 20px;
-      font-weight: 500;
-    }
-
-    .stat-change.positive { background: #e8f5e9; color: var(--success); }
-    .stat-change.negative { background: #fef2f2; color: var(--danger); }
 
     .stat-value {
       font-size: 32px;
@@ -692,6 +669,11 @@
       color: white;
     }
 
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
     /* Modal */
     .modal-overlay {
       position: fixed;
@@ -804,23 +786,10 @@
       min-height: 100px;
     }
 
-    .form-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-
-    .form-checkbox input {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent);
-    }
-
     /* User Detail View */
     .user-detail {
       display: grid;
-      grid-template-columns: 1fr 2fr;
+      grid-template-columns: 200px 1fr;
       gap: 24px;
     }
 
@@ -875,33 +844,117 @@
       font-size: 13px;
     }
 
-    /* Tabs */
-    .tabs {
+    /* Item Card */
+    .item-card {
       display: flex;
-      gap: 4px;
-      background: var(--bg-secondary);
-      padding: 4px;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
       border-radius: var(--radius-md);
-      margin-bottom: 20px;
+      background: var(--bg-secondary);
+      margin-bottom: 12px;
     }
 
-    .tab {
+    .item-card img {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+    }
+
+    .item-card-info {
       flex: 1;
-      padding: 10px 16px;
-      border: none;
-      background: none;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: all 0.2s;
+      min-width: 0;
     }
 
-    .tab.active {
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      box-shadow: var(--shadow-sm);
+    .item-card-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .item-card-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .item-card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* QR Scanner */
+    #qr-reader {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .qr-result {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .qr-result.success {
+      background: #e8f5e9;
+      color: var(--success);
+    }
+
+    .qr-result.error {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .attendance-list {
+      margin-top: 20px;
+    }
+
+    .attendance-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      margin-bottom: 8px;
+    }
+
+    .attendance-item img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .attendance-info {
+      flex: 1;
+    }
+
+    .attendance-name {
+      font-weight: 500;
+    }
+
+    .attendance-time {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .attendance-status {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .attendance-confirmed {
+      background: #e8f5e9;
+      color: var(--success);
+    }
+
+    .attendance-pending {
+      background: #fff3e0;
+      color: #f57c00;
     }
 
     /* Empty State */
@@ -964,149 +1017,67 @@
       opacity: 1;
     }
 
-    .toast.error {
-      background: var(--danger);
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
     }
 
-    .toast.success {
-      background: var(--success);
+    @media (max-width: 768px) {
+      .page-content {
+        padding: 16px;
+      }
+
+      .top-header {
+        padding: 12px 16px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .user-detail {
+        grid-template-columns: 1fr;
+      }
+
+      .user-detail-sidebar {
+        margin-bottom: 16px;
+      }
+
+      .filters-bar {
+        flex-direction: column;
+      }
+
+      .search-box {
+        max-width: none;
+        width: 100%;
+      }
+
+      .item-card {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .item-card-actions {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
-    /* Club Card */
-    .club-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-
-    .club-card {
-      background: var(--bg-primary);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-color);
-      overflow: hidden;
-      transition: all 0.2s;
-    }
-
-    .club-card:hover {
-      box-shadow: var(--shadow-md);
-    }
-
-    .club-cover {
-      height: 120px;
-      background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
-      position: relative;
-    }
-
-    .club-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .club-badge-preview {
-      position: absolute;
-      bottom: -24px;
-      left: 20px;
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-md);
-      background: white;
-      border: 3px solid white;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .club-badge-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .club-content {
-      padding: 32px 20px 20px;
-    }
-
-    .club-name {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .club-owner {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-
-    .club-stats {
-      display: flex;
-      gap: 16px;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .club-stat {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .club-actions {
-      padding: 16px 20px;
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      gap: 8px;
-    }
-
-    /* Quick Actions */
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    .quick-action {
-      background: var(--bg-primary);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .quick-action:hover {
-      border-color: var(--accent);
-      box-shadow: var(--shadow-md);
-    }
-
-    .quick-action-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
-
-    .quick-action-text h4 {
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-
-    .quick-action-text p {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    /* Mobile Sidebar Overlay */
+    /* Overlay for mobile sidebar */
     .sidebar-overlay {
       display: none;
       position: fixed;
@@ -1118,278 +1089,6 @@
     .sidebar-overlay.active {
       display: block;
     }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-
-      .sidebar.active {
-        transform: translateX(0);
-      }
-
-      .main-content {
-        margin-left: 0;
-      }
-
-      .menu-toggle {
-        display: block;
-      }
-
-      .user-detail {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .top-header {
-        padding: 12px 16px;
-      }
-
-      .page-content {
-        padding: 16px;
-      }
-
-      .page-title {
-        font-size: 18px;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-
-      .stat-card {
-        padding: 16px;
-      }
-
-      .stat-value {
-        font-size: 24px;
-      }
-
-      .card-header {
-        padding: 16px;
-      }
-
-      .card-body {
-        padding: 16px;
-      }
-
-      .filters-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .search-box {
-        max-width: none;
-      }
-
-      .data-table th,
-      .data-table td {
-        padding: 12px 10px;
-        font-size: 13px;
-      }
-
-      .modal {
-        max-width: 100%;
-        margin: 0;
-        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-        max-height: 85vh;
-      }
-
-      .modal-overlay {
-        align-items: flex-end;
-        padding: 0;
-      }
-
-      .quick-actions {
-        grid-template-columns: 1fr;
-      }
-
-      .club-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .header-right {
-        gap: 8px;
-      }
-
-      .tabs {
-        flex-direction: column;
-      }
-
-      .action-btns {
-        flex-direction: column;
-      }
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--bg-secondary);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--border-dark);
-      border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--text-muted);
-    }
-
-    /* Activity Log */
-    .activity-list {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .activity-item {
-      display: flex;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .activity-item:last-child {
-      border-bottom: none;
-    }
-
-    .activity-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-
-    .activity-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .activity-text {
-      font-size: 14px;
-      margin-bottom: 2px;
-    }
-
-    .activity-time {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* Toggle Switch */
-    .toggle-switch {
-      position: relative;
-      width: 44px;
-      height: 24px;
-    }
-
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background: var(--border-dark);
-      border-radius: 24px;
-      transition: 0.3s;
-    }
-
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background: white;
-      border-radius: 50%;
-      transition: 0.3s;
-    }
-
-    .toggle-switch input:checked + .toggle-slider {
-      background: var(--accent);
-    }
-
-    .toggle-switch input:checked + .toggle-slider:before {
-      transform: translateX(20px);
-    }
-
-    /* Image Preview */
-    .image-preview {
-      width: 100%;
-      max-width: 200px;
-      height: 120px;
-      border-radius: var(--radius-md);
-      border: 2px dashed var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      overflow: hidden;
-      transition: all 0.2s;
-    }
-
-    .image-preview:hover {
-      border-color: var(--accent);
-    }
-
-    .image-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .image-preview-placeholder {
-      text-align: center;
-      color: var(--text-muted);
-    }
-
-    .image-preview-placeholder i {
-      font-size: 32px;
-      margin-bottom: 8px;
-    }
-
-    /* Realtime Indicator */
-    .realtime-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .realtime-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--success);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
   </style>
 </head>
 <body>
@@ -1398,11 +1097,15 @@
     <div class="login-card">
       <div class="login-logo">LENG</div>
       <div class="login-subtitle">Admin Panel</div>
-      <div class="login-error" id="loginError"></div>
-      <input type="email" class="login-input" id="adminEmail" placeholder="E-posta">
-      <input type="password" class="login-input" id="adminPassword" placeholder="Parola">
-      <button class="login-btn" onclick="adminLogin()">
-        <span id="loginBtnText">Giris Yap</span>
+      <div class="login-error" id="loginError">Bu hesabin admin yetkisi bulunmuyor.</div>
+      <button class="google-btn" onclick="signInWithGoogle()">
+        <svg viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Google ile Giris Yap
       </button>
     </div>
   </div>
@@ -1418,55 +1121,37 @@
         <div class="sidebar-logo">LENG</div>
         <div class="sidebar-label">Admin Panel</div>
       </div>
-      
+
       <nav class="sidebar-nav">
         <div class="nav-section">
           <div class="nav-section-title">Genel</div>
-          <div class="nav-item active" data-section="dashboard">
+          <div class="nav-item active" onclick="switchSection('dashboard')">
             <i class="ri-dashboard-line"></i>
             <span>Dashboard</span>
           </div>
-          <div class="nav-item" data-section="users">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Yonetim</div>
+          <div class="nav-item" onclick="switchSection('users')">
             <i class="ri-user-line"></i>
             <span>Kullanicilar</span>
-            <span class="badge" id="usersBadge">0</span>
           </div>
-          <div class="nav-item" data-section="events">
+          <div class="nav-item" onclick="switchSection('events')">
             <i class="ri-calendar-event-line"></i>
             <span>Etkinlikler</span>
           </div>
-          <div class="nav-item" data-section="games">
+          <div class="nav-item" onclick="switchSection('games')">
             <i class="ri-gamepad-line"></i>
             <span>Oyunlar</span>
           </div>
         </div>
 
         <div class="nav-section">
-          <div class="nav-section-title">Topluluk</div>
-          <div class="nav-item" data-section="clubs">
-            <i class="ri-team-line"></i>
-            <span>Kulupler</span>
-          </div>
-          <div class="nav-item" data-section="verifications">
-            <i class="ri-verified-badge-line"></i>
-            <span>Onay Bekleyenler</span>
-            <span class="badge" id="verificationBadge">0</span>
-          </div>
-        </div>
-
-        <div class="nav-section">
-          <div class="nav-section-title">Yonetim</div>
-          <div class="nav-item" data-section="banned">
-            <i class="ri-user-forbid-line"></i>
-            <span>Engellenenler</span>
-          </div>
-          <div class="nav-item" data-section="reports">
-            <i class="ri-flag-line"></i>
-            <span>Raporlar</span>
-          </div>
-          <div class="nav-item" data-section="settings">
-            <i class="ri-settings-3-line"></i>
-            <span>Ayarlar</span>
+          <div class="nav-section-title">Araclar</div>
+          <div class="nav-item" onclick="switchSection('qrscanner')">
+            <i class="ri-qr-scan-line"></i>
+            <span>QR Tarayici</span>
           </div>
         </div>
       </nav>
@@ -1476,7 +1161,7 @@
           <div class="admin-avatar" id="adminAvatar">A</div>
           <div class="admin-info">
             <div class="admin-name" id="adminName">Admin</div>
-            <div class="admin-role">Super Admin</div>
+            <div class="admin-role">Yonetici</div>
           </div>
         </div>
       </div>
@@ -1492,14 +1177,7 @@
           <h1 class="page-title" id="pageTitle">Dashboard</h1>
         </div>
         <div class="header-right">
-          <div class="realtime-indicator">
-            <div class="realtime-dot"></div>
-            Canli
-          </div>
-          <button class="header-btn" onclick="refreshData()">
-            <i class="ri-refresh-line"></i>
-          </button>
-          <button class="header-btn" onclick="adminLogout()">
+          <button class="header-btn" onclick="signOutAdmin()">
             <i class="ri-logout-box-line"></i>
           </button>
         </div>
@@ -1511,92 +1189,48 @@
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-header">
-                <div class="stat-icon users"><i class="ri-user-line"></i></div>
-                <span class="stat-change positive">+12%</span>
+                <div class="stat-icon users">
+                  <i class="ri-user-line"></i>
+                </div>
               </div>
               <div class="stat-value" id="totalUsers">0</div>
               <div class="stat-label">Toplam Kullanici</div>
             </div>
             <div class="stat-card">
               <div class="stat-header">
-                <div class="stat-icon events"><i class="ri-calendar-event-line"></i></div>
+                <div class="stat-icon events">
+                  <i class="ri-calendar-event-line"></i>
+                </div>
               </div>
               <div class="stat-value" id="totalEvents">0</div>
-              <div class="stat-label">Aktif Etkinlik</div>
+              <div class="stat-label">Toplam Etkinlik</div>
             </div>
             <div class="stat-card">
               <div class="stat-header">
-                <div class="stat-icon games"><i class="ri-gamepad-line"></i></div>
+                <div class="stat-icon games">
+                  <i class="ri-gamepad-line"></i>
+                </div>
               </div>
               <div class="stat-value" id="totalGames">0</div>
               <div class="stat-label">Toplam Oyun</div>
             </div>
             <div class="stat-card">
               <div class="stat-header">
-                <div class="stat-icon clubs"><i class="ri-team-line"></i></div>
-              </div>
-              <div class="stat-value" id="totalClubs">0</div>
-              <div class="stat-label">Aktif Kulup</div>
-            </div>
-          </div>
-
-          <div class="quick-actions">
-            <div class="quick-action" onclick="showSection('users')">
-              <div class="quick-action-icon" style="background:#e8f5e9;color:var(--success)">
-                <i class="ri-user-add-line"></i>
-              </div>
-              <div class="quick-action-text">
-                <h4>Kullanicilari Yonet</h4>
-                <p>Kullanici islemlerini gerceklestir</p>
-              </div>
-            </div>
-            <div class="quick-action" onclick="showSection('verifications')">
-              <div class="quick-action-icon" style="background:#e3f2fd;color:var(--info)">
-                <i class="ri-verified-badge-line"></i>
-              </div>
-              <div class="quick-action-text">
-                <h4>Onay Bekleyenler</h4>
-                <p>Dogrulama isteklerini incele</p>
-              </div>
-            </div>
-            <div class="quick-action" onclick="showSection('clubs')">
-              <div class="quick-action-icon" style="background:#f3e5f5;color:#9c27b0">
-                <i class="ri-team-line"></i>
-              </div>
-              <div class="quick-action-text">
-                <h4>Kulupleri Yonet</h4>
-                <p>Kulup islemlerini gerceklestir</p>
-              </div>
-            </div>
-            <div class="quick-action" onclick="showSection('banned')">
-              <div class="quick-action-icon" style="background:#fef2f2;color:var(--danger)">
-                <i class="ri-user-forbid-line"></i>
-              </div>
-              <div class="quick-action-text">
-                <h4>Engellenenler</h4>
-                <p>Engellenen kullanicilari yonet</p>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Son Kullanicilar</h3>
-              </div>
-              <div class="card-body" id="recentUsersContainer">
-                <div class="loading"><div class="spinner"></div></div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Son Aktiviteler</h3>
-              </div>
-              <div class="card-body">
-                <div class="activity-list" id="activityList">
-                  <div class="loading"><div class="spinner"></div></div>
+                <div class="stat-icon users">
+                  <i class="ri-user-star-line"></i>
                 </div>
               </div>
+              <div class="stat-value" id="onlineUsers">0</div>
+              <div class="stat-label">Cevrimici Kullanici</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Son Kullanicilar</h3>
+            </div>
+            <div class="card-body" id="recentUsers">
+              <div class="loading"><div class="spinner"></div></div>
             </div>
           </div>
         </section>
@@ -1605,16 +1239,16 @@
         <section class="page-section" id="usersSection">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Tum Kullanicilar</h3>
+              <h3 class="card-title">Kullanicilar</h3>
               <div class="filters-bar">
                 <div class="search-box">
                   <i class="ri-search-line"></i>
-                  <input type="text" id="userSearch" placeholder="Kullanici ara..." oninput="filterUsers()">
+                  <input type="text" placeholder="Kullanici ara..." id="userSearch" oninput="filterUsers()">
                 </div>
                 <select class="filter-select" id="userFilter" onchange="filterUsers()">
                   <option value="all">Tum Kullanicilar</option>
                   <option value="verified">Onaylilar</option>
-                  <option value="unverified">Onaysizlar</option>
+                  <option value="banned">Engellilar</option>
                   <option value="online">Cevrimici</option>
                 </select>
               </div>
@@ -1625,18 +1259,14 @@
                   <tr>
                     <th>Kullanici</th>
                     <th>Kullanici Adi</th>
-                    <th>Kayit Tarihi</th>
-                    <th>Son Giris</th>
+                    <th>E-posta</th>
                     <th>Durum</th>
+                    <th>Katilim</th>
                     <th>Islemler</th>
                   </tr>
                 </thead>
                 <tbody id="usersTableBody">
-                  <tr>
-                    <td colspan="6">
-                      <div class="loading"><div class="spinner"></div></div>
-                    </td>
-                  </tr>
+                  <tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -1647,39 +1277,13 @@
         <section class="page-section" id="eventsSection">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Tum Etkinlikler</h3>
-              <div class="filters-bar">
-                <div class="search-box">
-                  <i class="ri-search-line"></i>
-                  <input type="text" id="eventSearch" placeholder="Etkinlik ara..." oninput="filterEvents()">
-                </div>
-                <select class="filter-select" id="eventFilter" onchange="filterEvents()">
-                  <option value="all">Tum Etkinlikler</option>
-                  <option value="upcoming">Yaklasan</option>
-                  <option value="past">Gecmis</option>
-                </select>
-              </div>
+              <h3 class="card-title">Etkinlikler</h3>
+              <button class="btn btn-primary" onclick="showAddEventModal()">
+                <i class="ri-add-line"></i> Yeni Etkinlik
+              </button>
             </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Etkinlik</th>
-                    <th>Organizator</th>
-                    <th>Tarih</th>
-                    <th>Konum</th>
-                    <th>Katilimci</th>
-                    <th>Islemler</th>
-                  </tr>
-                </thead>
-                <tbody id="eventsTableBody">
-                  <tr>
-                    <td colspan="6">
-                      <div class="loading"><div class="spinner"></div></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="card-body" id="eventsList">
+              <div class="loading"><div class="spinner"></div></div>
             </div>
           </div>
         </section>
@@ -1688,174 +1292,38 @@
         <section class="page-section" id="gamesSection">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Tum Oyunlar</h3>
+              <h3 class="card-title">Oyunlar</h3>
               <button class="btn btn-primary" onclick="showAddGameModal()">
-                <i class="ri-add-line"></i> Oyun Ekle
+                <i class="ri-add-line"></i> Yeni Oyun
               </button>
             </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Oyun</th>
-                    <th>Platform</th>
-                    <th>Kategori</th>
-                    <th>Oyuncu Sayisi</th>
-                    <th>Islemler</th>
-                  </tr>
-                </thead>
-                <tbody id="gamesTableBody">
-                  <tr>
-                    <td colspan="5">
-                      <div class="loading"><div class="spinner"></div></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="card-body" id="gamesList">
+              <div class="loading"><div class="spinner"></div></div>
             </div>
           </div>
         </section>
 
-        <!-- Clubs Section -->
-        <section class="page-section" id="clubsSection">
+        <!-- QR Scanner Section -->
+        <section class="page-section" id="qrscannerSection">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Tum Kulupler</h3>
-              <div class="filters-bar">
-                <div class="search-box">
-                  <i class="ri-search-line"></i>
-                  <input type="text" id="clubSearch" placeholder="Kulup ara..." oninput="filterClubs()">
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="club-grid" id="clubsGrid">
-                <div class="loading"><div class="spinner"></div></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Verifications Section -->
-        <section class="page-section" id="verificationsSection">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Onay Bekleyen Kullanicilar</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Kullanici</th>
-                    <th>Kullanici Adi</th>
-                    <th>Talep Tarihi</th>
-                    <th>Aciklama</th>
-                    <th>Islemler</th>
-                  </tr>
-                </thead>
-                <tbody id="verificationsTableBody">
-                  <tr>
-                    <td colspan="5">
-                      <div class="loading"><div class="spinner"></div></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- Banned Section -->
-        <section class="page-section" id="bannedSection">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Engellenen Kullanicilar</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Kullanici</th>
-                    <th>Engelleme Tarihi</th>
-                    <th>Sebep</th>
-                    <th>Islemler</th>
-                  </tr>
-                </thead>
-                <tbody id="bannedTableBody">
-                  <tr>
-                    <td colspan="4">
-                      <div class="empty-state">
-                        <i class="ri-user-forbid-line"></i>
-                        <h3>Engellenen kullanici yok</h3>
-                        <p>Henuz kimse engellenmemis</p>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- Reports Section -->
-        <section class="page-section" id="reportsSection">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Kullanici Raporlari</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Raporlayan</th>
-                    <th>Raporlanan</th>
-                    <th>Sebep</th>
-                    <th>Tarih</th>
-                    <th>Islemler</th>
-                  </tr>
-                </thead>
-                <tbody id="reportsTableBody">
-                  <tr>
-                    <td colspan="5">
-                      <div class="empty-state">
-                        <i class="ri-flag-line"></i>
-                        <h3>Rapor yok</h3>
-                        <p>Henuz rapor bulunmuyor</p>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- Settings Section -->
-        <section class="page-section" id="settingsSection">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Sistem Ayarlari</h3>
+              <h3 class="card-title">QR Tarayici</h3>
             </div>
             <div class="card-body">
               <div class="form-group">
-                <label class="form-label">Duyuru Metni</label>
-                <textarea class="form-input form-textarea" id="announcementText" placeholder="Tum kullanicilara gosterilecek duyuru..."></textarea>
+                <label class="form-label">Etkinlik Sec</label>
+                <select class="form-input" id="qrEventSelect" onchange="onQrEventChange()">
+                  <option value="">Etkinlik seciniz...</option>
+                </select>
               </div>
-              <div class="form-group">
-                <label class="form-checkbox">
-                  <input type="checkbox" id="maintenanceMode">
-                  <span>Bakim Modu</span>
-                </label>
+              <div id="qr-reader"></div>
+              <div class="qr-result" id="qrResult" style="display:none;">
+                <div id="qrResultTitle"></div>
+                <div id="qrResultText"></div>
               </div>
-              <div class="form-group">
-                <label class="form-checkbox">
-                  <input type="checkbox" id="registrationEnabled" checked>
-                  <span>Yeni Kayitlara Izin Ver</span>
-                </label>
+              <div class="attendance-list" id="attendanceList">
+                <p style="text-align:center;color:var(--text-muted);padding:20px;">Etkinlik seciniz</p>
               </div>
-              <button class="btn btn-primary" onclick="saveSettings()">
-                <i class="ri-save-line"></i> Ayarlari Kaydet
-              </button>
             </div>
           </div>
         </section>
@@ -1865,108 +1333,122 @@
 
   <!-- User Detail Modal -->
   <div class="modal-overlay" id="userDetailModal">
-    <div class="modal" style="max-width:700px">
+    <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title">Kullanici Detayi</h3>
         <button class="modal-close" onclick="closeModal('userDetailModal')">
           <i class="ri-close-line"></i>
         </button>
       </div>
-      <div class="modal-body" id="userDetailContent">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('userDetailModal')">Kapat</button>
-        <button class="btn btn-danger" id="banUserBtn" onclick="banUser()">
-          <i class="ri-user-forbid-line"></i> Engelle
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Ban Modal -->
-  <div class="modal-overlay" id="banModal">
-    <div class="modal" style="max-width:480px">
-      <div class="modal-header">
-        <h3 class="modal-title">Kullaniciyi Engelle</h3>
-        <button class="modal-close" onclick="closeModal('banModal')">
-          <i class="ri-close-line"></i>
-        </button>
-      </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Engelleme Sebebi</label>
-          <textarea class="form-input form-textarea" id="banReason" placeholder="Engelleme sebebini yazin..."></textarea>
+        <div class="user-detail">
+          <div class="user-detail-sidebar">
+            <img class="user-detail-avatar" id="userDetailAvatar" src="" alt="">
+            <div class="user-detail-name" id="userDetailName">-</div>
+            <div class="user-detail-username" id="userDetailUsername">-</div>
+          </div>
+          <div class="user-detail-info">
+            <div class="user-detail-row">
+              <span class="user-detail-label">E-posta</span>
+              <span class="user-detail-value" id="userDetailEmail">-</span>
+            </div>
+            <div class="user-detail-row">
+              <span class="user-detail-label">Dogum Tarihi</span>
+              <span class="user-detail-value" id="userDetailBirthDate">-</span>
+            </div>
+            <div class="user-detail-row">
+              <span class="user-detail-label">Katilim Tarihi</span>
+              <span class="user-detail-value" id="userDetailJoinDate">-</span>
+            </div>
+            <div class="user-detail-row">
+              <span class="user-detail-label">Durum</span>
+              <span class="user-detail-value" id="userDetailStatus">-</span>
+            </div>
+            <div class="user-detail-row">
+              <span class="user-detail-label">Onay</span>
+              <span class="user-detail-value" id="userDetailVerified">-</span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('banModal')">Iptal</button>
-        <button class="btn btn-danger" onclick="confirmBan()">
-          <i class="ri-user-forbid-line"></i> Engelle
-        </button>
+        <button class="btn btn-secondary" onclick="closeModal('userDetailModal')">Kapat</button>
+        <button class="btn btn-success" id="userVerifyBtn" onclick="toggleUserVerify()">Onayla</button>
+        <button class="btn btn-danger" id="userBanBtn" onclick="toggleUserBan()">Engelle</button>
       </div>
     </div>
   </div>
 
-  <!-- Club Detail Modal -->
-  <div class="modal-overlay" id="clubDetailModal">
-    <div class="modal" style="max-width:700px">
+  <!-- Event Modal -->
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal">
       <div class="modal-header">
-        <h3 class="modal-title">Kulup Detayi</h3>
-        <button class="modal-close" onclick="closeModal('clubDetailModal')">
-          <i class="ri-close-line"></i>
-        </button>
-      </div>
-      <div class="modal-body" id="clubDetailContent">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('clubDetailModal')">Kapat</button>
-        <button class="btn btn-danger" id="deleteClubBtn">
-          <i class="ri-delete-bin-line"></i> Kulubu Sil
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Add Game Modal -->
-  <div class="modal-overlay" id="addGameModal">
-    <div class="modal" style="max-width:500px">
-      <div class="modal-header">
-        <h3 class="modal-title">Yeni Oyun Ekle</h3>
-        <button class="modal-close" onclick="closeModal('addGameModal')">
+        <h3 class="modal-title" id="eventModalTitle">Yeni Etkinlik</h3>
+        <button class="modal-close" onclick="closeModal('eventModal')">
           <i class="ri-close-line"></i>
         </button>
       </div>
       <div class="modal-body">
+        <input type="hidden" id="eventEditId">
+        <div class="form-group">
+          <label class="form-label">Etkinlik Adi</label>
+          <input type="text" class="form-input" id="eventName" placeholder="Etkinlik adi">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Aciklama</label>
+          <textarea class="form-input form-textarea" id="eventDesc" placeholder="Etkinlik aciklamasi"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gorsel URL</label>
+          <input type="text" class="form-input" id="eventImage" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tarih</label>
+          <input type="datetime-local" class="form-input" id="eventDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Konum</label>
+          <input type="text" class="form-input" id="eventLocation" placeholder="Etkinlik konumu">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('eventModal')">Iptal</button>
+        <button class="btn btn-primary" onclick="saveEvent()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Modal -->
+  <div class="modal-overlay" id="gameModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="gameModalTitle">Yeni Oyun</h3>
+        <button class="modal-close" onclick="closeModal('gameModal')">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="gameEditId">
         <div class="form-group">
           <label class="form-label">Oyun Adi</label>
           <input type="text" class="form-input" id="gameName" placeholder="Oyun adi">
         </div>
         <div class="form-group">
-          <label class="form-label">Platform</label>
-          <select class="form-input" id="gamePlatform">
-            <option value="PC">PC</option>
-            <option value="PlayStation">PlayStation</option>
-            <option value="Xbox">Xbox</option>
-            <option value="Mobile">Mobile</option>
-            <option value="Nintendo">Nintendo</option>
-          </select>
+          <label class="form-label">Aciklama</label>
+          <textarea class="form-input form-textarea" id="gameDesc" placeholder="Oyun aciklamasi"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Kategori</label>
-          <input type="text" class="form-input" id="gameCategory" placeholder="FPS, RPG, MOBA...">
+          <label class="form-label">Ikon URL</label>
+          <input type="text" class="form-input" id="gameIcon" placeholder="https://...">
         </div>
         <div class="form-group">
-          <label class="form-label">Oyun Gorseli URL</label>
-          <input type="text" class="form-input" id="gameImage" placeholder="https://...">
+          <label class="form-label">Oyun URL</label>
+          <input type="text" class="form-input" id="gameUrl" placeholder="https://...">
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('addGameModal')">Iptal</button>
-        <button class="btn btn-primary" onclick="addGame()">
-          <i class="ri-add-line"></i> Ekle
-        </button>
+        <button class="btn btn-secondary" onclick="closeModal('gameModal')">Iptal</button>
+        <button class="btn btn-primary" onclick="saveGame()">Kaydet</button>
       </div>
     </div>
   </div>
@@ -1974,1079 +1456,765 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
-  <script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithPopup, 
+      GoogleAuthProvider, 
+      onAuthStateChanged,
+      signOut as firebaseSignOut 
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      get, 
+      push, 
+      onValue, 
+      update,
+      remove
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
     // Firebase Config
     const firebaseConfig = {
-      apiKey: "AIzaSyDixvAihFLj0xpTqc3P9Ej2vT09cSt3aRA",
-      authDomain: "leng-proje.firebaseapp.com",
-      databaseURL: "https://leng-proje-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "leng-proje",
-      storageBucket: "leng-proje.appspot.com",
-      messagingSenderId: "227663692952",
-      appId: "1:227663692952:web:ee95f3e6c2b6e6c6ebc03e"
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "maps-52b00",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
-    const storage = firebase.storage();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
 
-    // State
     let currentAdmin = null;
     let allUsers = [];
     let allEvents = [];
     let allGames = [];
-    let allClubs = [];
     let selectedUserId = null;
-    let selectedClubId = null;
+    let html5QrCode = null;
+    let isScanning = false;
 
-    // Admin emails
-    const adminEmails = ['admin@leng.com', 'superadmin@leng.com'];
+    // ADMIN CHECK: Only allow specific email OR admins from database
+    const SUPER_ADMIN_EMAIL = "m.yusufertek@gmail.com";
 
     // Auth State
-    auth.onAuthStateChanged(async (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         // Check if user is admin
-        const userSnap = await db.ref('users/' + user.uid).once('value');
-        const userData = userSnap.val();
+        const isAdmin = await checkAdminPermission(user);
         
-        if (userData && (userData.isAdmin || adminEmails.includes(user.email))) {
-          currentAdmin = { ...userData, uid: user.uid };
+        if (isAdmin) {
+          currentAdmin = user;
           showAdminPanel();
-          loadAllData();
-          setupRealtimeListeners();
+          loadDashboard();
+          loadUsers();
+          loadEvents();
+          loadGames();
+          updateAdminProfile();
         } else {
-          showToast('Yetkiniz yok!', 'error');
-          auth.signOut();
+          // Not an admin
+          document.getElementById('loginError').style.display = 'block';
+          await firebaseSignOut(auth);
         }
       } else {
+        currentAdmin = null;
         showLoginScreen();
       }
     });
 
-    // Login
-    async function adminLogin() {
-      const email = document.getElementById('adminEmail').value.trim();
-      const password = document.getElementById('adminPassword').value;
-      const errorEl = document.getElementById('loginError');
-      const btnText = document.getElementById('loginBtnText');
-
-      if (!email || !password) {
-        errorEl.textContent = 'Lutfen tum alanlari doldurun';
-        errorEl.style.display = 'block';
-        return;
+    // Check Admin Permission
+    async function checkAdminPermission(user) {
+      // First check if email is super admin
+      if (user.email === SUPER_ADMIN_EMAIL) {
+        return true;
       }
-
-      btnText.textContent = 'Giris yapiliyor...';
-
+      
+      // Then check database for admins
       try {
-        await auth.signInWithEmailAndPassword(email, password);
+        const adminRef = ref(db, `admins/${user.uid}`);
+        const snapshot = await get(adminRef);
+        return snapshot.exists() && snapshot.val() === true;
       } catch (error) {
-        errorEl.textContent = 'Giris basarisiz: ' + error.message;
-        errorEl.style.display = 'block';
-        btnText.textContent = 'Giris Yap';
+        console.error("Admin check error:", error);
+        return false;
       }
     }
 
-    // Logout
-    function adminLogout() {
-      auth.signOut();
-    }
+    // Sign In with Google
+    window.signInWithGoogle = async () => {
+      try {
+        document.getElementById('loginError').style.display = 'none';
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Login error:", error);
+        showToast("Giris yapilamadi");
+      }
+    };
 
-    // Show/Hide Screens
+    // Sign Out
+    window.signOutAdmin = async () => {
+      try {
+        await firebaseSignOut(auth);
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    };
+
+    // Show Login Screen
     function showLoginScreen() {
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('adminContainer').classList.remove('active');
     }
 
+    // Show Admin Panel
     function showAdminPanel() {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('adminContainer').classList.add('active');
+    }
+
+    // Update Admin Profile
+    function updateAdminProfile() {
+      const avatarEl = document.getElementById('adminAvatar');
+      const nameEl = document.getElementById('adminName');
       
-      if (currentAdmin) {
-        document.getElementById('adminName').textContent = currentAdmin.displayName || 'Admin';
-        document.getElementById('adminAvatar').textContent = (currentAdmin.displayName || 'A')[0].toUpperCase();
+      if (currentAdmin.photoURL) {
+        avatarEl.innerHTML = `<img src="${currentAdmin.photoURL}" alt="">`;
+      } else {
+        avatarEl.textContent = currentAdmin.email.charAt(0).toUpperCase();
       }
+      
+      nameEl.textContent = currentAdmin.displayName || currentAdmin.email.split('@')[0];
     }
 
-    // Sidebar Toggle
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
+    // Toggle Sidebar
+    window.toggleSidebar = () => {
+      document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('sidebarOverlay').classList.toggle('active');
-    }
+    };
 
-    // Navigation
-    document.querySelectorAll('.nav-item[data-section]').forEach(item => {
-      item.addEventListener('click', () => {
-        const section = item.dataset.section;
-        showSection(section);
-        
-        // Close sidebar on mobile
-        if (window.innerWidth <= 1024) {
-          toggleSidebar();
-        }
-      });
-    });
-
-    function showSection(sectionName) {
-      // Update nav items
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.section === sectionName);
-      });
-
-      // Update sections
-      document.querySelectorAll('.page-section').forEach(section => {
-        section.classList.remove('active');
-      });
-      document.getElementById(sectionName + 'Section').classList.add('active');
-
-      // Update title
+    // Switch Section
+    window.switchSection = (section) => {
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      document.getElementById(section + 'Section').classList.add('active');
+      event.currentTarget.classList.add('active');
+      
       const titles = {
-        dashboard: 'Dashboard',
-        users: 'Kullanicilar',
-        events: 'Etkinlikler',
-        games: 'Oyunlar',
-        clubs: 'Kulupler',
-        verifications: 'Onay Bekleyenler',
-        banned: 'Engellenenler',
-        reports: 'Raporlar',
-        settings: 'Ayarlar'
+        'dashboard': 'Dashboard',
+        'users': 'Kullanicilar',
+        'events': 'Etkinlikler',
+        'games': 'Oyunlar',
+        'qrscanner': 'QR Tarayici'
       };
-      document.getElementById('pageTitle').textContent = titles[sectionName] || sectionName;
-    }
+      
+      document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
+      
+      if (section === 'qrscanner') {
+        loadEventsForSelect('qrEventSelect');
+        initQRScanner();
+      }
+      
+      // Close sidebar on mobile
+      if (window.innerWidth <= 1024) {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+      }
+    };
 
-    // Load All Data
-    async function loadAllData() {
-      await Promise.all([
-        loadUsers(),
-        loadEvents(),
-        loadGames(),
-        loadClubs(),
-        loadVerifications(),
-        loadBannedUsers()
-      ]);
-      updateDashboardStats();
-      loadRecentUsers();
-      loadActivityLog();
-    }
-
-    // Refresh Data
-    function refreshData() {
-      loadAllData();
-      showToast('Veriler yenilendi', 'success');
-    }
-
-    // Realtime Listeners
-    function setupRealtimeListeners() {
-      // Users
-      db.ref('users').on('value', (snap) => {
-        processUsers(snap.val() || {});
+    // Load Dashboard
+    function loadDashboard() {
+      // Stats are updated via realtime listeners
+      onValue(ref(db, 'users'), (snapshot) => {
+        const users = snapshot.val() || {};
+        const userCount = Object.keys(users).length;
+        const onlineCount = Object.values(users).filter(u => u.online).length;
+        
+        document.getElementById('totalUsers').textContent = userCount;
+        document.getElementById('onlineUsers').textContent = onlineCount;
+        
+        // Recent users
+        const recentContainer = document.getElementById('recentUsers');
+        const sortedUsers = Object.entries(users)
+          .map(([id, user]) => ({ id, ...user }))
+          .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+          .slice(0, 5);
+        
+        if (sortedUsers.length === 0) {
+          recentContainer.innerHTML = '<div class="empty-state"><p>Henuz kullanici yok</p></div>';
+          return;
+        }
+        
+        let html = '';
+        for (const user of sortedUsers) {
+          html += `
+            <div class="item-card">
+              <img src="${user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}&background=1a1a1a&color=fff`}" alt="">
+              <div class="item-card-info">
+                <div class="item-card-title">${user.displayName || 'Isimsiz'}</div>
+                <div class="item-card-desc">@${user.username || 'kullanici'} - ${user.email || ''}</div>
+              </div>
+              <span class="badge ${user.online ? 'badge-success' : 'badge-default'}">${user.online ? 'Cevrimici' : 'Cevrimdisi'}</span>
+            </div>
+          `;
+        }
+        recentContainer.innerHTML = html;
       });
 
-      // Events
-      db.ref('events').on('value', (snap) => {
-        processEvents(snap.val() || {});
+      onValue(ref(db, 'events'), (snapshot) => {
+        const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        document.getElementById('totalEvents').textContent = count;
       });
 
-      // Games
-      db.ref('games').on('value', (snap) => {
-        processGames(snap.val() || {});
+      onValue(ref(db, 'games'), (snapshot) => {
+        const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        document.getElementById('totalGames').textContent = count;
       });
-
-      // Clubs
-      db.ref('clubs').on('value', (snap) => {
-        processClubs(snap.val() || {});
-      });
-
-      // Banned Users
-      db.ref('bannedUsers').on('value', (snap) => {
-        renderBannedUsers(snap.val() || {});
-      });
-    }
-
-    // Process Users
-    function processUsers(usersData) {
-      allUsers = Object.entries(usersData).map(([uid, data]) => ({
-        uid,
-        ...data
-      }));
-      renderUsers(allUsers);
-      document.getElementById('usersBadge').textContent = allUsers.length;
-      document.getElementById('totalUsers').textContent = allUsers.length;
     }
 
     // Load Users
-    async function loadUsers() {
-      const snap = await db.ref('users').once('value');
-      processUsers(snap.val() || {});
+    function loadUsers() {
+      onValue(ref(db, 'users'), (snapshot) => {
+        allUsers = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allUsers.push({ id: child.key, ...child.val() });
+          });
+        }
+        renderUsersTable();
+      });
     }
 
-    // Render Users
-    function renderUsers(users) {
+    // Render Users Table
+    function renderUsersTable(users = allUsers) {
       const tbody = document.getElementById('usersTableBody');
       
       if (users.length === 0) {
-        tbody.innerHTML = `
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><p>Kullanici bulunamadi</p></td></tr>';
+        return;
+      }
+      
+      let html = '';
+      for (const user of users) {
+        const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-';
+        const statusBadge = user.banned 
+          ? '<span class="badge badge-danger">Engelli</span>'
+          : (user.online ? '<span class="badge badge-success">Cevrimici</span>' : '<span class="badge badge-default">Cevrimdisi</span>');
+        
+        html += `
           <tr>
-            <td colspan="6">
-              <div class="empty-state">
-                <i class="ri-user-line"></i>
-                <h3>Kullanici bulunamadi</h3>
+            <td>
+              <div class="user-cell">
+                <img class="user-avatar" src="${user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}&background=1a1a1a&color=fff`}" alt="">
+                <div>
+                  <div class="user-name">${user.displayName || 'Isimsiz'} ${user.verified ? '<i class="ri-verified-badge-fill" style="color:#1da1f2;"></i>' : ''}</div>
+                  <div class="user-email">${user.email || '-'}</div>
+                </div>
+              </div>
+            </td>
+            <td>@${user.username || '-'}</td>
+            <td>${user.email || '-'}</td>
+            <td>${statusBadge}</td>
+            <td>${joinDate}</td>
+            <td>
+              <div class="action-btns">
+                <button class="action-btn view" onclick="viewUserDetail('${user.id}')">
+                  <i class="ri-eye-line"></i>
+                </button>
+                <button class="action-btn ${user.verified ? 'edit' : 'success'}" onclick="quickToggleVerify('${user.id}', ${!user.verified})">
+                  <i class="ri-${user.verified ? 'close-line' : 'check-line'}"></i>
+                </button>
+                <button class="action-btn delete" onclick="quickToggleBan('${user.id}', ${!user.banned})">
+                  <i class="ri-${user.banned ? 'lock-unlock-line' : 'forbid-line'}"></i>
+                </button>
               </div>
             </td>
           </tr>
         `;
-        return;
       }
-
-      tbody.innerHTML = users.map(user => `
-        <tr>
-          <td>
-            <div class="user-cell">
-              ${user.profilePhoto 
-                ? `<img src="${user.profilePhoto}" class="user-avatar" alt="">`
-                : `<div class="user-avatar-placeholder">${(user.displayName || 'U')[0].toUpperCase()}</div>`
-              }
-              <div>
-                <div class="user-name">${user.displayName || 'Isimsiz'}</div>
-                <div class="user-email">${user.email || '-'}</div>
-              </div>
-            </div>
-          </td>
-          <td>@${user.username || '-'}</td>
-          <td>${formatDate(user.createdAt)}</td>
-          <td>${formatDate(user.lastLogin)}</td>
-          <td>
-            ${user.isVerified 
-              ? '<span class="badge badge-success"><i class="ri-verified-badge-fill"></i> Onayli</span>'
-              : '<span class="badge badge-default">Onaysiz</span>'
-            }
-          </td>
-          <td>
-            <div class="action-btns">
-              <button class="action-btn view" onclick="viewUser('${user.uid}')" title="Detay">
-                <i class="ri-eye-line"></i>
-              </button>
-              <button class="action-btn edit" onclick="editUser('${user.uid}')" title="Duzenle">
-                <i class="ri-edit-line"></i>
-              </button>
-              <button class="action-btn delete" onclick="showBanModal('${user.uid}')" title="Engelle">
-                <i class="ri-user-forbid-line"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = html;
     }
 
     // Filter Users
-    function filterUsers() {
+    window.filterUsers = () => {
       const search = document.getElementById('userSearch').value.toLowerCase();
       const filter = document.getElementById('userFilter').value;
-
-      let filtered = allUsers.filter(user => {
-        const matchesSearch = 
-          (user.displayName || '').toLowerCase().includes(search) ||
-          (user.username || '').toLowerCase().includes(search) ||
-          (user.email || '').toLowerCase().includes(search);
-
-        if (!matchesSearch) return false;
-
-        switch (filter) {
-          case 'verified': return user.isVerified;
-          case 'unverified': return !user.isVerified;
-          case 'online': return user.isOnline;
-          default: return true;
-        }
-      });
-
-      renderUsers(filtered);
-    }
-
-    // View User
-    function viewUser(uid) {
-      selectedUserId = uid;
-      const user = allUsers.find(u => u.uid === uid);
       
+      let filtered = allUsers;
+      
+      if (search) {
+        filtered = filtered.filter(u => 
+          (u.displayName && u.displayName.toLowerCase().includes(search)) ||
+          (u.username && u.username.toLowerCase().includes(search)) ||
+          (u.email && u.email.toLowerCase().includes(search))
+        );
+      }
+      
+      if (filter === 'verified') {
+        filtered = filtered.filter(u => u.verified);
+      } else if (filter === 'banned') {
+        filtered = filtered.filter(u => u.banned);
+      } else if (filter === 'online') {
+        filtered = filtered.filter(u => u.online);
+      }
+      
+      renderUsersTable(filtered);
+    };
+
+    // View User Detail
+    window.viewUserDetail = (userId) => {
+      selectedUserId = userId;
+      const user = allUsers.find(u => u.id === userId);
       if (!user) return;
+      
+      document.getElementById('userDetailAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}&background=1a1a1a&color=fff`;
+      document.getElementById('userDetailName').textContent = user.displayName || 'Isimsiz';
+      document.getElementById('userDetailUsername').textContent = '@' + (user.username || 'kullanici');
+      document.getElementById('userDetailEmail').textContent = user.email || '-';
+      document.getElementById('userDetailBirthDate').textContent = user.birthDate || '-';
+      document.getElementById('userDetailJoinDate').textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-';
+      document.getElementById('userDetailStatus').innerHTML = user.banned 
+        ? '<span class="badge badge-danger">Engelli</span>' 
+        : (user.online ? '<span class="badge badge-success">Cevrimici</span>' : '<span class="badge badge-default">Cevrimdisi</span>');
+      document.getElementById('userDetailVerified').innerHTML = user.verified 
+        ? '<span class="badge badge-info">Onaylanmis</span>' 
+        : '<span class="badge badge-default">Onaysiz</span>';
+      
+      document.getElementById('userVerifyBtn').textContent = user.verified ? 'Onayi Kaldir' : 'Onayla';
+      document.getElementById('userBanBtn').textContent = user.banned ? 'Engeli Kaldir' : 'Engelle';
+      
+      document.getElementById('userDetailModal').classList.add('active');
+    };
 
-      const content = document.getElementById('userDetailContent');
-      content.innerHTML = `
-        <div class="user-detail">
-          <div class="user-detail-sidebar">
-            ${user.profilePhoto 
-              ? `<img src="${user.profilePhoto}" class="user-detail-avatar" alt="">`
-              : `<div class="user-detail-avatar" style="background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:600">${(user.displayName || 'U')[0].toUpperCase()}</div>`
-            }
-            <div class="user-detail-name">${user.displayName || 'Isimsiz'}</div>
-            <div class="user-detail-username">@${user.username || '-'}</div>
-            <div style="margin-bottom:16px">
-              ${user.isVerified 
-                ? '<span class="badge badge-success"><i class="ri-verified-badge-fill"></i> Onayli Hesap</span>'
-                : '<span class="badge badge-default">Onaysiz Hesap</span>'
-              }
-            </div>
-          </div>
-          <div>
-            <div class="user-detail-info">
-              <div class="user-detail-row">
-                <span class="user-detail-label">E-posta</span>
-                <span class="user-detail-value">${user.email || '-'}</span>
-              </div>
-              <div class="user-detail-row">
-                <span class="user-detail-label">Telefon</span>
-                <span class="user-detail-value">${user.phone || '-'}</span>
-              </div>
-              <div class="user-detail-row">
-                <span class="user-detail-label">Bolum</span>
-                <span class="user-detail-value">${user.department || '-'}</span>
-              </div>
-              <div class="user-detail-row">
-                <span class="user-detail-label">Sinif</span>
-                <span class="user-detail-value">${user.grade || '-'}</span>
-              </div>
-              <div class="user-detail-row">
-                <span class="user-detail-label">Kayit Tarihi</span>
-                <span class="user-detail-value">${formatDate(user.createdAt)}</span>
-              </div>
-              <div class="user-detail-row">
-                <span class="user-detail-label">Son Giris</span>
-                <span class="user-detail-value">${formatDate(user.lastLogin)}</span>
-              </div>
-              <div class="user-detail-row">
-                <span class="user-detail-label">Kulup Olusturabilir</span>
-                <span class="user-detail-value">
-                  <label class="toggle-switch">
-                    <input type="checkbox" ${user.canCreateClub ? 'checked' : ''} onchange="toggleClubPermission('${uid}', this.checked)">
-                    <span class="toggle-slider"></span>
-                  </label>
-                </span>
-              </div>
-              <div class="user-detail-row">
-                <span class="user-detail-label">Onayli Hesap</span>
-                <span class="user-detail-value">
-                  <label class="toggle-switch">
-                    <input type="checkbox" ${user.isVerified ? 'checked' : ''} onchange="toggleVerification('${uid}', this.checked)">
-                    <span class="toggle-slider"></span>
-                  </label>
-                </span>
-              </div>
-            </div>
-            ${user.bio ? `
-              <div style="margin-top:16px">
-                <strong style="font-size:13px;color:var(--text-secondary)">Biyografi</strong>
-                <p style="margin-top:8px">${user.bio}</p>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      `;
-
-      openModal('userDetailModal');
-    }
-
-    // Edit User
-    function editUser(uid) {
-      viewUser(uid);
-    }
-
-    // Toggle Club Permission
-    async function toggleClubPermission(uid, value) {
-      try {
-        await db.ref('users/' + uid + '/canCreateClub').set(value);
-        showToast(value ? 'Kulup olusturma yetkisi verildi' : 'Kulup olusturma yetkisi kaldirildi', 'success');
-      } catch (error) {
-        showToast('Hata: ' + error.message, 'error');
-      }
-    }
-
-    // Toggle Verification
-    async function toggleVerification(uid, value) {
-      try {
-        await db.ref('users/' + uid + '/isVerified').set(value);
-        showToast(value ? 'Hesap onaylandi' : 'Onay kaldirildi', 'success');
-      } catch (error) {
-        showToast('Hata: ' + error.message, 'error');
-      }
-    }
-
-    // Ban User
-    function showBanModal(uid) {
-      selectedUserId = uid;
-      openModal('banModal');
-    }
-
-    async function confirmBan() {
+    // Toggle User Verify
+    window.toggleUserVerify = async () => {
       if (!selectedUserId) return;
-
-      const reason = document.getElementById('banReason').value.trim();
-      const user = allUsers.find(u => u.uid === selectedUserId);
-
+      const user = allUsers.find(u => u.id === selectedUserId);
       if (!user) return;
-
+      
       try {
-        // Add to banned users
-        await db.ref('bannedUsers/' + selectedUserId).set({
-          uid: selectedUserId,
-          displayName: user.displayName || 'Isimsiz',
-          username: user.username || '',
-          email: user.email || '',
-          profilePhoto: user.profilePhoto || '',
-          reason: reason || 'Sebep belirtilmedi',
-          bannedAt: firebase.database.ServerValue.TIMESTAMP,
-          bannedBy: currentAdmin.uid
+        await update(ref(db, `users/${selectedUserId}`), {
+          verified: !user.verified
         });
-
-        // Set user as banned
-        await db.ref('users/' + selectedUserId + '/isBanned').set(true);
-
-        // Force logout the user by updating their session
-        await db.ref('users/' + selectedUserId + '/forceLogout').set(Date.now());
-
-        closeModal('banModal');
+        showToast(user.verified ? 'Onay kaldirildi' : 'Kullanici onaylandi');
         closeModal('userDetailModal');
-        document.getElementById('banReason').value = '';
-        showToast('Kullanici engellendi', 'success');
       } catch (error) {
-        showToast('Hata: ' + error.message, 'error');
+        showToast('Hata: ' + error.message);
       }
-    }
+    };
 
-    // Load Banned Users
-    async function loadBannedUsers() {
-      const snap = await db.ref('bannedUsers').once('value');
-      renderBannedUsers(snap.val() || {});
-    }
-
-    function renderBannedUsers(bannedData) {
-      const tbody = document.getElementById('bannedTableBody');
-      const banned = Object.entries(bannedData).map(([uid, data]) => ({ uid, ...data }));
-
-      if (banned.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="4">
-              <div class="empty-state">
-                <i class="ri-user-forbid-line"></i>
-                <h3>Engellenen kullanici yok</h3>
-                <p>Henuz kimse engellenmemis</p>
-              </div>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = banned.map(user => `
-        <tr>
-          <td>
-            <div class="user-cell">
-              ${user.profilePhoto 
-                ? `<img src="${user.profilePhoto}" class="user-avatar" alt="">`
-                : `<div class="user-avatar-placeholder">${(user.displayName || 'U')[0].toUpperCase()}</div>`
-              }
-              <div>
-                <div class="user-name">${user.displayName || 'Isimsiz'}</div>
-                <div class="user-email">@${user.username || '-'}</div>
-              </div>
-            </div>
-          </td>
-          <td>${formatDate(user.bannedAt)}</td>
-          <td>${user.reason || '-'}</td>
-          <td>
-            <button class="action-btn success" onclick="unbanUser('${user.uid}')" title="Engeli Kaldir">
-              <i class="ri-user-follow-line"></i>
-            </button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    // Unban User
-    async function unbanUser(uid) {
+    // Toggle User Ban
+    window.toggleUserBan = async () => {
+      if (!selectedUserId) return;
+      const user = allUsers.find(u => u.id === selectedUserId);
+      if (!user) return;
+      
       try {
-        await db.ref('bannedUsers/' + uid).remove();
-        await db.ref('users/' + uid + '/isBanned').set(false);
-        showToast('Engel kaldirildi', 'success');
+        const newBannedStatus = !user.banned;
+        await update(ref(db, `users/${selectedUserId}`), {
+          banned: newBannedStatus
+        });
+        
+        // If banning user, force logout by setting forceLogout flag
+        if (newBannedStatus) {
+          await set(ref(db, `forceLogout/${selectedUserId}`), {
+            timestamp: Date.now(),
+            reason: 'banned'
+          });
+        }
+        
+        showToast(user.banned ? 'Engel kaldirildi' : 'Kullanici engellendi');
+        closeModal('userDetailModal');
       } catch (error) {
-        showToast('Hata: ' + error.message, 'error');
+        showToast('Hata: ' + error.message);
       }
-    }
+    };
+
+    // Quick Toggle Verify
+    window.quickToggleVerify = async (userId, newStatus) => {
+      try {
+        await update(ref(db, `users/${userId}`), {
+          verified: newStatus
+        });
+        showToast(newStatus ? 'Kullanici onaylandi' : 'Onay kaldirildi');
+      } catch (error) {
+        showToast('Hata: ' + error.message);
+      }
+    };
+
+    // Quick Toggle Ban
+    window.quickToggleBan = async (userId, newStatus) => {
+      try {
+        await update(ref(db, `users/${userId}`), {
+          banned: newStatus
+        });
+        
+        // If banning, force logout
+        if (newStatus) {
+          await set(ref(db, `forceLogout/${userId}`), {
+            timestamp: Date.now(),
+            reason: 'banned'
+          });
+        }
+        
+        showToast(newStatus ? 'Kullanici engellendi' : 'Engel kaldirildi');
+      } catch (error) {
+        showToast('Hata: ' + error.message);
+      }
+    };
 
     // Load Events
-    async function loadEvents() {
-      const snap = await db.ref('events').once('value');
-      processEvents(snap.val() || {});
-    }
-
-    function processEvents(eventsData) {
-      allEvents = Object.entries(eventsData).map(([id, data]) => ({
-        id,
-        ...data
-      }));
-      renderEvents(allEvents);
-      document.getElementById('totalEvents').textContent = allEvents.length;
-    }
-
-    function renderEvents(events) {
-      const tbody = document.getElementById('eventsTableBody');
-      
-      if (events.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6">
-              <div class="empty-state">
-                <i class="ri-calendar-event-line"></i>
-                <h3>Etkinlik bulunamadi</h3>
+    function loadEvents() {
+      onValue(ref(db, 'events'), (snapshot) => {
+        allEvents = [];
+        let html = '';
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            const event = { id: child.key, ...child.val() };
+            allEvents.push(event);
+            const date = event.date ? new Date(event.date).toLocaleDateString('tr-TR') : 'Tarih yok';
+            html += `
+              <div class="item-card">
+                <img src="${event.image || 'https://via.placeholder.com/60/1a1a1a/666?text=E'}" alt="${event.name}">
+                <div class="item-card-info">
+                  <div class="item-card-title">${event.name}</div>
+                  <div class="item-card-desc">${date} - ${event.location || 'Konum yok'}</div>
+                </div>
+                <div class="item-card-actions">
+                  <button class="btn btn-sm btn-secondary" onclick="editEvent('${event.id}')">Duzenle</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteEvent('${event.id}')">Sil</button>
+                </div>
               </div>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = events.map(event => `
-        <tr>
-          <td>
-            <div class="user-cell">
-              ${event.image 
-                ? `<img src="${event.image}" class="user-avatar" style="border-radius:8px" alt="">`
-                : `<div class="user-avatar-placeholder" style="border-radius:8px"><i class="ri-calendar-event-line"></i></div>`
-              }
-              <div>
-                <div class="user-name">${event.title || 'Isimsiz Etkinlik'}</div>
-                <div class="user-email">${event.category || '-'}</div>
-              </div>
-            </div>
-          </td>
-          <td>${event.organizerName || '-'}</td>
-          <td>${formatDate(event.date)}</td>
-          <td>${event.location || '-'}</td>
-          <td>${event.participants ? Object.keys(event.participants).length : 0} kisi</td>
-          <td>
-            <div class="action-btns">
-              <button class="action-btn view" onclick="viewEvent('${event.id}')" title="Detay">
-                <i class="ri-eye-line"></i>
-              </button>
-              <button class="action-btn delete" onclick="deleteEvent('${event.id}')" title="Sil">
-                <i class="ri-delete-bin-line"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function filterEvents() {
-      const search = document.getElementById('eventSearch').value.toLowerCase();
-      const filter = document.getElementById('eventFilter').value;
-      const now = Date.now();
-
-      let filtered = allEvents.filter(event => {
-        const matchesSearch = (event.title || '').toLowerCase().includes(search);
-        if (!matchesSearch) return false;
-
-        const eventDate = new Date(event.date).getTime();
-        switch (filter) {
-          case 'upcoming': return eventDate > now;
-          case 'past': return eventDate < now;
-          default: return true;
+            `;
+          });
         }
+        document.getElementById('eventsList').innerHTML = html || '<p style="text-align:center;color:var(--text-muted);padding:20px;">Etkinlik bulunamadi</p>';
       });
-
-      renderEvents(filtered);
     }
 
-    function viewEvent(id) {
-      const event = allEvents.find(e => e.id === id);
-      if (event) {
-        showToast('Etkinlik: ' + event.title);
+    function loadEventsForSelect(selectId) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = '<option value="">Etkinlik seciniz...</option>';
+      allEvents.forEach(event => {
+        select.innerHTML += `<option value="${event.id}">${event.name}</option>`;
+      });
+    }
+
+    window.showAddEventModal = () => {
+      document.getElementById('eventModalTitle').textContent = 'Yeni Etkinlik';
+      document.getElementById('eventEditId').value = '';
+      document.getElementById('eventName').value = '';
+      document.getElementById('eventDesc').value = '';
+      document.getElementById('eventImage').value = '';
+      document.getElementById('eventDate').value = '';
+      document.getElementById('eventLocation').value = '';
+      document.getElementById('eventModal').classList.add('active');
+    };
+
+    window.editEvent = async (eventId) => {
+      const snapshot = await get(ref(db, `events/${eventId}`));
+      if (snapshot.exists()) {
+        const event = snapshot.val();
+        document.getElementById('eventModalTitle').textContent = 'Etkinlik Duzenle';
+        document.getElementById('eventEditId').value = eventId;
+        document.getElementById('eventName').value = event.name || '';
+        document.getElementById('eventDesc').value = event.description || '';
+        document.getElementById('eventImage').value = event.image || '';
+        document.getElementById('eventDate').value = event.date || '';
+        document.getElementById('eventLocation').value = event.location || '';
+        document.getElementById('eventModal').classList.add('active');
       }
-    }
+    };
 
-    async function deleteEvent(id) {
-      if (confirm('Bu etkinligi silmek istediginizden emin misiniz?')) {
-        try {
-          await db.ref('events/' + id).remove();
-          showToast('Etkinlik silindi', 'success');
-        } catch (error) {
-          showToast('Hata: ' + error.message, 'error');
-        }
-      }
-    }
-
-    // Load Games
-    async function loadGames() {
-      const snap = await db.ref('games').once('value');
-      processGames(snap.val() || {});
-    }
-
-    function processGames(gamesData) {
-      allGames = Object.entries(gamesData).map(([id, data]) => ({
-        id,
-        ...data
-      }));
-      renderGames(allGames);
-      document.getElementById('totalGames').textContent = allGames.length;
-    }
-
-    function renderGames(games) {
-      const tbody = document.getElementById('gamesTableBody');
-      
-      if (games.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5">
-              <div class="empty-state">
-                <i class="ri-gamepad-line"></i>
-                <h3>Oyun bulunamadi</h3>
-              </div>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = games.map(game => `
-        <tr>
-          <td>
-            <div class="user-cell">
-              ${game.image 
-                ? `<img src="${game.image}" class="user-avatar" style="border-radius:8px" alt="">`
-                : `<div class="user-avatar-placeholder" style="border-radius:8px"><i class="ri-gamepad-line"></i></div>`
-              }
-              <div>
-                <div class="user-name">${game.name || 'Isimsiz Oyun'}</div>
-              </div>
-            </div>
-          </td>
-          <td><span class="badge badge-info">${game.platform || '-'}</span></td>
-          <td>${game.category || '-'}</td>
-          <td>${game.playerCount || 0} oyuncu</td>
-          <td>
-            <div class="action-btns">
-              <button class="action-btn edit" onclick="editGame('${game.id}')" title="Duzenle">
-                <i class="ri-edit-line"></i>
-              </button>
-              <button class="action-btn delete" onclick="deleteGame('${game.id}')" title="Sil">
-                <i class="ri-delete-bin-line"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function showAddGameModal() {
-      openModal('addGameModal');
-    }
-
-    async function addGame() {
-      const name = document.getElementById('gameName').value.trim();
-      const platform = document.getElementById('gamePlatform').value;
-      const category = document.getElementById('gameCategory').value.trim();
-      const image = document.getElementById('gameImage').value.trim();
+    window.saveEvent = async () => {
+      const eventId = document.getElementById('eventEditId').value;
+      const name = document.getElementById('eventName').value.trim();
+      const description = document.getElementById('eventDesc').value.trim();
+      const image = document.getElementById('eventImage').value.trim();
+      const date = document.getElementById('eventDate').value;
+      const location = document.getElementById('eventLocation').value.trim();
 
       if (!name) {
-        showToast('Oyun adi gerekli', 'error');
+        showToast('Etkinlik adi gerekli!');
         return;
       }
 
+      const eventData = { name, description, image, date, location };
+
       try {
-        const newGameRef = db.ref('games').push();
-        await newGameRef.set({
-          name,
-          platform,
-          category,
-          image,
-          playerCount: 0,
-          createdAt: firebase.database.ServerValue.TIMESTAMP
-        });
-
-        closeModal('addGameModal');
-        document.getElementById('gameName').value = '';
-        document.getElementById('gameCategory').value = '';
-        document.getElementById('gameImage').value = '';
-        showToast('Oyun eklendi', 'success');
+        if (eventId) {
+          await update(ref(db, `events/${eventId}`), eventData);
+        } else {
+          await push(ref(db, 'events'), eventData);
+        }
+        closeModal('eventModal');
+        showToast('Etkinlik kaydedildi');
       } catch (error) {
-        showToast('Hata: ' + error.message, 'error');
+        showToast('Hata: ' + error.message);
       }
-    }
+    };
 
-    function editGame(id) {
-      showToast('Oyun duzenleme yakinda eklenecek');
-    }
-
-    async function deleteGame(id) {
-      if (confirm('Bu oyunu silmek istediginizden emin misiniz?')) {
+    window.deleteEvent = async (eventId) => {
+      if (confirm('Bu etkinligi silmek istediginize emin misiniz?')) {
         try {
-          await db.ref('games/' + id).remove();
-          showToast('Oyun silindi', 'success');
+          await remove(ref(db, `events/${eventId}`));
+          showToast('Etkinlik silindi');
         } catch (error) {
-          showToast('Hata: ' + error.message, 'error');
+          showToast('Hata: ' + error.message);
         }
       }
-    }
+    };
 
-    // Load Clubs
-    async function loadClubs() {
-      const snap = await db.ref('clubs').once('value');
-      processClubs(snap.val() || {});
-    }
-
-    function processClubs(clubsData) {
-      allClubs = Object.entries(clubsData).map(([id, data]) => ({
-        id,
-        ...data
-      }));
-      renderClubs(allClubs);
-      document.getElementById('totalClubs').textContent = allClubs.length;
-    }
-
-    function renderClubs(clubs) {
-      const grid = document.getElementById('clubsGrid');
-      
-      if (clubs.length === 0) {
-        grid.innerHTML = `
-          <div class="empty-state" style="grid-column:1/-1">
-            <i class="ri-team-line"></i>
-            <h3>Kulup bulunamadi</h3>
-            <p>Henuz kulup olusturulmamis</p>
-          </div>
-        `;
-        return;
-      }
-
-      grid.innerHTML = clubs.map(club => `
-        <div class="club-card">
-          <div class="club-cover">
-            ${club.coverImage ? `<img src="${club.coverImage}" alt="">` : ''}
-            <div class="club-badge-preview">
-              ${club.badge ? `<img src="${club.badge}" alt="">` : `<i class="ri-team-line" style="font-size:24px;color:var(--text-muted)"></i>`}
-            </div>
-          </div>
-          <div class="club-content">
-            <div class="club-name">${club.name || 'Isimsiz Kulup'}</div>
-            <div class="club-owner">Sahip: ${club.ownerName || '-'}</div>
-            <div class="club-stats">
-              <div class="club-stat">
-                <i class="ri-user-line"></i>
-                ${club.members ? Object.keys(club.members).length : 0} uye
+    // Load Games
+    function loadGames() {
+      onValue(ref(db, 'games'), (snapshot) => {
+        allGames = [];
+        let html = '';
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            const game = { id: child.key, ...child.val() };
+            allGames.push(game);
+            html += `
+              <div class="item-card">
+                <img src="${game.icon || game.iconUrl || 'https://via.placeholder.com/60/1a1a1a/666?text=G'}" alt="${game.name}">
+                <div class="item-card-info">
+                  <div class="item-card-title">${game.name}</div>
+                  <div class="item-card-desc">${game.description || 'Aciklama yok'}</div>
+                </div>
+                <div class="item-card-actions">
+                  <button class="btn btn-sm btn-secondary" onclick="editGame('${game.id}')">Duzenle</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteGame('${game.id}')">Sil</button>
+                </div>
               </div>
-              <div class="club-stat">
-                <i class="ri-chat-3-line"></i>
-                ${club.messageCount || 0} mesaj
-              </div>
-            </div>
-          </div>
-          <div class="club-actions">
-            <button class="btn btn-secondary" style="flex:1" onclick="viewClub('${club.id}')">
-              <i class="ri-eye-line"></i> Detay
-            </button>
-            <button class="action-btn delete" onclick="deleteClub('${club.id}')" title="Sil">
-              <i class="ri-delete-bin-line"></i>
-            </button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function filterClubs() {
-      const search = document.getElementById('clubSearch').value.toLowerCase();
-      const filtered = allClubs.filter(club => 
-        (club.name || '').toLowerCase().includes(search)
-      );
-      renderClubs(filtered);
-    }
-
-    function viewClub(id) {
-      selectedClubId = id;
-      const club = allClubs.find(c => c.id === id);
-      
-      if (!club) return;
-
-      const content = document.getElementById('clubDetailContent');
-      const memberCount = club.members ? Object.keys(club.members).length : 0;
-
-      content.innerHTML = `
-        <div style="text-align:center;margin-bottom:24px">
-          ${club.coverImage 
-            ? `<img src="${club.coverImage}" style="width:100%;height:150px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:16px" alt="">`
-            : ''
-          }
-          <div style="display:inline-flex;align-items:center;gap:12px;margin-bottom:8px">
-            ${club.badge ? `<img src="${club.badge}" style="width:48px;height:48px;border-radius:8px" alt="">` : ''}
-            <h2 style="font-size:24px">${club.name || 'Isimsiz Kulup'}</h2>
-          </div>
-          <p style="color:var(--text-muted)">${club.description || 'Aciklama yok'}</p>
-        </div>
-
-        <div class="user-detail-info">
-          <div class="user-detail-row">
-            <span class="user-detail-label">Sahip</span>
-            <span class="user-detail-value">${club.ownerName || '-'}</span>
-          </div>
-          <div class="user-detail-row">
-            <span class="user-detail-label">Uye Sayisi</span>
-            <span class="user-detail-value">${memberCount}</span>
-          </div>
-          <div class="user-detail-row">
-            <span class="user-detail-label">Olusturulma Tarihi</span>
-            <span class="user-detail-value">${formatDate(club.createdAt)}</span>
-          </div>
-          <div class="user-detail-row">
-            <span class="user-detail-label">Sohbet Rengi</span>
-            <span class="user-detail-value">
-              <span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:${club.chatColor || '#1a1a1a'}"></span>
-            </span>
-          </div>
-        </div>
-
-        ${memberCount > 0 ? `
-          <div style="margin-top:20px">
-            <strong style="font-size:13px;color:var(--text-secondary)">Uyeler</strong>
-            <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
-              ${Object.entries(club.members || {}).map(([uid, member]) => `
-                <span class="badge badge-default">${member.displayName || 'Uye'}</span>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-      `;
-
-      document.getElementById('deleteClubBtn').onclick = () => deleteClub(id);
-      openModal('clubDetailModal');
-    }
-
-    async function deleteClub(id) {
-      if (confirm('Bu kulubu silmek istediginizden emin misiniz?')) {
-        try {
-          await db.ref('clubs/' + id).remove();
-          closeModal('clubDetailModal');
-          showToast('Kulup silindi', 'success');
-        } catch (error) {
-          showToast('Hata: ' + error.message, 'error');
+            `;
+          });
         }
-      }
-    }
-
-    // Load Verifications
-    async function loadVerifications() {
-      const snap = await db.ref('verificationRequests').once('value');
-      const requests = snap.val() || {};
-      
-      const pending = Object.entries(requests)
-        .filter(([_, req]) => req.status === 'pending')
-        .map(([id, data]) => ({ id, ...data }));
-      
-      renderVerifications(pending);
-      document.getElementById('verificationBadge').textContent = pending.length;
-    }
-
-    function renderVerifications(requests) {
-      const tbody = document.getElementById('verificationsTableBody');
-      
-      if (requests.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5">
-              <div class="empty-state">
-                <i class="ri-verified-badge-line"></i>
-                <h3>Onay bekleyen yok</h3>
-                <p>Tum talepler islendi</p>
-              </div>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = requests.map(req => `
-        <tr>
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar-placeholder">${(req.displayName || 'U')[0].toUpperCase()}</div>
-              <div>
-                <div class="user-name">${req.displayName || 'Isimsiz'}</div>
-                <div class="user-email">${req.email || '-'}</div>
-              </div>
-            </div>
-          </td>
-          <td>@${req.username || '-'}</td>
-          <td>${formatDate(req.requestedAt)}</td>
-          <td>${req.reason || '-'}</td>
-          <td>
-            <div class="action-btns">
-              <button class="action-btn success" onclick="approveVerification('${req.id}', '${req.userId}')" title="Onayla">
-                <i class="ri-check-line"></i>
-              </button>
-              <button class="action-btn delete" onclick="rejectVerification('${req.id}')" title="Reddet">
-                <i class="ri-close-line"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    async function approveVerification(requestId, userId) {
-      try {
-        await db.ref('users/' + userId + '/isVerified').set(true);
-        await db.ref('users/' + userId + '/canCreateClub').set(true);
-        await db.ref('verificationRequests/' + requestId + '/status').set('approved');
-        loadVerifications();
-        showToast('Kullanici onaylandi', 'success');
-      } catch (error) {
-        showToast('Hata: ' + error.message, 'error');
-      }
-    }
-
-    async function rejectVerification(requestId) {
-      try {
-        await db.ref('verificationRequests/' + requestId + '/status').set('rejected');
-        loadVerifications();
-        showToast('Talep reddedildi', 'success');
-      } catch (error) {
-        showToast('Hata: ' + error.message, 'error');
-      }
-    }
-
-    // Dashboard Stats
-    function updateDashboardStats() {
-      document.getElementById('totalUsers').textContent = allUsers.length;
-      document.getElementById('totalEvents').textContent = allEvents.length;
-      document.getElementById('totalGames').textContent = allGames.length;
-      document.getElementById('totalClubs').textContent = allClubs.length;
-    }
-
-    // Recent Users
-    function loadRecentUsers() {
-      const container = document.getElementById('recentUsersContainer');
-      const recent = [...allUsers]
-        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-        .slice(0, 5);
-
-      if (recent.length === 0) {
-        container.innerHTML = '<div class="empty-state"><p>Henuz kullanici yok</p></div>';
-        return;
-      }
-
-      container.innerHTML = recent.map(user => `
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color)">
-          ${user.profilePhoto 
-            ? `<img src="${user.profilePhoto}" style="width:40px;height:40px;border-radius:50%;object-fit:cover" alt="">`
-            : `<div style="width:40px;height:40px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-weight:600">${(user.displayName || 'U')[0].toUpperCase()}</div>`
-          }
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:500">${user.displayName || 'Isimsiz'}</div>
-            <div style="font-size:12px;color:var(--text-muted)">@${user.username || '-'}</div>
-          </div>
-          <div style="font-size:12px;color:var(--text-muted)">${formatDate(user.createdAt)}</div>
-        </div>
-      `).join('');
-    }
-
-    // Activity Log
-    function loadActivityLog() {
-      const container = document.getElementById('activityList');
-      
-      // Simulated activity - in real app, this would come from a separate collection
-      const activities = [
-        { type: 'user', text: 'Yeni kullanici kaydoldu', time: Date.now() - 300000, icon: 'ri-user-add-line', color: '#e8f5e9' },
-        { type: 'event', text: 'Yeni etkinlik olusturuldu', time: Date.now() - 600000, icon: 'ri-calendar-event-line', color: '#e3f2fd' },
-        { type: 'club', text: 'Yeni kulup kuruldu', time: Date.now() - 900000, icon: 'ri-team-line', color: '#f3e5f5' },
-      ];
-
-      container.innerHTML = activities.map(act => `
-        <div class="activity-item">
-          <div class="activity-icon" style="background:${act.color}">
-            <i class="${act.icon}"></i>
-          </div>
-          <div class="activity-content">
-            <div class="activity-text">${act.text}</div>
-            <div class="activity-time">${formatRelativeTime(act.time)}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Settings
-    async function saveSettings() {
-      const announcement = document.getElementById('announcementText').value;
-      const maintenance = document.getElementById('maintenanceMode').checked;
-      const registration = document.getElementById('registrationEnabled').checked;
-
-      try {
-        await db.ref('settings').update({
-          announcement,
-          maintenanceMode: maintenance,
-          registrationEnabled: registration,
-          updatedAt: firebase.database.ServerValue.TIMESTAMP
-        });
-        showToast('Ayarlar kaydedildi', 'success');
-      } catch (error) {
-        showToast('Hata: ' + error.message, 'error');
-      }
-    }
-
-    // Modal Functions
-    function openModal(modalId) {
-      document.getElementById(modalId).classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.remove('active');
-      document.body.style.overflow = '';
-    }
-
-    // Utility Functions
-    function formatDate(timestamp) {
-      if (!timestamp) return '-';
-      return new Date(timestamp).toLocaleDateString('tr-TR', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
+        document.getElementById('gamesList').innerHTML = html || '<p style="text-align:center;color:var(--text-muted);padding:20px;">Oyun bulunamadi</p>';
       });
     }
 
-    function formatRelativeTime(timestamp) {
-      const diff = Date.now() - timestamp;
-      const minutes = Math.floor(diff / 60000);
-      const hours = Math.floor(diff / 3600000);
-      const days = Math.floor(diff / 86400000);
+    window.showAddGameModal = () => {
+      document.getElementById('gameModalTitle').textContent = 'Yeni Oyun';
+      document.getElementById('gameEditId').value = '';
+      document.getElementById('gameName').value = '';
+      document.getElementById('gameDesc').value = '';
+      document.getElementById('gameIcon').value = '';
+      document.getElementById('gameUrl').value = '';
+      document.getElementById('gameModal').classList.add('active');
+    };
 
-      if (minutes < 1) return 'Az once';
-      if (minutes < 60) return minutes + ' dakika once';
-      if (hours < 24) return hours + ' saat once';
-      return days + ' gun once';
+    window.editGame = async (gameId) => {
+      const snapshot = await get(ref(db, `games/${gameId}`));
+      if (snapshot.exists()) {
+        const game = snapshot.val();
+        document.getElementById('gameModalTitle').textContent = 'Oyun Duzenle';
+        document.getElementById('gameEditId').value = gameId;
+        document.getElementById('gameName').value = game.name || '';
+        document.getElementById('gameDesc').value = game.description || '';
+        document.getElementById('gameIcon').value = game.icon || game.iconUrl || '';
+        document.getElementById('gameUrl').value = game.url || '';
+        document.getElementById('gameModal').classList.add('active');
+      }
+    };
+
+    window.saveGame = async () => {
+      const gameId = document.getElementById('gameEditId').value;
+      const name = document.getElementById('gameName').value.trim();
+      const description = document.getElementById('gameDesc').value.trim();
+      const icon = document.getElementById('gameIcon').value.trim();
+      const url = document.getElementById('gameUrl').value.trim();
+
+      if (!name) {
+        showToast('Oyun adi gerekli!');
+        return;
+      }
+
+      const gameData = { name, description, icon, iconUrl: icon, url };
+
+      try {
+        if (gameId) {
+          await update(ref(db, `games/${gameId}`), gameData);
+        } else {
+          await push(ref(db, 'games'), gameData);
+        }
+        closeModal('gameModal');
+        showToast('Oyun kaydedildi');
+      } catch (error) {
+        showToast('Hata: ' + error.message);
+      }
+    };
+
+    window.deleteGame = async (gameId) => {
+      if (confirm('Bu oyunu silmek istediginize emin misiniz?')) {
+        try {
+          await remove(ref(db, `games/${gameId}`));
+          showToast('Oyun silindi');
+        } catch (error) {
+          showToast('Hata: ' + error.message);
+        }
+      }
+    };
+
+    // QR Scanner
+    function initQRScanner() {
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("qr-reader");
+      }
     }
 
-    function showToast(message, type = 'default') {
+    window.onQrEventChange = () => {
+      const eventId = document.getElementById('qrEventSelect').value;
+      if (eventId) {
+        loadAttendanceList(eventId);
+        startScanning(eventId);
+      } else {
+        document.getElementById('attendanceList').innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Etkinlik seciniz</p>';
+        stopScanning();
+      }
+    };
+
+    async function startScanning(eventId) {
+      if (isScanning) {
+        await stopScanning();
+      }
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          (decodedText) => {
+            processQRCode(decodedText, eventId);
+          },
+          (errorMessage) => {}
+        );
+        isScanning = true;
+      } catch (error) {
+        console.error('QR Scanner error:', error);
+      }
+    }
+
+    async function stopScanning() {
+      if (html5QrCode && isScanning) {
+        try {
+          await html5QrCode.stop();
+          isScanning = false;
+        } catch (e) {}
+      }
+    }
+
+    async function processQRCode(qrData, eventId) {
+      const resultDiv = document.getElementById('qrResult');
+      const titleEl = document.getElementById('qrResultTitle');
+      const textEl = document.getElementById('qrResultText');
+
+      try {
+        const parts = qrData.split(':');
+        if (parts.length !== 3) {
+          throw new Error('Gecersiz QR kod formati');
+        }
+
+        const [userId, timestamp, code] = parts;
+        const qrTime = parseInt(timestamp);
+        const now = Date.now();
+
+        // QR codes are valid for 30 seconds
+        if (now - qrTime > 30000) {
+          throw new Error('QR kod suresi dolmus (30 saniye)');
+        }
+
+        const participantSnap = await get(ref(db, `eventParticipants/${eventId}/${userId}`));
+        if (!participantSnap.exists()) {
+          throw new Error('Bu kullanici etkinlige kayitli degil');
+        }
+
+        await update(ref(db, `eventParticipants/${eventId}/${userId}`), {
+          attended: true,
+          attendedAt: now
+        });
+
+        const userSnap = await get(ref(db, `users/${userId}`));
+        const user = userSnap.exists() ? userSnap.val() : { displayName: 'Bilinmiyor' };
+
+        resultDiv.className = 'qr-result success';
+        resultDiv.style.display = 'block';
+        titleEl.textContent = 'Basarili!';
+        textEl.textContent = `${user.displayName} etkinlige giris yapti.`;
+
+        loadAttendanceList(eventId);
+
+      } catch (error) {
+        resultDiv.className = 'qr-result error';
+        resultDiv.style.display = 'block';
+        titleEl.textContent = 'Hata!';
+        textEl.textContent = error.message;
+      }
+
+      setTimeout(() => {
+        resultDiv.style.display = 'none';
+      }, 3000);
+    }
+
+    async function loadAttendanceList(eventId) {
+      const listDiv = document.getElementById('attendanceList');
+      
+      const snapshot = await get(ref(db, `eventParticipants/${eventId}`));
+      let html = '';
+      
+      if (snapshot.exists()) {
+        for (const [userId, data] of Object.entries(snapshot.val())) {
+          const userSnap = await get(ref(db, `users/${userId}`));
+          if (userSnap.exists()) {
+            const user = userSnap.val();
+            html += `
+              <div class="attendance-item">
+                <img src="${user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}&background=1a1a1a&color=fff`}" alt="${user.displayName}">
+                <div class="attendance-info">
+                  <div class="attendance-name">${user.displayName}</div>
+                  <div class="attendance-time">${data.attendedAt ? new Date(data.attendedAt).toLocaleTimeString('tr-TR') : 'Bekliyor'}</div>
+                </div>
+                <span class="attendance-status ${data.attended ? 'attendance-confirmed' : 'attendance-pending'}">
+                  ${data.attended ? 'Katildi' : 'Bekliyor'}
+                </span>
+              </div>
+            `;
+          }
+        }
+      }
+      
+      listDiv.innerHTML = html || '<p style="text-align:center;color:var(--text-muted);padding:20px;">Katilimci bulunamadi</p>';
+    }
+
+    // Modal
+    window.closeModal = (modalId) => {
+      document.getElementById(modalId).classList.remove('active');
+    };
+
+    // Toast
+    function showToast(message) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
-      toast.className = 'toast show';
-      if (type === 'error') toast.classList.add('error');
-      if (type === 'success') toast.classList.add('success');
-      setTimeout(() => toast.className = 'toast', 3000);
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
     }
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
-          modal.classList.remove('active');
-        });
-        document.body.style.overflow = '';
-      }
-    });
 
     // Close modals on overlay click
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
           overlay.classList.remove('active');
-          document.body.style.overflow = '';
         }
       });
     });
