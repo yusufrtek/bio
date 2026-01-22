@@ -1,0 +1,2447 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LENG - Kulupler</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --c-bg: #f5f5f5;
+      --c-content: #1a1a1a;
+      --c-action: #3b82f6;
+      --c-glass: #ffffff;
+      --c-light: #ffffff;
+      --c-dark: #1a1a1a;
+      --c-success: #22c55e;
+      --c-error: #ef4444;
+      --c-online: #22c55e;
+      --c-verified: #1da1f2;
+      --c-border: #e5e7eb;
+      --c-muted: #6b7280;
+      --nav-height: 70px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    body {
+      font-family: "DM Sans", sans-serif;
+      background: var(--c-bg);
+      color: var(--c-content);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    body.theme-dark {
+      --c-bg: #0f0f0f;
+      --c-content: #f5f5f5;
+      --c-glass: #1a1a1a;
+      --c-light: #1a1a1a;
+      --c-dark: #f5f5f5;
+      --c-border: #2a2a2a;
+      --c-muted: #a1a1aa;
+    }
+
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      background: var(--c-bg);
+    }
+
+    .loading-screen.hidden {
+      display: none;
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    .loading-content .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--c-border);
+      border-top-color: var(--c-action);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Main App */
+    .app-container {
+      display: none;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
+    }
+
+    .app-container.active {
+      display: block;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--c-glass);
+      border-bottom: 1px solid var(--c-border);
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+
+    .header-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--c-action), #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      cursor: pointer;
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .header-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .header-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .verified-badge {
+      color: var(--c-verified);
+      font-size: 0.9rem;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(var(--nav-height) + var(--safe-bottom));
+      background: var(--c-glass);
+      border-top: 1px solid var(--c-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding-top: 10px;
+      padding-bottom: var(--safe-bottom);
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      color: var(--c-muted);
+      text-decoration: none;
+      font-size: 0.7rem;
+      transition: color 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+    }
+
+    .nav-item.active {
+      color: var(--c-action);
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      padding: 80px 16px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      min-height: calc(100vh - var(--nav-height));
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    /* Search Box */
+    .search-box {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--c-muted);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 16px 14px 48px;
+      border: 1px solid var(--c-border);
+      border-radius: 16px;
+      font-size: 1rem;
+      background: var(--c-glass);
+      color: var(--c-content);
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    /* Create Club Button */
+    .create-club-btn {
+      width: 100%;
+      padding: 16px;
+      border: 2px dashed var(--c-border);
+      border-radius: 16px;
+      background: transparent;
+      color: var(--c-action);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    .create-club-btn:hover {
+      border-color: var(--c-action);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .create-club-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Clubs Grid */
+    .clubs-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .club-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      background: var(--c-glass);
+      border-radius: 16px;
+      border: 1px solid var(--c-border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .club-card:hover {
+      border-color: var(--c-action);
+    }
+
+    .club-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: var(--c-border);
+    }
+
+    .club-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .club-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .club-desc {
+      font-size: 0.85rem;
+      color: var(--c-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .club-members {
+      font-size: 0.75rem;
+      color: var(--c-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .club-badge-preview {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: var(--c-glass);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+      border: 1px solid var(--c-border);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      border-radius: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--c-muted);
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .tab.active {
+      background: var(--c-action);
+      color: white;
+    }
+
+    /* Club Detail Page */
+    .club-detail-page {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--c-bg);
+      z-index: 200;
+      overflow-y: auto;
+    }
+
+    .club-detail-page.active {
+      display: block;
+    }
+
+    .club-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--c-glass);
+      border-bottom: 1px solid var(--c-border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: var(--c-bg);
+      color: var(--c-content);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .club-detail-title {
+      flex: 1;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .club-settings-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: var(--c-bg);
+      color: var(--c-content);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .club-detail-body {
+      padding: 20px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .club-detail-info {
+      text-align: center;
+      padding: 20px;
+      background: var(--c-glass);
+      border-radius: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--c-border);
+    }
+
+    .club-detail-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      object-fit: cover;
+      margin-bottom: 16px;
+    }
+
+    .club-detail-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .club-detail-desc {
+      color: var(--c-muted);
+      margin-bottom: 16px;
+    }
+
+    .club-detail-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .club-stat {
+      text-align: center;
+    }
+
+    .club-stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .club-stat-label {
+      font-size: 0.85rem;
+      color: var(--c-muted);
+    }
+
+    .club-action-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+
+    .club-action-btn.join {
+      background: var(--c-action);
+      color: white;
+    }
+
+    .club-action-btn.leave {
+      background: var(--c-error);
+      color: white;
+    }
+
+    .club-action-btn.member {
+      background: var(--c-success);
+      color: white;
+    }
+
+    /* Club Channels */
+    .club-channels {
+      background: var(--c-glass);
+      border-radius: 16px;
+      border: 1px solid var(--c-border);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .channel-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .channel-item:last-child {
+      border-bottom: none;
+    }
+
+    .channel-item:hover {
+      background: var(--c-bg);
+    }
+
+    .channel-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .channel-icon.announcement {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .channel-icon.chat {
+      background: #dbeafe;
+      color: #3b82f6;
+    }
+
+    .channel-info {
+      flex: 1;
+    }
+
+    .channel-name {
+      font-weight: 600;
+    }
+
+    .channel-desc {
+      font-size: 0.85rem;
+      color: var(--c-muted);
+    }
+
+    /* Club Members */
+    .club-members-section {
+      background: var(--c-glass);
+      border-radius: 16px;
+      border: 1px solid var(--c-border);
+      padding: 16px;
+    }
+
+    .section-header {
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .member-item:last-child {
+      border-bottom: none;
+    }
+
+    .member-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .member-info {
+      flex: 1;
+    }
+
+    .member-name {
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .member-role {
+      font-size: 0.8rem;
+      color: var(--c-muted);
+    }
+
+    .role-badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .role-badge.owner {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .role-badge.admin {
+      background: #dbeafe;
+      color: #3b82f6;
+    }
+
+    /* Chat View */
+    .club-chat-view {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--c-bg);
+      z-index: 250;
+      flex-direction: column;
+    }
+
+    .club-chat-view.active {
+      display: flex;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--c-glass);
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .chat-header-info {
+      flex: 1;
+    }
+
+    .chat-header-title {
+      font-weight: 600;
+    }
+
+    .chat-header-subtitle {
+      font-size: 0.8rem;
+      color: var(--c-muted);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chat-message {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .chat-message-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-message-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .chat-message-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-message-badges {
+      display: flex;
+      gap: 4px;
+    }
+
+    .user-badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+
+    .chat-message-time {
+      font-size: 0.75rem;
+      color: var(--c-muted);
+    }
+
+    .chat-message-text {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .chat-message-attachment {
+      margin-top: 8px;
+      max-width: 300px;
+    }
+
+    .chat-message-attachment img {
+      width: 100%;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .chat-message-attachment a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--c-glass);
+      border: 1px solid var(--c-border);
+      border-radius: 10px;
+      color: var(--c-content);
+      text-decoration: none;
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--c-glass);
+      border-top: 1px solid var(--c-border);
+      align-items: flex-end;
+    }
+
+    .chat-input-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-attachment-preview {
+      display: none;
+      padding: 8px;
+      background: var(--c-bg);
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .chat-attachment-preview.active {
+      display: block;
+    }
+
+    .chat-attachment-preview img {
+      max-width: 100px;
+      max-height: 60px;
+      border-radius: 8px;
+    }
+
+    .chat-attachment-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--c-error);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chat-input-row input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid var(--c-border);
+      border-radius: 24px;
+      font-size: 1rem;
+      background: var(--c-bg);
+      color: var(--c-content);
+    }
+
+    .chat-input-row input:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .chat-attach-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: var(--c-bg);
+      color: var(--c-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: var(--c-action);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Create Club Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--c-glass);
+      border-radius: 24px;
+      padding: 24px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: var(--c-bg);
+      color: var(--c-content);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--c-border);
+      border-radius: 12px;
+      font-size: 1rem;
+      background: var(--c-bg);
+      color: var(--c-content);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--c-action);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .image-upload-area {
+      border: 2px dashed var(--c-border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .image-upload-area:hover {
+      border-color: var(--c-action);
+    }
+
+    .image-upload-area i {
+      font-size: 2rem;
+      color: var(--c-muted);
+      margin-bottom: 8px;
+    }
+
+    .image-upload-area p {
+      font-size: 0.9rem;
+      color: var(--c-muted);
+    }
+
+    .image-preview {
+      width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .color-picker-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .color-option {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .color-option.active {
+      border-color: var(--c-content);
+      transform: scale(1.1);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px 24px;
+      border-radius: 12px;
+      border: none;
+      background: var(--c-action);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.9;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Club Settings Page */
+    .club-settings-page {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--c-bg);
+      z-index: 260;
+      overflow-y: auto;
+    }
+
+    .club-settings-page.active {
+      display: block;
+    }
+
+    .settings-body {
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .settings-section {
+      background: var(--c-glass);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--c-border);
+    }
+
+    .settings-section h4 {
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .admin-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .admin-item:last-child {
+      border-bottom: none;
+    }
+
+    .admin-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .admin-info {
+      flex: 1;
+    }
+
+    .admin-name {
+      font-weight: 500;
+    }
+
+    .admin-remove {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--c-error);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-admin-btn {
+      width: 100%;
+      padding: 12px;
+      border: 1px dashed var(--c-border);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--c-action);
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    .danger-zone {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    body.theme-dark .danger-zone {
+      background: #2a1a1a;
+      border-color: #5c2a2a;
+    }
+
+    .danger-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--c-error);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* User Badges Display */
+    .user-badges-container {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--c-muted);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state p {
+      font-size: 0.95rem;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--c-border);
+      border-top-color: var(--c-action);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 12px 24px;
+      border-radius: 12px;
+      background: var(--c-content);
+      color: var(--c-bg);
+      font-weight: 500;
+      z-index: 1000;
+      opacity: 0;
+      transition: all 300ms ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .page { padding: 80px 12px 20px; }
+      .nav-item { padding: 8px 10px; font-size: 0.65rem; }
+      .nav-item i { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Yukleniyor...</p>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div class="app-container" id="appContainer">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <span class="header-logo" onclick="goToHome()">LENG</span>
+        <div class="header-user" onclick="goToProfile()">
+          <img class="header-avatar" id="headerAvatar" src="https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff" alt="Avatar">
+          <span class="header-name" id="headerName">Kullanici</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Pages -->
+    <main>
+      <!-- Clubs Page -->
+      <div class="page active" id="clubsPage">
+        <h2 class="page-title">Kulupler</h2>
+        
+        <div class="tabs">
+          <button class="tab active" onclick="switchClubTab('discover')">Kesfet</button>
+          <button class="tab" onclick="switchClubTab('my')">Kuluplerım</button>
+        </div>
+
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="clubSearchInput" placeholder="Kulup ara..." oninput="searchClubs()">
+        </div>
+
+        <button class="create-club-btn" id="createClubBtn" onclick="showCreateClubModal()">
+          <i class="fas fa-plus"></i>
+          Kulup Olustur
+        </button>
+
+        <div class="clubs-grid" id="clubsGrid">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="nav-item" onclick="goToHome()">
+        <i class="fas fa-home"></i>
+        <span>Ana Sayfa</span>
+      </div>
+      <div class="nav-item" onclick="goToSearch()">
+        <i class="fas fa-search"></i>
+        <span>Ara</span>
+      </div>
+      <div class="nav-item active">
+        <i class="fas fa-users"></i>
+        <span>Kulupler</span>
+      </div>
+      <div class="nav-item" onclick="goToFriends()">
+        <i class="fas fa-user-friends"></i>
+        <span>Arkadaslar</span>
+      </div>
+      <div class="nav-item" onclick="goToChat()">
+        <i class="fas fa-comments"></i>
+        <span>Mesajlar</span>
+      </div>
+      <div class="nav-item" onclick="goToProfile()">
+        <i class="fas fa-user"></i>
+        <span>Profil</span>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Club Detail Page -->
+  <div class="club-detail-page" id="clubDetailPage">
+    <div class="club-detail-header">
+      <button class="back-btn" onclick="closeClubDetail()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <span class="club-detail-title" id="clubDetailTitle">Kulup</span>
+      <button class="club-settings-btn" id="clubSettingsBtn" onclick="openClubSettings()" style="display:none;">
+        <i class="fas fa-cog"></i>
+      </button>
+    </div>
+    <div class="club-detail-body">
+      <div class="club-detail-info">
+        <img class="club-detail-avatar" id="clubDetailAvatar" src="" alt="">
+        <h2 class="club-detail-name" id="clubDetailName">Kulup Adi</h2>
+        <p class="club-detail-desc" id="clubDetailDesc">Kulup aciklamasi</p>
+        <div class="club-detail-stats">
+          <div class="club-stat">
+            <div class="club-stat-value" id="clubDetailMembers">0</div>
+            <div class="club-stat-label">Uye</div>
+          </div>
+        </div>
+        <button class="club-action-btn" id="clubActionBtn">Katil</button>
+      </div>
+
+      <div class="club-channels" id="clubChannels">
+        <div class="channel-item" onclick="openClubChat('announcements')">
+          <div class="channel-icon announcement">
+            <i class="fas fa-bullhorn"></i>
+          </div>
+          <div class="channel-info">
+            <div class="channel-name">Duyurular</div>
+            <div class="channel-desc">Sadece yoneticiler yazabilir</div>
+          </div>
+          <i class="fas fa-chevron-right" style="color:var(--c-muted);"></i>
+        </div>
+        <div class="channel-item" onclick="openClubChat('general')">
+          <div class="channel-icon chat">
+            <i class="fas fa-comments"></i>
+          </div>
+          <div class="channel-info">
+            <div class="channel-name">Genel Sohbet</div>
+            <div class="channel-desc">Herkes yazabilir</div>
+          </div>
+          <i class="fas fa-chevron-right" style="color:var(--c-muted);"></i>
+        </div>
+      </div>
+
+      <div class="club-members-section">
+        <div class="section-header">
+          <span>Uyeler</span>
+          <span id="clubMembersCount">0 uye</span>
+        </div>
+        <div id="clubMembersList">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Club Chat View -->
+  <div class="club-chat-view" id="clubChatView">
+    <div class="chat-header">
+      <button class="back-btn" onclick="closeClubChat()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="chat-header-info">
+        <div class="chat-header-title" id="chatChannelTitle">Kanal</div>
+        <div class="chat-header-subtitle" id="chatChannelSubtitle">Kulup</div>
+      </div>
+    </div>
+    <div class="chat-messages" id="clubChatMessages">
+      <div class="empty-state">
+        <i class="fas fa-comments"></i>
+        <p>Henuz mesaj yok</p>
+      </div>
+    </div>
+    <div class="chat-input-area" id="chatInputArea">
+      <div class="chat-input-wrapper">
+        <div class="chat-attachment-preview" id="attachmentPreview">
+          <img id="attachmentPreviewImg" src="" alt="">
+          <button class="chat-attachment-remove" onclick="removeAttachment()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="chat-input-row">
+          <button class="chat-attach-btn" onclick="triggerAttachment()">
+            <i class="fas fa-paperclip"></i>
+          </button>
+          <input type="text" id="clubMessageInput" placeholder="Mesajinizi yazin..." onkeypress="handleClubMessageKeypress(event)">
+          <button class="chat-send-btn" onclick="sendClubMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+      <input type="file" id="attachmentInput" accept="image/*" style="display:none;" onchange="handleAttachment(event)">
+    </div>
+  </div>
+
+  <!-- Create Club Modal -->
+  <div class="modal-overlay" id="createClubModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Kulup Olustur</h3>
+        <button class="modal-close" onclick="closeCreateClubModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="form-group">
+        <label>Kulup Adi</label>
+        <input type="text" class="form-input" id="newClubName" placeholder="Kulup adi" maxlength="30">
+      </div>
+      <div class="form-group">
+        <label>Aciklama</label>
+        <textarea class="form-input form-textarea" id="newClubDesc" placeholder="Kulup aciklamasi" maxlength="200"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Kulup Gorseli (Kare)</label>
+        <div class="image-upload-area" id="clubImageUpload" onclick="document.getElementById('clubImageInput').click()">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Gorsel yuklemek icin tiklayin</p>
+        </div>
+        <input type="file" id="clubImageInput" accept="image/*" style="display:none;" onchange="handleClubImage(event)">
+      </div>
+      <div class="form-group">
+        <label>Rozet Gorseli (Kare - Uyeler bu rozeti alir)</label>
+        <div class="image-upload-area" id="badgeImageUpload" onclick="document.getElementById('badgeImageInput').click()">
+          <i class="fas fa-award"></i>
+          <p>Rozet gorseli yuklemek icin tiklayin</p>
+        </div>
+        <input type="file" id="badgeImageInput" accept="image/*" style="display:none;" onchange="handleBadgeImage(event)">
+      </div>
+      <div class="form-group">
+        <label>Sohbet Rengi</label>
+        <div class="color-picker-group" id="colorPicker">
+          <div class="color-option active" style="background:#3b82f6;" data-color="#3b82f6" onclick="selectColor(this)"></div>
+          <div class="color-option" style="background:#8b5cf6;" data-color="#8b5cf6" onclick="selectColor(this)"></div>
+          <div class="color-option" style="background:#ec4899;" data-color="#ec4899" onclick="selectColor(this)"></div>
+          <div class="color-option" style="background:#ef4444;" data-color="#ef4444" onclick="selectColor(this)"></div>
+          <div class="color-option" style="background:#f97316;" data-color="#f97316" onclick="selectColor(this)"></div>
+          <div class="color-option" style="background:#eab308;" data-color="#eab308" onclick="selectColor(this)"></div>
+          <div class="color-option" style="background:#22c55e;" data-color="#22c55e" onclick="selectColor(this)"></div>
+          <div class="color-option" style="background:#14b8a6;" data-color="#14b8a6" onclick="selectColor(this)"></div>
+        </div>
+      </div>
+      <button class="submit-btn" id="createClubSubmit" onclick="createClub()">Kulup Olustur</button>
+    </div>
+  </div>
+
+  <!-- Club Settings Page -->
+  <div class="club-settings-page" id="clubSettingsPage">
+    <div class="club-detail-header">
+      <button class="back-btn" onclick="closeClubSettings()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <span class="club-detail-title">Kulup Ayarlari</span>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <h4>Genel Bilgiler</h4>
+        <div class="form-group">
+          <label>Kulup Adi</label>
+          <input type="text" class="form-input" id="editClubName" placeholder="Kulup adi" maxlength="30">
+        </div>
+        <div class="form-group">
+          <label>Aciklama</label>
+          <textarea class="form-input form-textarea" id="editClubDesc" placeholder="Kulup aciklamasi" maxlength="200"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Kulup Gorseli</label>
+          <div class="image-upload-area" id="editClubImageUpload" onclick="document.getElementById('editClubImageInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Gorsel degistirmek icin tiklayin</p>
+          </div>
+          <input type="file" id="editClubImageInput" accept="image/*" style="display:none;" onchange="handleEditClubImage(event)">
+        </div>
+        <div class="form-group">
+          <label>Rozet Gorseli</label>
+          <div class="image-upload-area" id="editBadgeImageUpload" onclick="document.getElementById('editBadgeImageInput').click()">
+            <i class="fas fa-award"></i>
+            <p>Rozet degistirmek icin tiklayin</p>
+          </div>
+          <input type="file" id="editBadgeImageInput" accept="image/*" style="display:none;" onchange="handleEditBadgeImage(event)">
+        </div>
+        <div class="form-group">
+          <label>Sohbet Rengi</label>
+          <div class="color-picker-group" id="editColorPicker">
+            <div class="color-option" style="background:#3b82f6;" data-color="#3b82f6" onclick="selectEditColor(this)"></div>
+            <div class="color-option" style="background:#8b5cf6;" data-color="#8b5cf6" onclick="selectEditColor(this)"></div>
+            <div class="color-option" style="background:#ec4899;" data-color="#ec4899" onclick="selectEditColor(this)"></div>
+            <div class="color-option" style="background:#ef4444;" data-color="#ef4444" onclick="selectEditColor(this)"></div>
+            <div class="color-option" style="background:#f97316;" data-color="#f97316" onclick="selectEditColor(this)"></div>
+            <div class="color-option" style="background:#eab308;" data-color="#eab308" onclick="selectEditColor(this)"></div>
+            <div class="color-option" style="background:#22c55e;" data-color="#22c55e" onclick="selectEditColor(this)"></div>
+            <div class="color-option" style="background:#14b8a6;" data-color="#14b8a6" onclick="selectEditColor(this)"></div>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="saveClubSettings()">Degisiklikleri Kaydet</button>
+      </div>
+
+      <div class="settings-section">
+        <h4>Yoneticiler</h4>
+        <div id="clubAdminsList">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+        <button class="add-admin-btn" onclick="showAddAdminModal()">
+          <i class="fas fa-plus"></i> Yonetici Ekle
+        </button>
+      </div>
+
+      <div class="settings-section danger-zone">
+        <h4 style="color:var(--c-error);">Tehlikeli Bolge</h4>
+        <button class="danger-btn" onclick="deleteClub()">
+          <i class="fas fa-trash"></i> Kulubu Sil
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { 
+      getAuth, 
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      get, 
+      push, 
+      onValue, 
+      off,
+      query, 
+      orderByChild,
+      update,
+      remove,
+      limitToLast
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "maps-52b00",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let currentUser = null;
+    let currentUserData = null;
+    let currentClubId = null;
+    let currentChannel = null;
+    let chatListener = null;
+    let currentTab = 'discover';
+    let newClubImage = null;
+    let newBadgeImage = null;
+    let editClubImage = null;
+    let editBadgeImage = null;
+    let selectedColor = '#3b82f6';
+    let editSelectedColor = '#3b82f6';
+    let attachmentData = null;
+
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+        
+        if (snapshot.exists() && snapshot.val().username) {
+          currentUserData = snapshot.val();
+          
+          if (currentUserData.banned) {
+            window.location.href = 'index.html';
+            return;
+          }
+          
+          showApp();
+          loadClubs();
+          loadTheme();
+          checkCreatePermission();
+        } else {
+          window.location.href = 'index.html';
+        }
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+
+    function showApp() {
+      document.getElementById('loadingScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.add('active');
+      updateUIWithUserData();
+    }
+
+    function updateUIWithUserData() {
+      if (!currentUserData) return;
+      
+      const verifiedBadge = currentUserData.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+      document.getElementById('headerAvatar').src = currentUserData.photoURL;
+      document.getElementById('headerName').innerHTML = currentUserData.displayName.split(' ')[0] + ' ' + verifiedBadge;
+    }
+
+    function checkCreatePermission() {
+      const btn = document.getElementById('createClubBtn');
+      if (currentUserData && currentUserData.verified) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus"></i> Kulup Olustur';
+      } else {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-lock"></i> Kulup olusturmak icin onay gerekli';
+      }
+    }
+
+    // Navigation
+    window.goToHome = () => { window.location.href = 'index.html'; };
+    window.goToSearch = () => { window.location.href = 'index.html#search'; };
+    window.goToFriends = () => { window.location.href = 'index.html#friends'; };
+    window.goToChat = () => { window.location.href = 'index.html#chat'; };
+    window.goToProfile = () => { window.location.href = 'index.html#profile'; };
+
+    // Club Tabs
+    window.switchClubTab = (tab) => {
+      currentTab = tab;
+      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      loadClubs();
+    };
+
+    // Load Clubs
+    async function loadClubs() {
+      const container = document.getElementById('clubsGrid');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      const clubsRef = ref(db, 'clubs');
+      onValue(clubsRef, async (snapshot) => {
+        if (!snapshot.exists()) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>Henuz kulup yok</p></div>';
+          return;
+        }
+
+        let html = '';
+        const clubs = [];
+
+        snapshot.forEach(child => {
+          clubs.push({ id: child.key, ...child.val() });
+        });
+
+        for (const club of clubs) {
+          if (currentTab === 'my') {
+            const memberSnap = await get(ref(db, `clubMembers/${club.id}/${currentUser.uid}`));
+            if (!memberSnap.exists()) continue;
+          }
+
+          const memberCountSnap = await get(ref(db, `clubMembers/${club.id}`));
+          const memberCount = memberCountSnap.exists() ? Object.keys(memberCountSnap.val()).length : 0;
+
+          html += `
+            <div class="club-card" onclick="openClubDetail('${club.id}')">
+              <img class="club-avatar" src="${club.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(club.name) + '&background=3b82f6&color=fff'}" alt="${club.name}">
+              <div class="club-info">
+                <div class="club-name">
+                  ${club.name}
+                  ${club.badge ? `<img class="club-badge-preview" src="${club.badge}" alt="rozet">` : ''}
+                </div>
+                <div class="club-desc">${club.description || 'Aciklama yok'}</div>
+                <div class="club-members">
+                  <i class="fas fa-users"></i>
+                  ${memberCount} uye
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        container.innerHTML = html || '<div class="empty-state"><i class="fas fa-users"></i><p>Kulup bulunamadi</p></div>';
+      }, { onlyOnce: true });
+    }
+
+    // Search Clubs
+    window.searchClubs = async () => {
+      const query_text = document.getElementById('clubSearchInput').value.trim().toLowerCase();
+      const container = document.getElementById('clubsGrid');
+
+      if (query_text.length < 2) {
+        loadClubs();
+        return;
+      }
+
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      const snapshot = await get(ref(db, 'clubs'));
+      
+      if (!snapshot.exists()) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>Kulup bulunamadi</p></div>';
+        return;
+      }
+
+      let html = '';
+      let found = false;
+
+      for (const [clubId, club] of Object.entries(snapshot.val())) {
+        if (club.name.toLowerCase().includes(query_text) || 
+            (club.description && club.description.toLowerCase().includes(query_text))) {
+          found = true;
+
+          const memberCountSnap = await get(ref(db, `clubMembers/${clubId}`));
+          const memberCount = memberCountSnap.exists() ? Object.keys(memberCountSnap.val()).length : 0;
+
+          html += `
+            <div class="club-card" onclick="openClubDetail('${clubId}')">
+              <img class="club-avatar" src="${club.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(club.name) + '&background=3b82f6&color=fff'}" alt="${club.name}">
+              <div class="club-info">
+                <div class="club-name">${club.name}</div>
+                <div class="club-desc">${club.description || 'Aciklama yok'}</div>
+                <div class="club-members">
+                  <i class="fas fa-users"></i>
+                  ${memberCount} uye
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      container.innerHTML = found ? html : '<div class="empty-state"><i class="fas fa-search"></i><p>Kulup bulunamadi</p></div>';
+    };
+
+    // Open Club Detail
+    window.openClubDetail = async (clubId) => {
+      currentClubId = clubId;
+      
+      const clubSnap = await get(ref(db, `clubs/${clubId}`));
+      if (!clubSnap.exists()) {
+        showToast('Kulup bulunamadi');
+        return;
+      }
+
+      const club = clubSnap.val();
+      
+      document.getElementById('clubDetailTitle').textContent = club.name;
+      document.getElementById('clubDetailAvatar').src = club.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(club.name) + '&background=3b82f6&color=fff';
+      document.getElementById('clubDetailName').textContent = club.name;
+      document.getElementById('clubDetailDesc').textContent = club.description || 'Aciklama yok';
+
+      // Member count
+      const memberSnap = await get(ref(db, `clubMembers/${clubId}`));
+      const memberCount = memberSnap.exists() ? Object.keys(memberSnap.val()).length : 0;
+      document.getElementById('clubDetailMembers').textContent = memberCount;
+      document.getElementById('clubMembersCount').textContent = memberCount + ' uye';
+
+      // Check if user is member/owner/admin
+      const isMember = memberSnap.exists() && memberSnap.val()[currentUser.uid];
+      const isOwner = club.ownerId === currentUser.uid;
+      const isAdmin = isMember && memberSnap.val()[currentUser.uid].role === 'admin';
+
+      // Action button
+      const actionBtn = document.getElementById('clubActionBtn');
+      if (isOwner) {
+        actionBtn.textContent = 'Kulup Sahibisin';
+        actionBtn.className = 'club-action-btn member';
+        actionBtn.onclick = null;
+      } else if (isMember) {
+        actionBtn.textContent = 'Kulupten Ayril';
+        actionBtn.className = 'club-action-btn leave';
+        actionBtn.onclick = () => leaveClub(clubId);
+      } else {
+        actionBtn.textContent = 'Kulube Katil';
+        actionBtn.className = 'club-action-btn join';
+        actionBtn.onclick = () => joinClub(clubId);
+      }
+
+      // Settings button
+      const settingsBtn = document.getElementById('clubSettingsBtn');
+      settingsBtn.style.display = (isOwner || isAdmin) ? 'flex' : 'none';
+
+      // Load members
+      loadClubMembers(clubId, memberSnap.exists() ? memberSnap.val() : {}, club.ownerId);
+
+      document.getElementById('clubDetailPage').classList.add('active');
+    };
+
+    window.closeClubDetail = () => {
+      document.getElementById('clubDetailPage').classList.remove('active');
+      currentClubId = null;
+    };
+
+    // Load Club Members
+    async function loadClubMembers(clubId, members, ownerId) {
+      const container = document.getElementById('clubMembersList');
+      let html = '';
+
+      for (const [userId, memberData] of Object.entries(members)) {
+        const userSnap = await get(ref(db, `users/${userId}`));
+        if (!userSnap.exists()) continue;
+
+        const user = userSnap.val();
+        const isOwner = userId === ownerId;
+        const isAdmin = memberData.role === 'admin';
+
+        let roleBadge = '';
+        if (isOwner) roleBadge = '<span class="role-badge owner">Sahip</span>';
+        else if (isAdmin) roleBadge = '<span class="role-badge admin">Yonetici</span>';
+
+        const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+
+        html += `
+          <div class="member-item">
+            <img class="member-avatar" src="${user.photoURL}" alt="">
+            <div class="member-info">
+              <div class="member-name">${user.displayName} ${verifiedBadge}</div>
+              <div class="member-role">@${user.username}</div>
+            </div>
+            ${roleBadge}
+          </div>
+        `;
+      }
+
+      container.innerHTML = html || '<p style="color:var(--c-muted);text-align:center;padding:20px;">Uye yok</p>';
+    }
+
+    // Join Club
+    async function joinClub(clubId) {
+      try {
+        await set(ref(db, `clubMembers/${clubId}/${currentUser.uid}`), {
+          joinedAt: Date.now(),
+          role: 'member'
+        });
+
+        // Add badge to user
+        const clubSnap = await get(ref(db, `clubs/${clubId}`));
+        if (clubSnap.exists() && clubSnap.val().badge) {
+          const userBadgesRef = ref(db, `userBadges/${currentUser.uid}/${clubId}`);
+          await set(userBadgesRef, {
+            badge: clubSnap.val().badge,
+            clubName: clubSnap.val().name,
+            addedAt: Date.now()
+          });
+        }
+
+        showToast('Kulube katildiniz');
+        openClubDetail(clubId);
+      } catch (error) {
+        console.error('Join error:', error);
+        showToast('Bir hata olustu');
+      }
+    }
+
+    // Leave Club
+    async function leaveClub(clubId) {
+      if (!confirm('Kulupten ayrilmak istediginize emin misiniz?')) return;
+
+      try {
+        await remove(ref(db, `clubMembers/${clubId}/${currentUser.uid}`));
+        await remove(ref(db, `userBadges/${currentUser.uid}/${clubId}`));
+
+        showToast('Kulupten ayrildiniz');
+        closeClubDetail();
+        loadClubs();
+      } catch (error) {
+        console.error('Leave error:', error);
+        showToast('Bir hata olustu');
+      }
+    }
+
+    // Club Chat
+    window.openClubChat = async (channel) => {
+      if (!currentClubId) return;
+
+      // Check if user is member
+      const memberSnap = await get(ref(db, `clubMembers/${currentClubId}/${currentUser.uid}`));
+      if (!memberSnap.exists()) {
+        showToast('Sohbete erisebilmek icin kulube katilmalisiniz');
+        return;
+      }
+
+      currentChannel = channel;
+
+      const clubSnap = await get(ref(db, `clubs/${currentClubId}`));
+      const club = clubSnap.val();
+
+      const channelNames = {
+        'announcements': 'Duyurular',
+        'general': 'Genel Sohbet'
+      };
+
+      document.getElementById('chatChannelTitle').textContent = channelNames[channel];
+      document.getElementById('chatChannelSubtitle').textContent = club.name;
+
+      // Check if user can send messages
+      const isOwner = club.ownerId === currentUser.uid;
+      const isAdmin = memberSnap.val().role === 'admin';
+      const canSendAnnouncements = isOwner || isAdmin;
+
+      const inputArea = document.getElementById('chatInputArea');
+      if (channel === 'announcements' && !canSendAnnouncements) {
+        inputArea.style.display = 'none';
+      } else {
+        inputArea.style.display = 'flex';
+      }
+
+      // Apply club chat color
+      document.documentElement.style.setProperty('--club-chat-color', club.chatColor || '#3b82f6');
+
+      document.getElementById('clubChatView').classList.add('active');
+      loadClubMessages(currentClubId, channel, club.chatColor);
+    };
+
+    window.closeClubChat = () => {
+      document.getElementById('clubChatView').classList.remove('active');
+      if (chatListener) {
+        off(ref(db, `clubMessages/${currentClubId}/${currentChannel}`));
+        chatListener = null;
+      }
+      currentChannel = null;
+      attachmentData = null;
+      document.getElementById('attachmentPreview').classList.remove('active');
+    };
+
+    // Load Club Messages
+    function loadClubMessages(clubId, channel, chatColor) {
+      const messagesRef = ref(db, `clubMessages/${clubId}/${channel}`);
+      
+      if (chatListener) {
+        off(messagesRef);
+      }
+
+      chatListener = onValue(messagesRef, async (snapshot) => {
+        const container = document.getElementById('clubChatMessages');
+
+        if (!snapshot.exists()) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-comments"></i><p>Henuz mesaj yok. Ilk mesaji sen gonder!</p></div>';
+          return;
+        }
+
+        let html = '';
+        const messages = [];
+
+        snapshot.forEach(child => {
+          messages.push({ id: child.key, ...child.val() });
+        });
+
+        messages.sort((a, b) => a.timestamp - b.timestamp);
+
+        for (const msg of messages) {
+          const userSnap = await get(ref(db, `users/${msg.senderId}`));
+          const user = userSnap.exists() ? userSnap.val() : { displayName: 'Bilinmeyen', photoURL: '' };
+          
+          // Get user badges
+          const userBadgesSnap = await get(ref(db, `userBadges/${msg.senderId}`));
+          const activeBadgesSnap = await get(ref(db, `users/${msg.senderId}/activeBadges`));
+          let badgesHtml = '';
+          
+          if (activeBadgesSnap.exists()) {
+            const activeBadges = activeBadgesSnap.val();
+            for (const badgeId of Object.keys(activeBadges)) {
+              if (userBadgesSnap.exists() && userBadgesSnap.val()[badgeId]) {
+                badgesHtml += `<img class="user-badge" src="${userBadgesSnap.val()[badgeId].badge}" alt="rozet" title="${userBadgesSnap.val()[badgeId].clubName}">`;
+              }
+            }
+          }
+
+          const verifiedBadge = user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+
+          let attachmentHtml = '';
+          if (msg.attachment) {
+            if (msg.attachmentType === 'image') {
+              attachmentHtml = `<div class="chat-message-attachment"><img src="${msg.attachment}" alt="gorsel" onclick="window.open('${msg.attachment}', '_blank')"></div>`;
+            } else {
+              attachmentHtml = `<div class="chat-message-attachment"><a href="${msg.attachment}" target="_blank"><i class="fas fa-file"></i> Dosya</a></div>`;
+            }
+          }
+
+          html += `
+            <div class="chat-message">
+              <img class="chat-message-avatar" src="${user.photoURL || 'https://ui-avatars.com/api/?name=U'}" alt="">
+              <div class="chat-message-content">
+                <div class="chat-message-header">
+                  <span class="chat-message-name" style="color:${chatColor || '#3b82f6'};">
+                    ${user.displayName} ${verifiedBadge}
+                    <span class="chat-message-badges">${badgesHtml}</span>
+                  </span>
+                  <span class="chat-message-time">${formatTime(msg.timestamp)}</span>
+                </div>
+                <div class="chat-message-text">${msg.text || ''}</div>
+                ${attachmentHtml}
+              </div>
+            </div>
+          `;
+        }
+
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+
+    // Send Club Message
+    window.sendClubMessage = async () => {
+      const input = document.getElementById('clubMessageInput');
+      const text = input.value.trim();
+
+      if (!text && !attachmentData) return;
+      if (!currentClubId || !currentChannel) return;
+
+      try {
+        const messageData = {
+          senderId: currentUser.uid,
+          text: text,
+          timestamp: Date.now()
+        };
+
+        if (attachmentData) {
+          messageData.attachment = attachmentData;
+          messageData.attachmentType = 'image';
+        }
+
+        await push(ref(db, `clubMessages/${currentClubId}/${currentChannel}`), messageData);
+
+        input.value = '';
+        attachmentData = null;
+        document.getElementById('attachmentPreview').classList.remove('active');
+      } catch (error) {
+        console.error('Send error:', error);
+        showToast('Mesaj gonderilemedi');
+      }
+    };
+
+    window.handleClubMessageKeypress = (e) => {
+      if (e.key === 'Enter') sendClubMessage();
+    };
+
+    // Attachment handling
+    window.triggerAttachment = () => {
+      document.getElementById('attachmentInput').click();
+    };
+
+    window.handleAttachment = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showToast('Sadece gorsel yukleyebilirsiniz');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        attachmentData = event.target.result;
+        document.getElementById('attachmentPreviewImg').src = attachmentData;
+        document.getElementById('attachmentPreview').classList.add('active');
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.removeAttachment = () => {
+      attachmentData = null;
+      document.getElementById('attachmentPreview').classList.remove('active');
+      document.getElementById('attachmentInput').value = '';
+    };
+
+    // Create Club Modal
+    window.showCreateClubModal = () => {
+      if (!currentUserData || !currentUserData.verified) {
+        showToast('Kulup olusturmak icin hesabinizin onaylanmis olmasi gerekiyor');
+        return;
+      }
+      document.getElementById('createClubModal').classList.add('active');
+    };
+
+    window.closeCreateClubModal = () => {
+      document.getElementById('createClubModal').classList.remove('active');
+      document.getElementById('newClubName').value = '';
+      document.getElementById('newClubDesc').value = '';
+      newClubImage = null;
+      newBadgeImage = null;
+      document.getElementById('clubImageUpload').innerHTML = '<i class="fas fa-cloud-upload-alt"></i><p>Gorsel yuklemek icin tiklayin</p>';
+      document.getElementById('badgeImageUpload').innerHTML = '<i class="fas fa-award"></i><p>Rozet gorseli yuklemek icin tiklayin</p>';
+    };
+
+    // Handle Club Image
+    window.handleClubImage = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        // Create square image
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const size = Math.min(img.width, img.height);
+          canvas.width = 200;
+          canvas.height = 200;
+          const ctx = canvas.getContext('2d');
+          
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+          
+          newClubImage = canvas.toDataURL('image/jpeg', 0.8);
+          document.getElementById('clubImageUpload').innerHTML = `<img class="image-preview" src="${newClubImage}" alt="">`;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    // Handle Badge Image
+    window.handleBadgeImage = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const size = Math.min(img.width, img.height);
+          canvas.width = 64;
+          canvas.height = 64;
+          const ctx = canvas.getContext('2d');
+          
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 64, 64);
+          
+          newBadgeImage = canvas.toDataURL('image/png');
+          document.getElementById('badgeImageUpload').innerHTML = `<img class="image-preview" src="${newBadgeImage}" alt="" style="max-width:64px;">`;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    // Color Selection
+    window.selectColor = (el) => {
+      document.querySelectorAll('#colorPicker .color-option').forEach(opt => opt.classList.remove('active'));
+      el.classList.add('active');
+      selectedColor = el.dataset.color;
+    };
+
+    // Create Club
+    window.createClub = async () => {
+      const name = document.getElementById('newClubName').value.trim();
+      const description = document.getElementById('newClubDesc').value.trim();
+
+      if (!name || name.length < 3) {
+        showToast('Kulup adi en az 3 karakter olmali');
+        return;
+      }
+
+      const btn = document.getElementById('createClubSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Olusturuluyor...';
+
+      try {
+        const clubData = {
+          name,
+          description,
+          image: newClubImage || null,
+          badge: newBadgeImage || null,
+          chatColor: selectedColor,
+          ownerId: currentUser.uid,
+          createdAt: Date.now()
+        };
+
+        const clubRef = await push(ref(db, 'clubs'), clubData);
+
+        // Add owner as member
+        await set(ref(db, `clubMembers/${clubRef.key}/${currentUser.uid}`), {
+          joinedAt: Date.now(),
+          role: 'owner'
+        });
+
+        // Add badge to owner
+        if (newBadgeImage) {
+          await set(ref(db, `userBadges/${currentUser.uid}/${clubRef.key}`), {
+            badge: newBadgeImage,
+            clubName: name,
+            addedAt: Date.now()
+          });
+        }
+
+        showToast('Kulup olusturuldu');
+        closeCreateClubModal();
+        loadClubs();
+      } catch (error) {
+        console.error('Create error:', error);
+        showToast('Bir hata olustu');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kulup Olustur';
+      }
+    };
+
+    // Club Settings
+    window.openClubSettings = async () => {
+      if (!currentClubId) return;
+
+      const clubSnap = await get(ref(db, `clubs/${currentClubId}`));
+      if (!clubSnap.exists()) return;
+
+      const club = clubSnap.val();
+
+      document.getElementById('editClubName').value = club.name;
+      document.getElementById('editClubDesc').value = club.description || '';
+      
+      if (club.image) {
+        document.getElementById('editClubImageUpload').innerHTML = `<img class="image-preview" src="${club.image}" alt="">`;
+      }
+      
+      if (club.badge) {
+        document.getElementById('editBadgeImageUpload').innerHTML = `<img class="image-preview" src="${club.badge}" alt="" style="max-width:64px;">`;
+      }
+
+      // Set color
+      editSelectedColor = club.chatColor || '#3b82f6';
+      document.querySelectorAll('#editColorPicker .color-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.color === editSelectedColor);
+      });
+
+      // Load admins
+      loadClubAdmins(currentClubId, club.ownerId);
+
+      document.getElementById('clubSettingsPage').classList.add('active');
+    };
+
+    window.closeClubSettings = () => {
+      document.getElementById('clubSettingsPage').classList.remove('active');
+      editClubImage = null;
+      editBadgeImage = null;
+    };
+
+    // Load Club Admins
+    async function loadClubAdmins(clubId, ownerId) {
+      const container = document.getElementById('clubAdminsList');
+      const memberSnap = await get(ref(db, `clubMembers/${clubId}`));
+      
+      if (!memberSnap.exists()) {
+        container.innerHTML = '<p style="color:var(--c-muted);">Yonetici yok</p>';
+        return;
+      }
+
+      let html = '';
+
+      for (const [userId, data] of Object.entries(memberSnap.val())) {
+        if (userId === ownerId || data.role === 'admin') {
+          const userSnap = await get(ref(db, `users/${userId}`));
+          if (!userSnap.exists()) continue;
+
+          const user = userSnap.val();
+          const isOwner = userId === ownerId;
+
+          html += `
+            <div class="admin-item">
+              <img class="admin-avatar" src="${user.photoURL}" alt="">
+              <div class="admin-info">
+                <div class="admin-name">${user.displayName}</div>
+                <div class="member-role">${isOwner ? 'Sahip' : 'Yonetici'}</div>
+              </div>
+              ${!isOwner && ownerId === currentUser.uid ? `<button class="admin-remove" onclick="removeAdmin('${userId}')"><i class="fas fa-times"></i></button>` : ''}
+            </div>
+          `;
+        }
+      }
+
+      container.innerHTML = html || '<p style="color:var(--c-muted);">Yonetici yok</p>';
+    }
+
+    // Edit handlers
+    window.handleEditClubImage = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const size = Math.min(img.width, img.height);
+          canvas.width = 200;
+          canvas.height = 200;
+          const ctx = canvas.getContext('2d');
+          
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+          
+          editClubImage = canvas.toDataURL('image/jpeg', 0.8);
+          document.getElementById('editClubImageUpload').innerHTML = `<img class="image-preview" src="${editClubImage}" alt="">`;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.handleEditBadgeImage = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const size = Math.min(img.width, img.height);
+          canvas.width = 64;
+          canvas.height = 64;
+          const ctx = canvas.getContext('2d');
+          
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 64, 64);
+          
+          editBadgeImage = canvas.toDataURL('image/png');
+          document.getElementById('editBadgeImageUpload').innerHTML = `<img class="image-preview" src="${editBadgeImage}" alt="" style="max-width:64px;">`;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.selectEditColor = (el) => {
+      document.querySelectorAll('#editColorPicker .color-option').forEach(opt => opt.classList.remove('active'));
+      el.classList.add('active');
+      editSelectedColor = el.dataset.color;
+    };
+
+    window.saveClubSettings = async () => {
+      const name = document.getElementById('editClubName').value.trim();
+      const description = document.getElementById('editClubDesc').value.trim();
+
+      if (!name || name.length < 3) {
+        showToast('Kulup adi en az 3 karakter olmali');
+        return;
+      }
+
+      try {
+        const updates = {
+          name,
+          description,
+          chatColor: editSelectedColor
+        };
+
+        if (editClubImage) updates.image = editClubImage;
+        if (editBadgeImage) updates.badge = editBadgeImage;
+
+        await update(ref(db, `clubs/${currentClubId}`), updates);
+
+        // Update badges for all members if badge changed
+        if (editBadgeImage) {
+          const memberSnap = await get(ref(db, `clubMembers/${currentClubId}`));
+          if (memberSnap.exists()) {
+            for (const userId of Object.keys(memberSnap.val())) {
+              await update(ref(db, `userBadges/${userId}/${currentClubId}`), {
+                badge: editBadgeImage,
+                clubName: name
+              });
+            }
+          }
+        }
+
+        showToast('Degisiklikler kaydedildi');
+        closeClubSettings();
+        openClubDetail(currentClubId);
+      } catch (error) {
+        console.error('Save error:', error);
+        showToast('Bir hata olustu');
+      }
+    };
+
+    window.removeAdmin = async (userId) => {
+      if (!confirm('Bu yoneticiyi kaldirmak istediginize emin misiniz?')) return;
+
+      try {
+        await update(ref(db, `clubMembers/${currentClubId}/${userId}`), {
+          role: 'member'
+        });
+        showToast('Yonetici kaldirildi');
+        
+        const clubSnap = await get(ref(db, `clubs/${currentClubId}`));
+        loadClubAdmins(currentClubId, clubSnap.val().ownerId);
+      } catch (error) {
+        console.error('Remove admin error:', error);
+        showToast('Bir hata olustu');
+      }
+    };
+
+    window.showAddAdminModal = () => {
+      showToast('Bu ozellik yakinda eklenecek');
+    };
+
+    window.deleteClub = async () => {
+      if (!confirm('Bu kulubu silmek istediginize emin misiniz? Bu islem geri alinamaz!')) return;
+
+      try {
+        // Remove all member badges
+        const memberSnap = await get(ref(db, `clubMembers/${currentClubId}`));
+        if (memberSnap.exists()) {
+          for (const userId of Object.keys(memberSnap.val())) {
+            await remove(ref(db, `userBadges/${userId}/${currentClubId}`));
+          }
+        }
+
+        // Delete club data
+        await remove(ref(db, `clubs/${currentClubId}`));
+        await remove(ref(db, `clubMembers/${currentClubId}`));
+        await remove(ref(db, `clubMessages/${currentClubId}`));
+
+        showToast('Kulup silindi');
+        closeClubSettings();
+        closeClubDetail();
+        loadClubs();
+      } catch (error) {
+        console.error('Delete error:', error);
+        showToast('Bir hata olustu');
+      }
+    };
+
+    // Theme
+    function loadTheme() {
+      const theme = localStorage.getItem('theme') || 'auto';
+      applyTheme(theme);
+    }
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.body.classList.add('theme-dark');
+      } else if (theme === 'light') {
+        document.body.classList.remove('theme-dark');
+      } else {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.body.classList.add('theme-dark');
+        } else {
+          document.body.classList.remove('theme-dark');
+        }
+      }
+    }
+
+    // Helper functions
+    function formatTime(timestamp) {
+      if (!timestamp) return '';
+      const date = new Date(timestamp);
+      const now = new Date();
+      
+      if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      }
+      return date.toLocaleDateString('tr-TR');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
