@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Panel - LENG</title>
+    <title>LENG</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -27,7 +27,7 @@
             --gray-light: #94a3b8;
             --light: #f1f5f9;
             --white: #ffffff;
-            --card-bg: rgba(30, 41, 59, 0.9);
+            --card-bg: rgba(30, 41, 59, 0.8);
             --glass: rgba(255, 255, 255, 0.1);
         }
 
@@ -36,6 +36,7 @@
             background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 50%, var(--dark) 100%);
             min-height: 100vh;
             color: var(--white);
+            overflow-x: hidden;
         }
 
         /* Login Screen */
@@ -45,6 +46,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 100%);
         }
 
         .login-box {
@@ -55,6 +57,7 @@
             width: 100%;
             max-width: 420px;
             border: 1px solid var(--glass);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .login-logo {
@@ -64,19 +67,47 @@
 
         .login-logo i {
             font-size: 48px;
-            color: var(--danger);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .login-logo h1 {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
             margin-top: 12px;
+            background: linear-gradient(135deg, var(--white), var(--gray-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .login-logo p {
+        .login-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--dark);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
             color: var(--gray-light);
             font-size: 14px;
-            margin-top: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .login-tab.active {
+            background: var(--primary);
+            color: var(--white);
         }
 
         .form-group {
@@ -108,7 +139,12 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
 
+        .form-group input::placeholder {
+            color: var(--gray);
+        }
+
         .btn {
+            width: 100%;
             padding: 14px 24px;
             border: none;
             border-radius: 12px;
@@ -116,7 +152,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
@@ -125,24 +161,17 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: var(--white);
-            width: 100%;
         }
 
-        .btn-google {
-            background: var(--white);
-            color: #333;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--dark-light);
+            color: var(--white);
             border: 1px solid var(--glass);
-            width: 100%;
-            margin-top: 16px;
-        }
-
-        .btn-google:hover {
-            background: var(--light);
-        }
-
-        .btn-google img {
-            width: 20px;
-            height: 20px;
         }
 
         .btn-success {
@@ -155,24 +184,25 @@
             color: var(--white);
         }
 
-        .btn-warning {
-            background: linear-gradient(135deg, var(--warning), #d97706);
-            color: var(--white);
+        .btn-google {
+            background: var(--white);
+            color: #333;
+            border: 1px solid var(--glass);
         }
 
-        .btn-secondary {
-            background: var(--dark-light);
-            color: var(--white);
-            border: 1px solid var(--glass);
+        .btn-google:hover {
+            background: var(--light);
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
         }
 
         .btn-small {
             padding: 8px 16px;
             font-size: 13px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
+            width: auto;
         }
 
         .divider {
@@ -195,442 +225,1032 @@
             padding: 0 16px;
         }
 
-        /* Admin Layout */
-        .admin-container {
+        /* Main App Container */
+        .app-container {
             display: none;
+            flex-direction: column;
             min-height: 100vh;
+            padding-bottom: 80px;
         }
 
-        .admin-header {
+        /* Header */
+        .header {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            padding: 16px 24px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--glass);
             position: sticky;
             top: 0;
             z-index: 100;
+            border-bottom: 1px solid var(--glass);
         }
 
-        .admin-logo {
+        .header-logo {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .admin-logo i {
+        .header-logo i {
             font-size: 24px;
-            color: var(--danger);
+            color: var(--primary);
         }
 
-        .admin-logo span {
+        .header-logo span {
             font-size: 18px;
             font-weight: 700;
         }
 
-        .admin-user {
+        .header-actions {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .admin-user img {
+        .header-btn {
             width: 40px;
             height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .admin-body {
-            display: flex;
-            min-height: calc(100vh - 73px);
-        }
-
-        /* Sidebar */
-        .admin-sidebar {
-            width: 260px;
-            background: var(--card-bg);
-            border-right: 1px solid var(--glass);
-            padding: 20px 0;
-            flex-shrink: 0;
-        }
-
-        @media (max-width: 1024px) {
-            .admin-sidebar {
-                position: fixed;
-                left: -260px;
-                top: 73px;
-                height: calc(100vh - 73px);
-                z-index: 99;
-                transition: left 0.3s ease;
-            }
-
-            .admin-sidebar.open {
-                left: 0;
-            }
-
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 73px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 98;
-            }
-
-            .sidebar-overlay.show {
-                display: block;
-            }
-        }
-
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .sidebar-item {
-            padding: 12px 24px;
+            border-radius: 12px;
+            background: var(--dark);
+            border: 1px solid var(--glass);
+            color: var(--white);
             display: flex;
             align-items: center;
-            gap: 12px;
-            color: var(--gray-light);
+            justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            border-left: 3px solid transparent;
+            position: relative;
         }
 
-        .sidebar-item:hover {
-            background: var(--dark);
-            color: var(--white);
+        .header-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
         }
 
-        .sidebar-item.active {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--primary);
-            border-left-color: var(--primary);
-        }
-
-        .sidebar-item i {
-            width: 20px;
-        }
-
-        .sidebar-badge {
-            margin-left: auto;
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
             background: var(--danger);
-            color: var(--white);
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 600;
         }
 
         /* Content Area */
-        .admin-content {
+        .content {
             flex: 1;
-            padding: 24px;
-            overflow-y: auto;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
         }
 
-        @media (max-width: 768px) {
-            .admin-content {
-                padding: 16px;
-            }
-        }
-
-        .content-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .content-title {
-            font-size: 24px;
+        /* Section Titles */
+        .section-title {
+            font-size: 20px;
             font-weight: 700;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .content-title i {
+        .section-title i {
             color: var(--primary);
         }
 
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
+        /* Cards */
+        .card {
             background: var(--card-bg);
+            backdrop-filter: blur(20px);
             border-radius: 16px;
             padding: 20px;
+            margin-bottom: 16px;
             border: 1px solid var(--glass);
+            transition: all 0.3s ease;
         }
 
-        .stat-card-header {
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Event Card */
+        .event-card {
+            cursor: pointer;
+        }
+
+        .event-header {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            gap: 16px;
             margin-bottom: 12px;
         }
 
-        .stat-icon {
-            width: 48px;
-            height: 48px;
+        .event-image {
+            width: 80px;
+            height: 80px;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
+            object-fit: cover;
+            background: var(--dark);
         }
 
-        .stat-icon.primary {
-            background: rgba(99, 102, 241, 0.2);
+        .event-info {
+            flex: 1;
+        }
+
+        .event-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--gray-light);
+        }
+
+        .event-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-meta i {
             color: var(--primary);
         }
 
-        .stat-icon.success {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
-        }
-
-        .stat-icon.warning {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-        }
-
-        .stat-icon.danger {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-        }
-
-        .stat-icon.secondary {
-            background: rgba(139, 92, 246, 0.2);
-            color: var(--secondary);
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-        }
-
-        .stat-label {
+        .event-description {
             font-size: 14px;
             color: var(--gray-light);
+            line-height: 1.5;
+            margin-top: 12px;
         }
 
-        /* Data Table */
-        .data-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            border: 1px solid var(--glass);
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-
-        .data-card-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--glass);
+        .event-tags {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 8px;
+            margin-top: 12px;
         }
 
-        .data-card-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .data-card-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .search-input {
-            padding: 10px 16px;
+        .event-tag {
+            padding: 4px 10px;
             background: var(--dark);
-            border: 1px solid var(--glass);
-            border-radius: 10px;
-            color: var(--white);
-            font-size: 14px;
-            width: 200px;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 16px 20px;
-            text-align: left;
-            border-bottom: 1px solid var(--glass);
-        }
-
-        .data-table th {
-            background: var(--dark);
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            color: var(--gray-light);
-        }
-
-        .data-table tr:hover {
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        .data-table img {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-
-        /* Mobile Table */
-        @media (max-width: 768px) {
-            .data-table thead {
-                display: none;
-            }
-
-            .data-table tr {
-                display: block;
-                margin-bottom: 16px;
-                background: var(--dark);
-                border-radius: 12px;
-                padding: 16px;
-            }
-
-            .data-table td {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 8px 0;
-                border-bottom: 1px solid var(--glass);
-            }
-
-            .data-table td:last-child {
-                border-bottom: none;
-            }
-
-            .data-table td::before {
-                content: attr(data-label);
-                font-weight: 600;
-                color: var(--gray-light);
-                font-size: 12px;
-                text-transform: uppercase;
-            }
-        }
-
-        /* User Item */
-        .user-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-item img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .user-item-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-item-name {
-            font-weight: 500;
-        }
-
-        .user-item-email {
-            font-size: 12px;
-            color: var(--gray-light);
-        }
-
-        /* Status Badge */
-        .status-badge {
-            padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: 500;
+            color: var(--primary);
+            border: 1px solid var(--primary);
         }
 
-        .status-badge.active {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
+        /* User Badge */
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .status-badge.pending {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
+        .user-badge img {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            object-fit: cover;
         }
 
-        .status-badge.inactive {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
+        .badge-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            object-fit: cover;
         }
 
-        /* Action Buttons */
-        .action-btns {
+        .user-badges {
+            display: inline-flex;
+            gap: 4px;
+            margin-left: 6px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
             display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            border-top: 1px solid var(--glass);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Profile Section */
+        .profile-header {
+            text-align: center;
+            padding: 24px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--glass);
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 8px;
             flex-wrap: wrap;
         }
 
-        .action-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+        .profile-username {
+            font-size: 14px;
+            color: var(--gray-light);
+            margin-bottom: 8px;
         }
 
-        .action-btn.edit {
-            background: rgba(99, 102, 241, 0.2);
+        .profile-bio {
+            font-size: 14px;
+            color: var(--gray-light);
+            margin-bottom: 16px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
             color: var(--primary);
         }
 
-        .action-btn.delete {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
+        .stat-label {
+            font-size: 12px;
+            color: var(--gray-light);
         }
 
-        .action-btn.view {
-            background: rgba(6, 182, 212, 0.2);
-            color: var(--accent);
+        /* Badge Selector */
+        .badge-selector {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--glass);
         }
 
-        .action-btn.approve {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
+        .badge-selector-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
 
-        .action-btn:hover {
-            transform: scale(1.1);
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px;
+            background: var(--dark);
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .badge-item:hover {
+            border-color: var(--primary);
+        }
+
+        .badge-item.selected {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .badge-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .badge-item span {
+            font-size: 11px;
+            color: var(--gray-light);
+            text-align: center;
+            max-width: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Clubs Section */
+        .club-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            border: 1px solid var(--glass);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .club-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+        }
+
+        .club-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .club-content {
+            padding: 16px;
+        }
+
+        .club-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .club-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .club-description {
+            font-size: 14px;
+            color: var(--gray-light);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .club-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--gray-light);
+        }
+
+        .club-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .club-meta i {
+            color: var(--primary);
+        }
+
+        /* Club Detail Page */
+        .club-detail-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--dark);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .club-detail-header {
+            position: relative;
+            height: 200px;
+        }
+
+        .club-detail-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .club-detail-back {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            cursor: pointer;
+            border: none;
+        }
+
+        .club-detail-info {
+            padding: 20px;
+            margin-top: -40px;
+            position: relative;
+        }
+
+        .club-detail-badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 3px solid var(--dark);
+            margin-bottom: 12px;
+        }
+
+        .club-detail-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .club-detail-description {
+            font-size: 14px;
+            color: var(--gray-light);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .club-detail-stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .club-detail-stats span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: var(--gray-light);
+        }
+
+        .club-detail-stats i {
+            color: var(--primary);
+        }
+
+        .club-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 0 20px;
+            overflow-x: auto;
+        }
+
+        .club-tab {
+            padding: 10px 20px;
+            background: var(--dark-light);
+            border: 1px solid var(--glass);
+            border-radius: 20px;
+            color: var(--gray-light);
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .club-tab.active {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        .club-content-area {
+            padding: 0 20px 100px;
+        }
+
+        /* Chat Area */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 400px);
+            min-height: 300px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: var(--dark-light);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .chat-message {
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .chat-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .chat-username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .chat-time {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .chat-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--gray-light);
+            margin-left: 46px;
+        }
+
+        .chat-media {
+            margin-left: 46px;
+            margin-top: 8px;
+        }
+
+        .chat-media img {
+            max-width: 200px;
+            border-radius: 12px;
+        }
+
+        .chat-media a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--dark);
+            border-radius: 10px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .chat-input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--dark);
+            border-radius: 16px;
+            padding: 12px;
+        }
+
+        .chat-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--white);
+            font-size: 14px;
+            resize: none;
+            min-height: 40px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+        }
+
+        .chat-attachments {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-attachment-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--dark-light);
+            border: none;
+            color: var(--gray-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-attachment-btn:hover {
+            color: var(--primary);
+        }
+
+        .chat-send-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: var(--white);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Event Detail Page */
+        .event-detail-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--dark);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .event-detail-header {
+            position: relative;
+            height: 250px;
+        }
+
+        .event-detail-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .event-detail-back {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            cursor: pointer;
+            border: none;
+        }
+
+        .event-detail-content {
+            padding: 24px;
+            margin-top: -40px;
+            position: relative;
+            background: linear-gradient(to bottom, transparent, var(--dark) 40px);
+        }
+
+        .event-detail-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .event-detail-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .event-detail-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--gray-light);
+        }
+
+        .event-detail-meta-item i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .event-detail-description {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--gray-light);
+            margin-bottom: 24px;
+        }
+
+        .event-join-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            margin-bottom: 24px;
+        }
+
+        .event-join-btn.joined {
+            background: linear-gradient(135deg, var(--success), #059669);
+        }
+
+        .event-participants {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--glass);
+        }
+
+        .event-participants-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .event-participants-count {
+            background: var(--primary);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .event-participants-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .event-participant {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--dark);
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .event-participant img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Questions Section */
+        .event-questions {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 100px;
+            border: 1px solid var(--glass);
+        }
+
+        .event-questions-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .question-input-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .question-input-container input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--dark);
+            border: 1px solid var(--glass);
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 14px;
+        }
+
+        .question-input-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .question-input-container button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: var(--white);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .question-item {
+            padding: 16px;
+            background: var(--dark);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .question-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .question-user {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .question-time {
+            font-size: 12px;
+            color: var(--gray);
+            margin-left: auto;
+        }
+
+        .question-text {
+            font-size: 14px;
+            color: var(--gray-light);
+            line-height: 1.5;
+        }
+
+        .question-answer {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 10px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .question-answer-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .question-answer-text {
+            font-size: 14px;
+            color: var(--gray-light);
+        }
+
+        /* Members List */
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--dark);
+            border-radius: 12px;
+        }
+
+        .member-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .member-role {
+            font-size: 12px;
+            color: var(--gray-light);
+        }
+
+        .member-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .member-badge.owner {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .member-badge.moderator {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
         }
 
         /* Modal */
@@ -643,7 +1263,7 @@
             bottom: 0;
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(5px);
-            z-index: 1000;
+            z-index: 3000;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -653,7 +1273,7 @@
             background: var(--dark-light);
             border-radius: 20px;
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
             border: 1px solid var(--glass);
@@ -698,7 +1318,7 @@
         .image-upload-container {
             position: relative;
             width: 100%;
-            height: 150px;
+            height: 120px;
             background: var(--dark);
             border: 2px dashed var(--glass);
             border-radius: 12px;
@@ -716,13 +1336,13 @@
         }
 
         .image-upload-container i {
-            font-size: 32px;
+            font-size: 28px;
             color: var(--gray);
             margin-bottom: 8px;
         }
 
         .image-upload-container span {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--gray);
         }
 
@@ -735,137 +1355,57 @@
             object-fit: cover;
         }
 
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        /* Notifications Panel */
+        .notifications-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 380px;
+            height: 100%;
+            background: var(--dark-light);
+            z-index: 2000;
+            overflow-y: auto;
+            animation: slideInRight 0.3s ease;
         }
 
-        .tab {
-            padding: 10px 20px;
-            background: var(--dark);
-            border: 1px solid var(--glass);
-            border-radius: 10px;
-            color: var(--gray-light);
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
         }
 
-        .tab:hover {
-            border-color: var(--primary);
-        }
-
-        .tab.active {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-        }
-
-        /* Club Item */
-        .club-item {
+        .notifications-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass);
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 16px;
+            justify-content: space-between;
+        }
+
+        .notification-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--glass);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .notification-item:hover {
             background: var(--dark);
-            border-radius: 12px;
-            margin-bottom: 12px;
         }
 
-        .club-item img {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            object-fit: cover;
+        .notification-item.unread {
+            background: rgba(99, 102, 241, 0.1);
         }
 
-        .club-item-info {
-            flex: 1;
-        }
-
-        .club-item-name {
-            font-weight: 600;
+        .notification-content {
+            font-size: 14px;
             margin-bottom: 4px;
         }
 
-        .club-item-stats {
-            font-size: 13px;
-            color: var(--gray-light);
-        }
-
-        .club-item-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        /* Question Item */
-        .question-card {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .question-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .question-header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .question-user {
-            font-weight: 600;
-        }
-
-        .question-event {
+        .notification-time {
             font-size: 12px;
-            color: var(--primary);
-        }
-
-        .question-text {
-            font-size: 14px;
-            color: var(--gray-light);
-            margin-bottom: 12px;
-            line-height: 1.5;
-        }
-
-        .question-answer-input {
-            display: flex;
-            gap: 12px;
-        }
-
-        .question-answer-input input {
-            flex: 1;
-            padding: 10px 16px;
-            background: var(--dark-light);
-            border: 1px solid var(--glass);
-            border-radius: 10px;
-            color: var(--white);
-            font-size: 14px;
-        }
-
-        .question-answer-input input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        /* Page Sections */
-        .page-section {
-            display: none;
-        }
-
-        .page-section.active {
-            display: block;
+            color: var(--gray);
         }
 
         /* Toast */
@@ -873,11 +1413,11 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 2000;
+            z-index: 5000;
         }
 
         .toast {
-            padding: 16px 20px;
+            padding: 14px 20px;
             background: var(--dark-light);
             border-radius: 12px;
             border: 1px solid var(--glass);
@@ -886,6 +1426,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            min-width: 280px;
         }
 
         @keyframes slideIn {
@@ -911,30 +1452,10 @@
             border-left: 4px solid var(--primary);
         }
 
-        /* Mobile Menu Button */
-        .mobile-menu-btn {
-            display: none;
-            width: 40px;
-            height: 40px;
-            background: var(--dark);
-            border: 1px solid var(--glass);
-            border-radius: 10px;
-            color: var(--white);
-            cursor: pointer;
-        }
-
-        @media (max-width: 1024px) {
-            .mobile-menu-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-        }
-
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 60px 24px;
+            padding: 40px 24px;
         }
 
         .empty-state i {
@@ -958,6 +1479,56 @@
         .hidden {
             display: none !important;
         }
+
+        /* Club Settings */
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--dark);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .setting-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .setting-info p {
+            font-size: 12px;
+            color: var(--gray-light);
+        }
+
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 24px;
+            }
+
+            .profile-stats {
+                gap: 20px;
+            }
+
+            .event-detail-header {
+                height: 200px;
+            }
+
+            .club-tabs {
+                padding: 0 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -965,19 +1536,24 @@
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="login-logo">
-                <i class="fas fa-shield-alt"></i>
-                <h1>LENG Admin</h1>
-                <p>Admin paneline erisim</p>
+                <i class="fas fa-graduation-cap"></i>
+                <h1>LENG</h1>
             </div>
 
-            <form onsubmit="handleAdminLogin(event)">
+            <div class="login-tabs">
+                <button class="login-tab active" onclick="switchLoginTab('login')">Giris Yap</button>
+                <button class="login-tab" onclick="switchLoginTab('register')">Kayit Ol</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label>E-posta</label>
-                    <input type="email" id="adminEmail" placeholder="admin@example.com" required>
+                    <input type="email" id="loginEmail" placeholder="ornek@stu.thk.edu.tr" required>
                 </div>
                 <div class="form-group">
                     <label>Sifre</label>
-                    <input type="password" id="adminPassword" placeholder="Sifrenizi girin" required>
+                    <input type="password" id="loginPassword" placeholder="Sifrenizi girin" required>
                 </div>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-sign-in-alt"></i>
@@ -985,393 +1561,468 @@
                 </button>
             </form>
 
+            <!-- Register Form -->
+            <form id="registerForm" style="display: none;" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Ad Soyad</label>
+                    <input type="text" id="registerName" placeholder="Adiniz Soyadiniz" required>
+                </div>
+                <div class="form-group">
+                    <label>Kullanici Adi</label>
+                    <input type="text" id="registerUsername" placeholder="kullanici_adi" required>
+                </div>
+                <div class="form-group">
+                    <label>E-posta (Sadece @stu.thk.edu.tr)</label>
+                    <input type="email" id="registerEmail" placeholder="ornek@stu.thk.edu.tr" required>
+                </div>
+                <div class="form-group">
+                    <label>Sifre</label>
+                    <input type="password" id="registerPassword" placeholder="En az 6 karakter" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Bolum</label>
+                    <select id="registerDepartment" required>
+                        <option value="">Bolum Secin</option>
+                        <option value="Bilgisayar Muhendisligi">Bilgisayar Muhendisligi</option>
+                        <option value="Elektrik-Elektronik Muhendisligi">Elektrik-Elektronik Muhendisligi</option>
+                        <option value="Makine Muhendisligi">Makine Muhendisligi</option>
+                        <option value="Insaat Muhendisligi">Insaat Muhendisligi</option>
+                        <option value="Endustri Muhendisligi">Endustri Muhendisligi</option>
+                        <option value="Isletme">Isletme</option>
+                        <option value="Ekonomi">Ekonomi</option>
+                        <option value="Hukuk">Hukuk</option>
+                        <option value="Psikoloji">Psikoloji</option>
+                        <option value="Sosyoloji">Sosyoloji</option>
+                        <option value="Tip">Tip</option>
+                        <option value="Mimarlik">Mimarlik</option>
+                        <option value="Diger">Diger</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Kayit Ol
+                </button>
+            </form>
+
             <div class="divider">
                 <span>veya</span>
             </div>
 
-            <button class="btn btn-google" onclick="handleGoogleAdminLogin()">
+            <button class="btn btn-google" onclick="handleGoogleLogin()">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
                 Google ile Giris Yap
             </button>
         </div>
     </div>
 
-    <!-- Admin Container -->
-    <div class="admin-container" id="adminContainer">
+    <!-- Main App Container -->
+    <div class="app-container" id="appContainer">
         <!-- Header -->
-        <header class="admin-header">
-            <div class="admin-logo">
-                <button class="mobile-menu-btn" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <i class="fas fa-shield-alt"></i>
-                <span>LENG Admin</span>
+        <header class="header">
+            <div class="header-logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>LENG</span>
             </div>
-            <div class="admin-user">
-                <span id="adminName">Admin</span>
-                <button class="btn btn-small btn-danger" onclick="handleLogout()">
+            <div class="header-actions">
+                <button class="header-btn" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge hidden" id="notificationBadge">0</span>
+                </button>
+                <button class="header-btn" onclick="handleLogout()">
                     <i class="fas fa-sign-out-alt"></i>
-                    Cikis
                 </button>
             </div>
         </header>
 
-        <div class="admin-body">
-            <!-- Sidebar Overlay -->
-            <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        <!-- Content -->
+        <div class="content">
+            <!-- Home Page -->
+            <div class="page active" id="page-home">
+                <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Etkinlikler</h2>
+                <div id="eventsContainer"></div>
+            </div>
 
-            <!-- Sidebar -->
-            <aside class="admin-sidebar" id="adminSidebar">
-                <ul class="sidebar-menu">
-                    <li class="sidebar-item active" onclick="switchSection('dashboard')">
-                        <i class="fas fa-home"></i>
-                        <span>Dashboard</span>
-                    </li>
-                    <li class="sidebar-item" onclick="switchSection('users')">
-                        <i class="fas fa-users"></i>
-                        <span>Kullanicilar</span>
-                    </li>
-                    <li class="sidebar-item" onclick="switchSection('events')">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Etkinlikler</span>
-                    </li>
-                    <li class="sidebar-item" onclick="switchSection('clubs')">
-                        <i class="fas fa-users-cog"></i>
-                        <span>Kulupler</span>
-                    </li>
-                    <li class="sidebar-item" onclick="switchSection('creators')">
-                        <i class="fas fa-user-check"></i>
-                        <span>Kulup Izinleri</span>
-                    </li>
-                    <li class="sidebar-item" onclick="switchSection('questions')">
-                        <i class="fas fa-question-circle"></i>
-                        <span>Sorular</span>
-                        <span class="sidebar-badge hidden" id="questionsBadge">0</span>
-                    </li>
-                    <li class="sidebar-item" onclick="switchSection('notifications')">
-                        <i class="fas fa-bell"></i>
-                        <span>Bildirimler</span>
-                    </li>
-                </ul>
-            </aside>
+            <!-- Clubs Page -->
+            <div class="page" id="page-clubs">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                    <h2 class="section-title" style="margin-bottom: 0;"><i class="fas fa-users"></i> Kulupler</h2>
+                    <button class="btn btn-primary btn-small hidden" id="createClubBtn" onclick="openCreateClubModal()">
+                        <i class="fas fa-plus"></i>
+                        Kulup Olustur
+                    </button>
+                </div>
+                <div id="clubsContainer"></div>
+            </div>
 
-            <!-- Main Content -->
-            <main class="admin-content">
-                <!-- Dashboard Section -->
-                <section class="page-section active" id="section-dashboard">
-                    <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-chart-line"></i> Dashboard</h1>
-                    </div>
-
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <div class="stat-icon primary">
-                                    <i class="fas fa-users"></i>
-                                </div>
+            <!-- Chat Page -->
+            <div class="page" id="page-chat">
+                <h2 class="section-title"><i class="fas fa-comments"></i> Genel Sohbet</h2>
+                <div class="chat-container">
+                    <div class="chat-messages" id="generalChatMessages"></div>
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <textarea class="chat-input" id="generalChatInput" placeholder="Mesajinizi yazin..." rows="1"></textarea>
+                            <div class="chat-attachments">
+                                <button class="chat-attachment-btn" onclick="document.getElementById('generalChatImageInput').click()">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <input type="file" id="generalChatImageInput" accept="image/*" style="display: none;" onchange="handleGeneralChatImage(event)">
                             </div>
-                            <div class="stat-value" id="statUsers">0</div>
-                            <div class="stat-label">Toplam Kullanici</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <div class="stat-icon success">
-                                    <i class="fas fa-calendar-check"></i>
-                                </div>
-                            </div>
-                            <div class="stat-value" id="statEvents">0</div>
-                            <div class="stat-label">Toplam Etkinlik</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <div class="stat-icon warning">
-                                    <i class="fas fa-users-cog"></i>
-                                </div>
-                            </div>
-                            <div class="stat-value" id="statClubs">0</div>
-                            <div class="stat-label">Toplam Kulup</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <div class="stat-icon danger">
-                                    <i class="fas fa-question-circle"></i>
-                                </div>
-                            </div>
-                            <div class="stat-value" id="statQuestions">0</div>
-                            <div class="stat-label">Bekleyen Soru</div>
-                        </div>
-                    </div>
-
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            <h3 class="data-card-title">Son Kayit Olan Kullanicilar</h3>
-                        </div>
-                        <div id="recentUsersContainer" style="padding: 20px;"></div>
-                    </div>
-                </section>
-
-                <!-- Users Section -->
-                <section class="page-section" id="section-users">
-                    <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-users"></i> Kullanicilar</h1>
-                    </div>
-
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            <h3 class="data-card-title">Tum Kullanicilar</h3>
-                            <input type="text" class="search-input" placeholder="Kullanici ara..." id="userSearchInput" oninput="filterUsers()">
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Kullanici</th>
-                                        <th>Bolum</th>
-                                        <th>Kulup Olusturma</th>
-                                        <th>Kayit Tarihi</th>
-                                        <th>Islemler</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="usersTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Events Section -->
-                <section class="page-section" id="section-events">
-                    <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-calendar-alt"></i> Etkinlikler</h1>
-                        <button class="btn btn-primary btn-small" onclick="openEventModal()">
-                            <i class="fas fa-plus"></i>
-                            Yeni Etkinlik
+                        <button class="chat-send-btn" onclick="sendGeneralChatMessage()">
+                            <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
+                </div>
+            </div>
 
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            <h3 class="data-card-title">Tum Etkinlikler</h3>
+            <!-- Profile Page -->
+            <div class="page" id="page-profile">
+                <div class="profile-header">
+                    <img src="https://via.placeholder.com/100" alt="Profil" class="profile-avatar" id="profileAvatar">
+                    <h2 class="profile-name" id="profileName">Kullanici</h2>
+                    <p class="profile-username" id="profileUsername">@kullanici</p>
+                    <p class="profile-bio" id="profileBio">Bio eklenmemis</p>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="profileEventsCount">0</div>
+                            <div class="stat-label">Etkinlik</div>
                         </div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Gorsel</th>
-                                        <th>Baslik</th>
-                                        <th>Tarih</th>
-                                        <th>Konum</th>
-                                        <th>Katilimci</th>
-                                        <th>Islemler</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="eventsTableBody"></tbody>
-                            </table>
+                        <div class="stat-item">
+                            <div class="stat-value" id="profileClubsCount">0</div>
+                            <div class="stat-label">Kulup</div>
                         </div>
-                    </div>
-                </section>
-
-                <!-- Clubs Section -->
-                <section class="page-section" id="section-clubs">
-                    <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-users-cog"></i> Kulupler</h1>
-                    </div>
-
-                    <div class="tabs">
-                        <button class="tab active" onclick="switchClubTab('all')">Tum Kulupler</button>
-                        <button class="tab" onclick="switchClubTab('badges')">Rozetler</button>
-                    </div>
-
-                    <!-- All Clubs -->
-                    <div id="clubsTab-all">
-                        <div class="data-card">
-                            <div class="data-card-header">
-                                <h3 class="data-card-title">Kulup Listesi</h3>
-                                <input type="text" class="search-input" placeholder="Kulup ara..." id="clubSearchInput" oninput="filterClubs()">
-                            </div>
-                            <div id="clubsListContainer" style="padding: 20px;"></div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="profileBadgesCount">0</div>
+                            <div class="stat-label">Rozet</div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Badges -->
-                    <div id="clubsTab-badges" style="display: none;">
-                        <div class="data-card">
-                            <div class="data-card-header">
-                                <h3 class="data-card-title">Kulup Rozetleri</h3>
-                            </div>
-                            <div id="badgesListContainer" style="padding: 20px;"></div>
-                        </div>
-                    </div>
-                </section>
+                <button class="btn btn-secondary" onclick="openEditProfile()" style="margin-bottom: 16px;">
+                    <i class="fas fa-edit"></i>
+                    Profili Duzenle
+                </button>
 
-                <!-- Club Creators Section -->
-                <section class="page-section" id="section-creators">
-                    <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-user-check"></i> Kulup Olusturma Izinleri</h1>
-                    </div>
+                <!-- Badge Selector -->
+                <div class="badge-selector">
+                    <h3 class="badge-selector-title">Aktif Rozetlerim (Max 3)</h3>
+                    <div class="badge-list" id="activeBadgesList"></div>
+                </div>
 
-                    <div class="tabs">
-                        <button class="tab active" onclick="switchCreatorTab('approved')">Onaylilar</button>
-                        <button class="tab" onclick="switchCreatorTab('pending')">Bekleyenler</button>
-                        <button class="tab" onclick="switchCreatorTab('all')">Tum Kullanicilar</button>
-                    </div>
+                <div class="badge-selector">
+                    <h3 class="badge-selector-title">Tum Rozetlerim</h3>
+                    <div class="badge-list" id="myBadgesList"></div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Approved Creators -->
-                    <div id="creatorsTab-approved">
-                        <div class="data-card">
-                            <div class="data-card-header">
-                                <h3 class="data-card-title">Kulup Olusturma Yetkisi Olanlar</h3>
-                            </div>
-                            <div id="approvedCreatorsContainer" style="padding: 20px;"></div>
-                        </div>
-                    </div>
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="navigateTo('home')">
+                <i class="fas fa-home"></i>
+                <span>Ana Sayfa</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('clubs')">
+                <i class="fas fa-users"></i>
+                <span>Kulupler</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('chat')">
+                <i class="fas fa-comments"></i>
+                <span>Sohbet</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('profile')">
+                <i class="fas fa-user"></i>
+                <span>Profil</span>
+            </div>
+        </nav>
+    </div>
 
-                    <!-- Pending Requests -->
-                    <div id="creatorsTab-pending" style="display: none;">
-                        <div class="data-card">
-                            <div class="data-card-header">
-                                <h3 class="data-card-title">Bekleyen Talepler</h3>
-                            </div>
-                            <div id="pendingCreatorsContainer" style="padding: 20px;"></div>
-                        </div>
-                    </div>
+    <!-- Event Detail Page -->
+    <div class="event-detail-page" id="eventDetailPage">
+        <div class="event-detail-header">
+            <img src="" alt="" class="event-detail-image" id="eventDetailImage">
+            <button class="event-detail-back" onclick="closeEventDetail()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        <div class="event-detail-content">
+            <h1 class="event-detail-title" id="eventDetailTitle">Etkinlik Adi</h1>
+            <div class="event-detail-meta">
+                <div class="event-detail-meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span id="eventDetailDate">Tarih</span>
+                </div>
+                <div class="event-detail-meta-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="eventDetailTime">Saat</span>
+                </div>
+                <div class="event-detail-meta-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="eventDetailLocation">Konum</span>
+                </div>
+                <div class="event-detail-meta-item">
+                    <i class="fas fa-user"></i>
+                    <span id="eventDetailOrganizer">Organizator</span>
+                </div>
+            </div>
+            <p class="event-detail-description" id="eventDetailDescription">Etkinlik aciklamasi</p>
+            
+            <button class="event-join-btn" id="eventJoinBtn" onclick="toggleEventParticipation()">Etkinlige Katil</button>
 
-                    <!-- All Users -->
-                    <div id="creatorsTab-all" style="display: none;">
-                        <div class="data-card">
-                            <div class="data-card-header">
-                                <h3 class="data-card-title">Tum Kullanicilar</h3>
-                                <input type="text" class="search-input" placeholder="Kullanici ara..." id="creatorSearchInput" oninput="filterCreators()">
-                            </div>
-                            <div id="allCreatorsContainer" style="padding: 20px;"></div>
-                        </div>
-                    </div>
-                </section>
+            <div class="event-participants">
+                <h3 class="event-participants-title">
+                    Katilimcilar
+                    <span class="event-participants-count" id="eventParticipantsCount">0</span>
+                </h3>
+                <div class="event-participants-list" id="eventParticipantsList"></div>
+            </div>
 
-                <!-- Questions Section -->
-                <section class="page-section" id="section-questions">
-                    <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-question-circle"></i> Etkinlik Sorulari</h1>
-                    </div>
-
-                    <div class="tabs">
-                        <button class="tab active" onclick="switchQuestionTab('unanswered')">Cevaplanmamis</button>
-                        <button class="tab" onclick="switchQuestionTab('answered')">Cevaplanan</button>
-                    </div>
-
-                    <div id="questionsTab-unanswered">
-                        <div id="unansweredQuestionsContainer"></div>
-                    </div>
-
-                    <div id="questionsTab-answered" style="display: none;">
-                        <div id="answeredQuestionsContainer"></div>
-                    </div>
-                </section>
-
-                <!-- Notifications Section -->
-                <section class="page-section" id="section-notifications">
-                    <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-bell"></i> Bildirim Gonder</h1>
-                    </div>
-
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            <h3 class="data-card-title">Toplu Bildirim</h3>
-                        </div>
-                        <div style="padding: 20px;">
-                            <div class="form-group">
-                                <label>Bildirim Basligi</label>
-                                <input type="text" id="notificationTitle" placeholder="Bildirim basligi">
-                            </div>
-                            <div class="form-group">
-                                <label>Bildirim Mesaji</label>
-                                <textarea id="notificationMessage" rows="4" placeholder="Bildirim mesaji"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Hedef Kitle</label>
-                                <select id="notificationTarget">
-                                    <option value="all">Tum Kullanicilar</option>
-                                    <option value="clubOwners">Kulup Sahipleri</option>
-                                    <option value="eventParticipants">Etkinlik Katilimcilari</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-primary" onclick="sendMassNotification()">
-                                <i class="fas fa-paper-plane"></i>
-                                Bildirim Gonder
-                            </button>
-                        </div>
-                    </div>
-                </section>
-            </main>
+            <div class="event-questions">
+                <h3 class="event-questions-title">Soru-Cevap</h3>
+                <div class="question-input-container">
+                    <input type="text" id="eventQuestionInput" placeholder="Soru sorun...">
+                    <button onclick="askEventQuestion()">Gonder</button>
+                </div>
+                <div id="eventQuestionsList"></div>
+            </div>
         </div>
     </div>
 
-    <!-- Event Modal -->
-    <div class="modal-overlay" id="eventModal">
+    <!-- Club Detail Page -->
+    <div class="club-detail-page" id="clubDetailPage">
+        <div class="club-detail-header">
+            <img src="" alt="" class="club-detail-cover" id="clubDetailCover">
+            <button class="club-detail-back" onclick="closeClubDetail()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        <div class="club-detail-info">
+            <img src="" alt="" class="club-detail-badge" id="clubDetailBadge">
+            <h1 class="club-detail-title" id="clubDetailTitle">Kulup Adi</h1>
+            <p class="club-detail-description" id="clubDetailDescription">Kulup aciklamasi</p>
+            <div class="club-detail-stats">
+                <span><i class="fas fa-users"></i> <span id="clubMemberCount">0</span> uye</span>
+                <span><i class="fas fa-crown"></i> <span id="clubOwnerName">Sahip</span></span>
+            </div>
+            <button class="btn btn-primary" id="clubJoinBtn" onclick="toggleClubMembership()" style="margin-bottom: 20px;">Kulube Katil</button>
+        </div>
+
+        <div class="club-tabs">
+            <button class="club-tab active" onclick="switchClubTab('announcements')">Duyurular</button>
+            <button class="club-tab" onclick="switchClubTab('chat')">Sohbet</button>
+            <button class="club-tab" onclick="switchClubTab('members')">Uyeler</button>
+            <button class="club-tab" onclick="switchClubTab('settings')" id="clubSettingsTab" style="display: none;">Ayarlar</button>
+        </div>
+
+        <div class="club-content-area">
+            <!-- Announcements Tab -->
+            <div class="club-tab-content" id="clubTab-announcements">
+                <div class="chat-container">
+                    <div class="chat-messages" id="clubAnnouncementsMessages"></div>
+                    <div class="chat-input-container" id="announcementInputContainer" style="display: none;">
+                        <div class="chat-input-wrapper">
+                            <textarea class="chat-input" id="announcementInput" placeholder="Duyuru yazin..." rows="1"></textarea>
+                            <div class="chat-attachments">
+                                <button class="chat-attachment-btn" onclick="document.getElementById('announcementImageInput').click()">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button class="chat-attachment-btn" onclick="document.getElementById('announcementFileInput').click()">
+                                    <i class="fas fa-file"></i>
+                                </button>
+                                <input type="file" id="announcementImageInput" accept="image/*" style="display: none;" onchange="handleAnnouncementImage(event)">
+                                <input type="file" id="announcementFileInput" style="display: none;" onchange="handleAnnouncementFile(event)">
+                            </div>
+                        </div>
+                        <button class="chat-send-btn" onclick="sendAnnouncement()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Tab -->
+            <div class="club-tab-content" id="clubTab-chat" style="display: none;">
+                <div class="chat-container">
+                    <div class="chat-messages" id="clubChatMessages"></div>
+                    <div class="chat-input-container" id="clubChatInputContainer" style="display: none;">
+                        <div class="chat-input-wrapper">
+                            <textarea class="chat-input" id="clubChatInput" placeholder="Mesaj yazin..." rows="1"></textarea>
+                            <div class="chat-attachments">
+                                <button class="chat-attachment-btn" onclick="document.getElementById('clubChatImageInput').click()">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button class="chat-attachment-btn" onclick="document.getElementById('clubChatFileInput').click()">
+                                    <i class="fas fa-file"></i>
+                                </button>
+                                <input type="file" id="clubChatImageInput" accept="image/*" style="display: none;" onchange="handleClubChatImage(event)">
+                                <input type="file" id="clubChatFileInput" style="display: none;" onchange="handleClubChatFile(event)">
+                            </div>
+                        </div>
+                        <button class="chat-send-btn" onclick="sendClubChatMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members Tab -->
+            <div class="club-tab-content" id="clubTab-members" style="display: none;">
+                <div class="members-list" id="clubMembersList"></div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="club-tab-content" id="clubTab-settings" style="display: none;">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Sohbet Rengi</h4>
+                        <p>Kulup sohbetindeki mesaj rengi</p>
+                    </div>
+                    <input type="color" class="color-picker" id="clubChatColorPicker" onchange="updateClubChatColor()">
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Kulup Rozeti</h4>
+                        <p>Uyeler bu rozeti alacak</p>
+                    </div>
+                    <button class="btn btn-small btn-secondary" onclick="document.getElementById('clubBadgeInput').click()">
+                        <i class="fas fa-upload"></i>
+                        Yukle
+                    </button>
+                    <input type="file" id="clubBadgeInput" accept="image/*" style="display: none;" onchange="uploadClubBadge(event)">
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Kapak Fotografii</h4>
+                        <p>Kulup kapak gorseli</p>
+                    </div>
+                    <button class="btn btn-small btn-secondary" onclick="document.getElementById('clubCoverInput').click()">
+                        <i class="fas fa-image"></i>
+                        Degistir
+                    </button>
+                    <input type="file" id="clubCoverInput" accept="image/*" style="display: none;" onchange="uploadClubCover(event)">
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Moderator Ekle</h4>
+                        <p>Duyuru yetkisi ver</p>
+                    </div>
+                    <button class="btn btn-small btn-primary" onclick="openAddModeratorModal()">
+                        <i class="fas fa-user-plus"></i>
+                        Ekle
+                    </button>
+                </div>
+
+                <h3 style="margin: 20px 0 12px; font-size: 16px;">Moderatorler</h3>
+                <div class="members-list" id="clubModeratorsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel" id="notificationsPanel">
+        <div class="notifications-header">
+            <h3>Bildirimler</h3>
+            <button class="modal-close" onclick="toggleNotifications()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="notificationsList"></div>
+    </div>
+
+    <!-- Create Club Modal -->
+    <div class="modal-overlay" id="createClubModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title" id="eventModalTitle">Yeni Etkinlik</h3>
-                <button class="modal-close" onclick="closeEventModal()">
+                <h3 class="modal-title">Yeni Kulup Olustur</h3>
+                <button class="modal-close" onclick="closeCreateClubModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Etkinlik Gorseli</label>
-                    <div class="image-upload-container" onclick="document.getElementById('eventImageInput').click()">
-                        <i class="fas fa-image"></i>
-                        <span>Gorsel Yukle</span>
-                        <img src="" alt="" class="image-upload-preview hidden" id="eventImagePreview">
-                        <input type="file" id="eventImageInput" accept="image/*" style="display: none;" onchange="previewEventImage(event)">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Etkinlik Adi</label>
-                    <input type="text" id="eventTitle" placeholder="Etkinlik adini girin">
+                    <label>Kulup Adi</label>
+                    <input type="text" id="newClubName" placeholder="Kulup adi">
                 </div>
                 <div class="form-group">
                     <label>Aciklama</label>
-                    <textarea id="eventDescription" rows="4" placeholder="Etkinlik aciklamasi"></textarea>
+                    <textarea id="newClubDescription" rows="3" placeholder="Kulup aciklamasi"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Tarih</label>
-                    <input type="date" id="eventDate">
+                    <label>Kapak Fotografii</label>
+                    <div class="image-upload-container" onclick="document.getElementById('newClubCoverInput').click()">
+                        <i class="fas fa-image"></i>
+                        <span>Kapak Yukle</span>
+                        <img src="" alt="" class="image-upload-preview hidden" id="newClubCoverPreview">
+                        <input type="file" id="newClubCoverInput" accept="image/*" style="display: none;" onchange="previewNewClubCover(event)">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Saat</label>
-                    <input type="time" id="eventTime">
-                </div>
-                <div class="form-group">
-                    <label>Konum</label>
-                    <input type="text" id="eventLocation" placeholder="Etkinlik konumu">
-                </div>
-                <div class="form-group">
-                    <label>Organizator</label>
-                    <input type="text" id="eventOrganizer" placeholder="Organizator adi">
+                    <label>Kulup Rozeti</label>
+                    <div class="image-upload-container" onclick="document.getElementById('newClubBadgeInput').click()">
+                        <i class="fas fa-medal"></i>
+                        <span>Rozet Yukle</span>
+                        <img src="" alt="" class="image-upload-preview hidden" id="newClubBadgePreview">
+                        <input type="file" id="newClubBadgeInput" accept="image/*" style="display: none;" onchange="previewNewClubBadge(event)">
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeEventModal()">Iptal</button>
-                <button class="btn btn-primary" onclick="saveEvent()">Kaydet</button>
+                <button class="btn btn-secondary" onclick="closeCreateClubModal()">Iptal</button>
+                <button class="btn btn-primary" onclick="createClub()">Olustur</button>
             </div>
         </div>
     </div>
 
-    <!-- Club Detail Modal -->
-    <div class="modal-overlay" id="clubDetailModal">
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" id="editProfileModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Kulup Detaylari</h3>
-                <button class="modal-close" onclick="closeClubDetailModal()">
+                <h3 class="modal-title">Profili Duzenle</h3>
+                <button class="modal-close" onclick="closeEditProfile()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body" id="clubDetailContent"></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Profil Fotografi</label>
+                    <div class="image-upload-container" onclick="document.getElementById('editAvatarInput').click()">
+                        <i class="fas fa-camera"></i>
+                        <span>Foto Yukle</span>
+                        <img src="" alt="" class="image-upload-preview hidden" id="editAvatarPreview">
+                        <input type="file" id="editAvatarInput" accept="image/*" style="display: none;" onchange="previewEditAvatar(event)">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ad Soyad</label>
+                    <input type="text" id="editName">
+                </div>
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea id="editBio" rows="3" placeholder="Kendinizden bahsedin"></textarea>
+                </div>
+            </div>
             <div class="modal-footer">
-                <button class="btn btn-danger" onclick="deleteCurrentClub()">
-                    <i class="fas fa-trash"></i>
-                    Kulubu Sil
+                <button class="btn btn-secondary" onclick="closeEditProfile()">Iptal</button>
+                <button class="btn btn-primary" onclick="saveProfile()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Moderator Modal -->
+    <div class="modal-overlay" id="addModeratorModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Moderator Ekle</h3>
+                <button class="modal-close" onclick="closeAddModeratorModal()">
+                    <i class="fas fa-times"></i>
                 </button>
-                <button class="btn btn-secondary" onclick="closeClubDetailModal()">Kapat</button>
+            </div>
+            <div class="modal-body">
+                <div class="members-list" id="addModeratorList"></div>
             </div>
         </div>
     </div>
@@ -1406,750 +2057,1277 @@
         const googleProvider = new firebase.auth.GoogleAuthProvider();
 
         // Global State
-        let currentAdmin = null;
-        let allUsers = [];
-        let allEvents = [];
-        let allClubs = [];
-        let allQuestions = [];
-        let editingEventId = null;
+        let currentUser = null;
+        let currentUserData = null;
+        let currentPage = 'home';
+        let currentEventId = null;
         let currentClubId = null;
+        let currentClubTab = 'announcements';
+        let pendingAnnouncementImage = null;
+        let pendingAnnouncementFile = null;
+        let pendingClubChatImage = null;
+        let pendingClubChatFile = null;
+        let pendingGeneralChatImage = null;
 
-        // Hardcoded admin email (always has access)
-        const HARDCODED_ADMIN = 'm.yusufertek@gmail.com';
-
-        // Auth State
+        // Auth State Observer
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Check if user is admin from database or hardcoded
-                const isAdmin = await checkAdminPermission(user.email);
+                currentUser = user;
                 
-                if (isAdmin) {
-                    currentAdmin = user;
-                    showAdmin();
-                    loadDashboardData();
-                    loadUsers();
-                    loadEvents();
-                    loadClubs();
-                    loadQuestions();
-                    loadClubCreators();
-                } else {
-                    showToast('Admin yetkisi bulunamadi!', 'error');
-                    auth.signOut();
-                    showLogin();
+                // Check if user exists in database
+                const userSnapshot = await db.ref('users/' + user.uid).once('value');
+                
+                if (!userSnapshot.exists()) {
+                    // Create user record for Google sign-in users
+                    await db.ref('users/' + user.uid).set({
+                        name: user.displayName || 'Kullanici',
+                        username: user.email.split('@')[0],
+                        email: user.email,
+                        department: '',
+                        avatar: user.photoURL || 'https://via.placeholder.com/100',
+                        bio: '',
+                        badges: {},
+                        activeBadges: {},
+                        clubs: {},
+                        events: {},
+                        canCreateClub: false,
+                        createdAt: Date.now()
+                    });
                 }
+                
+                await loadUserData();
+                showApp();
+                loadEvents();
+                loadClubs();
+                loadGeneralChat();
+                loadNotifications();
+                checkClubCreatorPermission();
             } else {
-                currentAdmin = null;
+                currentUser = null;
+                currentUserData = null;
                 showLogin();
             }
         });
 
-        // Check Admin Permission
-        async function checkAdminPermission(email) {
-            // Check hardcoded admin
-            if (email === HARDCODED_ADMIN) {
-                return true;
-            }
-
-            // Check from database
-            try {
-                const snapshot = await db.ref('admins').once('value');
-                if (snapshot.exists()) {
-                    const admins = snapshot.val();
-                    // Check if email exists in admins (as key or value)
-                    for (const key in admins) {
-                        if (admins[key] === email || admins[key].email === email || key === email.replace(/\./g, '_')) {
-                            return true;
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Admin check error:', error);
-            }
-            
-            return false;
-        }
-
-        // Show/Hide
+        // Show/Hide Functions
         function showLogin() {
             document.getElementById('loginContainer').style.display = 'flex';
-            document.getElementById('adminContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'none';
         }
 
-        function showAdmin() {
+        function showApp() {
             document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('adminContainer').style.display = 'block';
-            document.getElementById('adminName').textContent = currentAdmin.email;
+            document.getElementById('appContainer').style.display = 'flex';
         }
 
-        // Admin Login with Email/Password
-        async function handleAdminLogin(e) {
+        // Login Tab Switch
+        function switchLoginTab(tab) {
+            document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'login') {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+            }
+        }
+
+        // Handle Login
+        async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
 
             try {
                 await auth.signInWithEmailAndPassword(email, password);
+                showToast('Basariyla giris yapildi!', 'success');
             } catch (error) {
                 showToast('Giris hatasi: ' + error.message, 'error');
             }
         }
 
-        // Admin Login with Google
-        async function handleGoogleAdminLogin() {
+        // Handle Google Login
+        async function handleGoogleLogin() {
             try {
                 await auth.signInWithPopup(googleProvider);
+                showToast('Google ile giris yapildi!', 'success');
             } catch (error) {
                 showToast('Google giris hatasi: ' + error.message, 'error');
             }
         }
 
+        // Handle Register
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const department = document.getElementById('registerDepartment').value;
+
+            // Check if email ends with @stu.thk.edu.tr
+            if (!email.endsWith('@stu.thk.edu.tr')) {
+                showToast('Sadece @stu.thk.edu.tr uzantili mail adresleri kabul edilmektedir!', 'error');
+                return;
+            }
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                await db.ref('users/' + user.uid).set({
+                    name: name,
+                    username: username,
+                    email: email,
+                    department: department,
+                    avatar: 'https://via.placeholder.com/100',
+                    bio: '',
+                    badges: {},
+                    activeBadges: {},
+                    clubs: {},
+                    events: {},
+                    canCreateClub: false,
+                    createdAt: Date.now()
+                });
+
+                showToast('Kayit basarili!', 'success');
+            } catch (error) {
+                showToast('Kayit hatasi: ' + error.message, 'error');
+            }
+        }
+
+        // Handle Logout
         function handleLogout() {
             auth.signOut();
             showToast('Cikis yapildi', 'info');
         }
 
-        // Section Switch
-        function switchSection(section) {
-            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        // Load User Data
+        async function loadUserData() {
+            const snapshot = await db.ref('users/' + currentUser.uid).once('value');
+            currentUserData = snapshot.val();
+            updateProfileUI();
+        }
+
+        // Update Profile UI
+        function updateProfileUI() {
+            if (!currentUserData) return;
             
-            document.getElementById(`section-${section}`).classList.add('active');
-            event.currentTarget.classList.add('active');
-
-            // Close sidebar on mobile
-            document.getElementById('adminSidebar').classList.remove('open');
-            document.getElementById('sidebarOverlay').classList.remove('show');
-        }
-
-        // Sidebar Toggle (Mobile)
-        function toggleSidebar() {
-            document.getElementById('adminSidebar').classList.toggle('open');
-            document.getElementById('sidebarOverlay').classList.toggle('show');
-        }
-
-        // Load Dashboard Data
-        function loadDashboardData() {
-            // Users count
-            db.ref('users').on('value', (snapshot) => {
-                const count = snapshot.numChildren();
-                document.getElementById('statUsers').textContent = count;
-            });
-
-            // Events count
-            db.ref('events').on('value', (snapshot) => {
-                const count = snapshot.numChildren();
-                document.getElementById('statEvents').textContent = count;
-            });
-
-            // Clubs count
-            db.ref('clubs').on('value', (snapshot) => {
-                const count = snapshot.numChildren();
-                document.getElementById('statClubs').textContent = count;
-            });
-
-            // Questions count
-            loadUnansweredQuestionsCount();
-
-            // Recent users
-            loadRecentUsers();
-        }
-
-        // Load Recent Users
-        function loadRecentUsers() {
-            db.ref('users').orderByChild('createdAt').limitToLast(5).on('value', (snapshot) => {
-                const container = document.getElementById('recentUsersContainer');
-                container.innerHTML = '';
-
-                const users = [];
-                snapshot.forEach((child) => {
-                    users.push({ id: child.key, ...child.val() });
+            document.getElementById('profileAvatar').src = currentUserData.avatar || 'https://via.placeholder.com/100';
+            
+            // Profile name with badges
+            const nameEl = document.getElementById('profileName');
+            let badgesHtml = '';
+            if (currentUserData.activeBadges) {
+                Object.values(currentUserData.activeBadges).forEach(badge => {
+                    badgesHtml += `<img src="${badge.image}" alt="${badge.name}" class="badge-icon" title="${badge.name}">`;
                 });
+            }
+            nameEl.innerHTML = `${currentUserData.name} <span class="user-badges">${badgesHtml}</span>`;
+            
+            document.getElementById('profileUsername').textContent = '@' + currentUserData.username;
+            document.getElementById('profileBio').textContent = currentUserData.bio || 'Henuz bio eklenmemis';
+            
+            // Stats
+            document.getElementById('profileEventsCount').textContent = currentUserData.events ? Object.keys(currentUserData.events).length : 0;
+            document.getElementById('profileClubsCount').textContent = currentUserData.clubs ? Object.keys(currentUserData.clubs).length : 0;
+            document.getElementById('profileBadgesCount').textContent = currentUserData.badges ? Object.keys(currentUserData.badges).length : 0;
 
-                users.reverse().forEach((user) => {
-                    const el = document.createElement('div');
-                    el.className = 'club-item';
-                    el.innerHTML = `
-                        <img src="${user.avatar || 'https://via.placeholder.com/60'}" alt="${user.name}">
-                        <div class="club-item-info">
-                            <div class="club-item-name">${user.name}</div>
-                            <div class="club-item-stats">${user.email} - ${user.department || 'Belirtilmemis'}</div>
-                        </div>
-                    `;
-                    container.appendChild(el);
-                });
-            });
+            // Load badges
+            loadMyBadges();
+            loadActiveBadges();
         }
 
-        // Load Users
-        function loadUsers() {
-            db.ref('users').on('value', (snapshot) => {
-                allUsers = [];
-                snapshot.forEach((child) => {
-                    allUsers.push({ id: child.key, ...child.val() });
-                });
-                renderUsers(allUsers);
-            });
-        }
+        // Load My Badges
+        async function loadMyBadges() {
+            const container = document.getElementById('myBadgesList');
+            container.innerHTML = '';
 
-        function renderUsers(users) {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
+            if (!currentUserData.badges || Object.keys(currentUserData.badges).length === 0) {
+                container.innerHTML = '<p style="color: var(--gray-light); font-size: 14px;">Henuz rozetiniz yok</p>';
+                return;
+            }
 
-            users.forEach((user) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td data-label="Kullanici">
-                        <div class="user-item">
-                            <img src="${user.avatar || 'https://via.placeholder.com/40'}" alt="${user.name}">
-                            <div class="user-item-info">
-                                <div class="user-item-name">${user.name}</div>
-                                <div class="user-item-email">${user.email}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td data-label="Bolum">${user.department || '-'}</td>
-                    <td data-label="Kulup Olusturma">
-                        <span class="status-badge ${user.canCreateClub ? 'active' : 'inactive'}">
-                            ${user.canCreateClub ? 'Evet' : 'Hayir'}
-                        </span>
-                    </td>
-                    <td data-label="Kayit Tarihi">${formatDate(user.createdAt)}</td>
-                    <td data-label="Islemler">
-                        <div class="action-btns">
-                            <button class="action-btn ${user.canCreateClub ? 'delete' : 'approve'}" onclick="toggleClubPermission('${user.id}', ${!user.canCreateClub})" title="${user.canCreateClub ? 'Yetkiyi Kaldir' : 'Yetki Ver'}">
-                                <i class="fas ${user.canCreateClub ? 'fa-times' : 'fa-check'}"></i>
-                            </button>
-                            <button class="action-btn delete" onclick="deleteUser('${user.id}')" title="Sil">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
+            for (const [badgeId, badge] of Object.entries(currentUserData.badges)) {
+                const isActive = currentUserData.activeBadges && currentUserData.activeBadges[badgeId];
+                const badgeEl = document.createElement('div');
+                badgeEl.className = `badge-item ${isActive ? 'selected' : ''}`;
+                badgeEl.innerHTML = `
+                    <img src="${badge.image}" alt="${badge.name}">
+                    <span>${badge.name}</span>
                 `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function filterUsers() {
-            const search = document.getElementById('userSearchInput').value.toLowerCase();
-            const filtered = allUsers.filter(u => 
-                u.name.toLowerCase().includes(search) || 
-                u.email.toLowerCase().includes(search)
-            );
-            renderUsers(filtered);
-        }
-
-        // Toggle Club Creation Permission
-        async function toggleClubPermission(userId, canCreate) {
-            try {
-                await db.ref(`users/${userId}/canCreateClub`).set(canCreate);
-                showToast(canCreate ? 'Kulup olusturma yetkisi verildi' : 'Yetki kaldirildi', 'success');
-            } catch (error) {
-                showToast('Hata: ' + error.message, 'error');
+                badgeEl.onclick = () => toggleActiveBadge(badgeId, badge);
+                container.appendChild(badgeEl);
             }
         }
 
-        // Delete User
-        async function deleteUser(userId) {
-            if (!confirm('Bu kullaniciyi silmek istediginize emin misiniz?')) return;
+        // Load Active Badges
+        function loadActiveBadges() {
+            const container = document.getElementById('activeBadgesList');
+            container.innerHTML = '';
+
+            if (!currentUserData.activeBadges || Object.keys(currentUserData.activeBadges).length === 0) {
+                container.innerHTML = '<p style="color: var(--gray-light); font-size: 14px;">Aktif rozet secilmemis</p>';
+                return;
+            }
+
+            for (const [badgeId, badge] of Object.entries(currentUserData.activeBadges)) {
+                const badgeEl = document.createElement('div');
+                badgeEl.className = 'badge-item selected';
+                badgeEl.innerHTML = `
+                    <img src="${badge.image}" alt="${badge.name}">
+                    <span>${badge.name}</span>
+                `;
+                badgeEl.onclick = () => removeActiveBadge(badgeId);
+                container.appendChild(badgeEl);
+            }
+        }
+
+        // Toggle Active Badge
+        async function toggleActiveBadge(badgeId, badge) {
+            const activeBadges = currentUserData.activeBadges || {};
             
-            try {
-                await db.ref(`users/${userId}`).remove();
-                showToast('Kullanici silindi', 'success');
-            } catch (error) {
-                showToast('Hata: ' + error.message, 'error');
+            if (activeBadges[badgeId]) {
+                // Remove
+                await db.ref(`users/${currentUser.uid}/activeBadges/${badgeId}`).remove();
+            } else {
+                // Add (max 3)
+                if (Object.keys(activeBadges).length >= 3) {
+                    showToast('En fazla 3 rozet aktif olabilir', 'error');
+                    return;
+                }
+                await db.ref(`users/${currentUser.uid}/activeBadges/${badgeId}`).set(badge);
             }
+            
+            await loadUserData();
+            showToast('Rozetler guncellendi', 'success');
+        }
+
+        // Remove Active Badge
+        async function removeActiveBadge(badgeId) {
+            await db.ref(`users/${currentUser.uid}/activeBadges/${badgeId}`).remove();
+            await loadUserData();
+            showToast('Rozet kaldirildi', 'success');
+        }
+
+        // Check Club Creator Permission
+        function checkClubCreatorPermission() {
+            if (currentUserData && currentUserData.canCreateClub) {
+                document.getElementById('createClubBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('createClubBtn').classList.add('hidden');
+            }
+        }
+
+        // Navigation
+        function navigateTo(page) {
+            currentPage = page;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(`page-${page}`).classList.add('active');
+            document.querySelectorAll('.nav-item')[['home', 'clubs', 'chat', 'profile'].indexOf(page)].classList.add('active');
         }
 
         // Load Events
         function loadEvents() {
             db.ref('events').on('value', (snapshot) => {
-                allEvents = [];
-                snapshot.forEach((child) => {
-                    allEvents.push({ id: child.key, ...child.val() });
-                });
-                renderEvents(allEvents);
-            });
-        }
+                const container = document.getElementById('eventsContainer');
+                container.innerHTML = '';
 
-        function renderEvents(events) {
-            const tbody = document.getElementById('eventsTableBody');
-            tbody.innerHTML = '';
-
-            events.forEach((event) => {
-                const participants = event.participants ? Object.keys(event.participants).length : 0;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td data-label="Gorsel">
-                        <img src="${event.image || 'https://via.placeholder.com/40'}" alt="${event.title}">
-                    </td>
-                    <td data-label="Baslik">${event.title}</td>
-                    <td data-label="Tarih">${event.date}</td>
-                    <td data-label="Konum">${event.location || '-'}</td>
-                    <td data-label="Katilimci">${participants}</td>
-                    <td data-label="Islemler">
-                        <div class="action-btns">
-                            <button class="action-btn edit" onclick="editEvent('${event.id}')" title="Duzenle">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn delete" onclick="deleteEvent('${event.id}')" title="Sil">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                if (!snapshot.exists()) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-xmark"></i>
+                            <h3>Henuz etkinlik yok</h3>
+                            <p>Yeni etkinlikler yakinda eklenecek</p>
                         </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                    `;
+                    return;
+                }
+
+                snapshot.forEach((child) => {
+                    const event = child.val();
+                    const eventId = child.key;
+                    
+                    const eventEl = document.createElement('div');
+                    eventEl.className = 'card event-card';
+                    eventEl.onclick = () => openEventDetail(eventId);
+                    
+                    const participantsCount = event.participants ? Object.keys(event.participants).length : 0;
+                    
+                    eventEl.innerHTML = `
+                        <div class="event-header">
+                            <img src="${event.image || 'https://via.placeholder.com/80'}" alt="${event.title}" class="event-image">
+                            <div class="event-info">
+                                <h3 class="event-title">${event.title}</h3>
+                                <div class="event-meta">
+                                    <span><i class="fas fa-calendar"></i> ${event.date}</span>
+                                    <span><i class="fas fa-users"></i> ${participantsCount} katilimci</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="event-description">${event.description ? event.description.substring(0, 100) + '...' : ''}</p>
+                    `;
+                    
+                    container.appendChild(eventEl);
+                });
             });
         }
 
-        // Event Modal Functions
-        function openEventModal() {
-            editingEventId = null;
-            document.getElementById('eventModalTitle').textContent = 'Yeni Etkinlik';
-            document.getElementById('eventTitle').value = '';
-            document.getElementById('eventDescription').value = '';
-            document.getElementById('eventDate').value = '';
-            document.getElementById('eventTime').value = '';
-            document.getElementById('eventLocation').value = '';
-            document.getElementById('eventOrganizer').value = '';
-            document.getElementById('eventImagePreview').classList.add('hidden');
-            document.getElementById('eventModal').style.display = 'flex';
-        }
-
-        function closeEventModal() {
-            document.getElementById('eventModal').style.display = 'none';
-        }
-
-        function editEvent(eventId) {
-            editingEventId = eventId;
-            const event = allEvents.find(e => e.id === eventId);
-            if (!event) return;
-
-            document.getElementById('eventModalTitle').textContent = 'Etkinlik Duzenle';
-            document.getElementById('eventTitle').value = event.title || '';
-            document.getElementById('eventDescription').value = event.description || '';
-            document.getElementById('eventDate').value = event.date || '';
-            document.getElementById('eventTime').value = event.time || '';
-            document.getElementById('eventLocation').value = event.location || '';
-            document.getElementById('eventOrganizer').value = event.organizer || '';
+        // Open Event Detail
+        async function openEventDetail(eventId) {
+            currentEventId = eventId;
             
-            if (event.image) {
-                document.getElementById('eventImagePreview').src = event.image;
-                document.getElementById('eventImagePreview').classList.remove('hidden');
+            const snapshot = await db.ref('events/' + eventId).once('value');
+            const event = snapshot.val();
+            
+            if (!event) {
+                showToast('Etkinlik bulunamadi', 'error');
+                return;
             }
 
-            document.getElementById('eventModal').style.display = 'flex';
+            document.getElementById('eventDetailImage').src = event.image || 'https://via.placeholder.com/400x250';
+            document.getElementById('eventDetailTitle').textContent = event.title;
+            document.getElementById('eventDetailDate').textContent = event.date;
+            document.getElementById('eventDetailTime').textContent = event.time || 'Belirtilmemis';
+            document.getElementById('eventDetailLocation').textContent = event.location || 'Belirtilmemis';
+            document.getElementById('eventDetailOrganizer').textContent = event.organizer || 'Organizator';
+            document.getElementById('eventDetailDescription').textContent = event.description || '';
+
+            // Load participants
+            loadEventParticipants(event.participants);
+            
+            // Load questions
+            loadEventQuestions(eventId);
+            
+            // Update join button
+            updateEventJoinButton(event.participants);
+
+            document.getElementById('eventDetailPage').style.display = 'block';
+            document.body.style.overflow = 'hidden';
         }
 
-        function previewEventImage(e) {
+        // Close Event Detail
+        function closeEventDetail() {
+            document.getElementById('eventDetailPage').style.display = 'none';
+            document.body.style.overflow = '';
+            currentEventId = null;
+        }
+
+        // Load Event Participants
+        async function loadEventParticipants(participants) {
+            const container = document.getElementById('eventParticipantsList');
+            const countEl = document.getElementById('eventParticipantsCount');
+            
+            container.innerHTML = '';
+            
+            if (!participants) {
+                countEl.textContent = '0';
+                container.innerHTML = '<p style="color: var(--gray-light);">Henuz katilimci yok</p>';
+                return;
+            }
+
+            const participantIds = Object.keys(participants);
+            countEl.textContent = participantIds.length;
+
+            for (const uid of participantIds.slice(0, 10)) {
+                const userSnapshot = await db.ref('users/' + uid).once('value');
+                const user = userSnapshot.val();
+                
+                if (user) {
+                    const participantEl = document.createElement('div');
+                    participantEl.className = 'event-participant';
+                    participantEl.innerHTML = `
+                        <img src="${user.avatar || 'https://via.placeholder.com/24'}" alt="${user.name}">
+                        <span>${user.name}</span>
+                    `;
+                    container.appendChild(participantEl);
+                }
+            }
+
+            if (participantIds.length > 10) {
+                const moreEl = document.createElement('div');
+                moreEl.className = 'event-participant';
+                moreEl.innerHTML = `<span>+${participantIds.length - 10} kisi daha</span>`;
+                container.appendChild(moreEl);
+            }
+        }
+
+        // Load Event Questions
+        function loadEventQuestions(eventId) {
+            db.ref('eventQuestions/' + eventId).on('value', (snapshot) => {
+                const container = document.getElementById('eventQuestionsList');
+                container.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    container.innerHTML = '<p style="color: var(--gray-light); padding: 16px 0;">Henuz soru sorulmamis</p>';
+                    return;
+                }
+
+                snapshot.forEach((child) => {
+                    const question = child.val();
+                    
+                    let answerHtml = '';
+                    if (question.answer) {
+                        answerHtml = `
+                            <div class="question-answer">
+                                <div class="question-answer-header">
+                                    <i class="fas fa-reply"></i>
+                                    Organizator Cevabi
+                                </div>
+                                <p class="question-answer-text">${question.answer}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    const questionEl = document.createElement('div');
+                    questionEl.className = 'question-item';
+                    questionEl.innerHTML = `
+                        <div class="question-header">
+                            <img src="${question.userAvatar || 'https://via.placeholder.com/32'}" alt="" class="question-avatar">
+                            <span class="question-user">${question.userName}</span>
+                            <span class="question-time">${formatTime(question.timestamp)}</span>
+                        </div>
+                        <p class="question-text">${question.text}</p>
+                        ${answerHtml}
+                    `;
+                    container.appendChild(questionEl);
+                });
+            });
+        }
+
+        // Ask Event Question
+        async function askEventQuestion() {
+            if (!currentEventId || !currentUser) return;
+            
+            const input = document.getElementById('eventQuestionInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showToast('Lutfen bir soru yazin', 'error');
+                return;
+            }
+
+            try {
+                await db.ref('eventQuestions/' + currentEventId).push({
+                    text: text,
+                    userId: currentUser.uid,
+                    userName: currentUserData.name,
+                    userAvatar: currentUserData.avatar,
+                    timestamp: Date.now(),
+                    answer: null
+                });
+                
+                input.value = '';
+                showToast('Sorunuz gonderildi', 'success');
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Update Event Join Button
+        function updateEventJoinButton(participants) {
+            const btn = document.getElementById('eventJoinBtn');
+            const isJoined = participants && participants[currentUser.uid];
+            
+            if (isJoined) {
+                btn.textContent = 'Katiliyorum';
+                btn.classList.add('joined');
+            } else {
+                btn.textContent = 'Etkinlige Katil';
+                btn.classList.remove('joined');
+            }
+        }
+
+        // Toggle Event Participation
+        async function toggleEventParticipation() {
+            if (!currentEventId || !currentUser) return;
+
+            const participantRef = db.ref(`events/${currentEventId}/participants/${currentUser.uid}`);
+            const userEventRef = db.ref(`users/${currentUser.uid}/events/${currentEventId}`);
+            
+            const snapshot = await participantRef.once('value');
+            
+            if (snapshot.exists()) {
+                await participantRef.remove();
+                await userEventRef.remove();
+                showToast('Katilim iptal edildi', 'info');
+            } else {
+                await participantRef.set({
+                    joinedAt: Date.now(),
+                    name: currentUserData.name,
+                    avatar: currentUserData.avatar
+                });
+                await userEventRef.set(true);
+                showToast('Etkinlige katildiniz!', 'success');
+            }
+            
+            // Reload event detail
+            openEventDetail(currentEventId);
+        }
+
+        // Load Clubs
+        function loadClubs() {
+            db.ref('clubs').on('value', (snapshot) => {
+                const container = document.getElementById('clubsContainer');
+                container.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-users-slash"></i>
+                            <h3>Henuz kulup yok</h3>
+                            <p>Yeni kulupler yakinda eklenecek</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                snapshot.forEach((child) => {
+                    const club = child.val();
+                    const clubId = child.key;
+                    
+                    const memberCount = club.members ? Object.keys(club.members).length : 0;
+                    
+                    const clubEl = document.createElement('div');
+                    clubEl.className = 'club-card';
+                    clubEl.onclick = () => openClubDetail(clubId);
+                    clubEl.innerHTML = `
+                        <img src="${club.cover || 'https://via.placeholder.com/400x120'}" alt="${club.name}" class="club-image">
+                        <div class="club-content">
+                            <h3 class="club-title">
+                                ${club.badge ? `<img src="${club.badge}" alt="" class="club-badge">` : ''}
+                                ${club.name}
+                            </h3>
+                            <p class="club-description">${club.description ? club.description.substring(0, 80) + '...' : ''}</p>
+                            <div class="club-meta">
+                                <span><i class="fas fa-users"></i> ${memberCount} uye</span>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(clubEl);
+                });
+            });
+        }
+
+        // Open Club Detail
+        async function openClubDetail(clubId) {
+            currentClubId = clubId;
+            
+            const snapshot = await db.ref('clubs/' + clubId).once('value');
+            const club = snapshot.val();
+            
+            if (!club) {
+                showToast('Kulup bulunamadi', 'error');
+                return;
+            }
+
+            document.getElementById('clubDetailCover').src = club.cover || 'https://via.placeholder.com/400x200';
+            document.getElementById('clubDetailBadge').src = club.badge || 'https://via.placeholder.com/60';
+            document.getElementById('clubDetailTitle').textContent = club.name;
+            document.getElementById('clubDetailDescription').textContent = club.description || '';
+            document.getElementById('clubMemberCount').textContent = club.members ? Object.keys(club.members).length : 0;
+            
+            // Get owner name
+            const ownerSnapshot = await db.ref('users/' + club.ownerId).once('value');
+            const owner = ownerSnapshot.val();
+            document.getElementById('clubOwnerName').textContent = owner ? owner.name : 'Bilinmiyor';
+
+            // Check if user is owner or moderator
+            const isOwner = club.ownerId === currentUser.uid;
+            const isModerator = club.moderators && club.moderators[currentUser.uid];
+            const isMember = club.members && club.members[currentUser.uid];
+
+            // Show/hide settings tab
+            document.getElementById('clubSettingsTab').style.display = isOwner ? 'block' : 'none';
+
+            // Show/hide announcement input
+            document.getElementById('announcementInputContainer').style.display = (isOwner || isModerator) ? 'flex' : 'none';
+
+            // Show/hide chat input based on membership
+            document.getElementById('clubChatInputContainer').style.display = isMember ? 'flex' : 'none';
+
+            // Update join button
+            updateClubJoinButton(isMember);
+
+            // Load club data
+            loadClubAnnouncements(clubId, club.chatColor);
+            loadClubChat(clubId, club.chatColor);
+            loadClubMembers(clubId, club);
+            
+            if (isOwner) {
+                loadClubSettings(club);
+                loadClubModerators(clubId, club);
+            }
+
+            // Switch to announcements tab
+            switchClubTab('announcements');
+
+            document.getElementById('clubDetailPage').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close Club Detail
+        function closeClubDetail() {
+            document.getElementById('clubDetailPage').style.display = 'none';
+            document.body.style.overflow = '';
+            currentClubId = null;
+        }
+
+        // Switch Club Tab
+        function switchClubTab(tab) {
+            currentClubTab = tab;
+            document.querySelectorAll('.club-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.club-tab-content').forEach(c => c.style.display = 'none');
+            
+            event.target.classList.add('active');
+            document.getElementById(`clubTab-${tab}`).style.display = 'block';
+        }
+
+        // Update Club Join Button
+        function updateClubJoinButton(isMember) {
+            const btn = document.getElementById('clubJoinBtn');
+            
+            if (isMember) {
+                btn.textContent = 'Uyesin';
+                btn.classList.add('member');
+            } else {
+                btn.textContent = 'Kulube Katil';
+                btn.classList.remove('member');
+            }
+        }
+
+        // Toggle Club Membership
+        async function toggleClubMembership() {
+            if (!currentClubId || !currentUser) return;
+
+            const snapshot = await db.ref('clubs/' + currentClubId).once('value');
+            const club = snapshot.val();
+            
+            if (!club) return;
+
+            const memberRef = db.ref(`clubs/${currentClubId}/members/${currentUser.uid}`);
+            const userClubRef = db.ref(`users/${currentUser.uid}/clubs/${currentClubId}`);
+            const userBadgeRef = db.ref(`users/${currentUser.uid}/badges/${currentClubId}`);
+            
+            const memberSnapshot = await memberRef.once('value');
+            
+            if (memberSnapshot.exists()) {
+                await memberRef.remove();
+                await userClubRef.remove();
+                await userBadgeRef.remove();
+                
+                // Remove from active badges if present
+                await db.ref(`users/${currentUser.uid}/activeBadges/${currentClubId}`).remove();
+                
+                showToast('Kulupten ayrildiniz', 'info');
+            } else {
+                await memberRef.set({
+                    joinedAt: Date.now(),
+                    name: currentUserData.name,
+                    avatar: currentUserData.avatar
+                });
+                await userClubRef.set(true);
+                
+                // Add club badge to user
+                if (club.badge) {
+                    await userBadgeRef.set({
+                        name: club.name,
+                        image: club.badge,
+                        clubId: currentClubId
+                    });
+                }
+                
+                showToast('Kulube katildiniz!', 'success');
+            }
+            
+            await loadUserData();
+            openClubDetail(currentClubId);
+        }
+
+        // Load Club Announcements
+        function loadClubAnnouncements(clubId, chatColor) {
+            db.ref('clubAnnouncements/' + clubId).orderByChild('timestamp').on('value', (snapshot) => {
+                const container = document.getElementById('clubAnnouncementsMessages');
+                container.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    container.innerHTML = '<p style="color: var(--gray-light); text-align: center; padding: 40px;">Henuz duyuru yok</p>';
+                    return;
+                }
+
+                const messages = [];
+                snapshot.forEach((child) => {
+                    messages.push({ id: child.key, ...child.val() });
+                });
+
+                messages.forEach((msg) => {
+                    const messageEl = createChatMessage(msg, chatColor);
+                    container.appendChild(messageEl);
+                });
+
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        // Load Club Chat
+        function loadClubChat(clubId, chatColor) {
+            db.ref('clubChats/' + clubId).orderByChild('timestamp').on('value', (snapshot) => {
+                const container = document.getElementById('clubChatMessages');
+                container.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    container.innerHTML = '<p style="color: var(--gray-light); text-align: center; padding: 40px;">Henuz mesaj yok</p>';
+                    return;
+                }
+
+                const messages = [];
+                snapshot.forEach((child) => {
+                    messages.push({ id: child.key, ...child.val() });
+                });
+
+                messages.forEach((msg) => {
+                    const messageEl = createChatMessage(msg, chatColor);
+                    container.appendChild(messageEl);
+                });
+
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        // Create Chat Message Element
+        function createChatMessage(msg, chatColor) {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'chat-message';
+            
+            let mediaHtml = '';
+            if (msg.image) {
+                mediaHtml = `<div class="chat-media"><img src="${msg.image}" alt="Gorsel"></div>`;
+            }
+            if (msg.file) {
+                mediaHtml += `<div class="chat-media"><a href="${msg.file}" target="_blank"><i class="fas fa-file"></i> ${msg.fileName || 'Dosya'}</a></div>`;
+            }
+
+            // Get user badges
+            let badgesHtml = '';
+            if (msg.userBadges) {
+                Object.values(msg.userBadges).forEach(badge => {
+                    badgesHtml += `<img src="${badge.image}" alt="${badge.name}" class="badge-icon" style="width: 14px; height: 14px; margin-left: 4px;" title="${badge.name}">`;
+                });
+            }
+            
+            const textColor = chatColor || 'inherit';
+            
+            messageEl.innerHTML = `
+                <div class="chat-message-header">
+                    <img src="${msg.userAvatar || 'https://via.placeholder.com/36'}" alt="" class="chat-avatar">
+                    <span class="chat-username">${msg.userName}${badgesHtml}</span>
+                    <span class="chat-time">${formatTime(msg.timestamp)}</span>
+                </div>
+                <p class="chat-text" style="color: ${textColor};">${msg.text || ''}</p>
+                ${mediaHtml}
+            `;
+            
+            return messageEl;
+        }
+
+        // Load Club Members
+        async function loadClubMembers(clubId, club) {
+            const container = document.getElementById('clubMembersList');
+            container.innerHTML = '';
+
+            if (!club.members) {
+                container.innerHTML = '<p style="color: var(--gray-light);">Henuz uye yok</p>';
+                return;
+            }
+
+            // Owner first
+            const ownerSnapshot = await db.ref('users/' + club.ownerId).once('value');
+            const owner = ownerSnapshot.val();
+            if (owner) {
+                const ownerEl = createMemberElement(owner, 'owner');
+                container.appendChild(ownerEl);
+            }
+
+            // Moderators
+            if (club.moderators) {
+                for (const modId of Object.keys(club.moderators)) {
+                    if (modId !== club.ownerId) {
+                        const modSnapshot = await db.ref('users/' + modId).once('value');
+                        const mod = modSnapshot.val();
+                        if (mod) {
+                            const modEl = createMemberElement(mod, 'moderator');
+                            container.appendChild(modEl);
+                        }
+                    }
+                }
+            }
+
+            // Regular members
+            for (const memberId of Object.keys(club.members)) {
+                if (memberId !== club.ownerId && (!club.moderators || !club.moderators[memberId])) {
+                    const memberSnapshot = await db.ref('users/' + memberId).once('value');
+                    const member = memberSnapshot.val();
+                    if (member) {
+                        const memberEl = createMemberElement(member, 'member');
+                        container.appendChild(memberEl);
+                    }
+                }
+            }
+        }
+
+        // Create Member Element
+        function createMemberElement(user, role) {
+            const el = document.createElement('div');
+            el.className = 'member-item';
+            
+            let badgesHtml = '';
+            if (user.activeBadges) {
+                Object.values(user.activeBadges).forEach(badge => {
+                    badgesHtml += `<img src="${badge.image}" alt="${badge.name}" class="badge-icon" title="${badge.name}">`;
+                });
+            }
+
+            let roleHtml = '';
+            if (role === 'owner') {
+                roleHtml = '<span class="member-badge owner">Kurucu</span>';
+            } else if (role === 'moderator') {
+                roleHtml = '<span class="member-badge moderator">Moderator</span>';
+            }
+            
+            el.innerHTML = `
+                <img src="${user.avatar || 'https://via.placeholder.com/44'}" alt="" class="member-avatar">
+                <div class="member-info">
+                    <div class="member-name">${user.name} ${badgesHtml}</div>
+                    <div class="member-role">${user.department || ''}</div>
+                </div>
+                ${roleHtml}
+            `;
+            
+            return el;
+        }
+
+        // Load Club Settings
+        function loadClubSettings(club) {
+            document.getElementById('clubChatColorPicker').value = club.chatColor || '#ffffff';
+        }
+
+        // Load Club Moderators
+        async function loadClubModerators(clubId, club) {
+            const container = document.getElementById('clubModeratorsList');
+            container.innerHTML = '';
+
+            if (!club.moderators || Object.keys(club.moderators).length === 0) {
+                container.innerHTML = '<p style="color: var(--gray-light);">Henuz moderator yok</p>';
+                return;
+            }
+
+            for (const modId of Object.keys(club.moderators)) {
+                const modSnapshot = await db.ref('users/' + modId).once('value');
+                const mod = modSnapshot.val();
+                if (mod) {
+                    const modEl = document.createElement('div');
+                    modEl.className = 'member-item';
+                    modEl.innerHTML = `
+                        <img src="${mod.avatar || 'https://via.placeholder.com/44'}" alt="" class="member-avatar">
+                        <div class="member-info">
+                            <div class="member-name">${mod.name}</div>
+                            <div class="member-role">${mod.email}</div>
+                        </div>
+                        <button class="btn btn-small btn-danger" onclick="removeModerator('${modId}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    container.appendChild(modEl);
+                }
+            }
+        }
+
+        // Update Club Chat Color
+        async function updateClubChatColor() {
+            if (!currentClubId) return;
+            
+            const color = document.getElementById('clubChatColorPicker').value;
+            
+            try {
+                await db.ref(`clubs/${currentClubId}/chatColor`).set(color);
+                showToast('Sohbet rengi guncellendi', 'success');
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Upload Club Badge
+        async function uploadClubBadge(e) {
+            if (!currentClubId) return;
+            
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                showToast('Rozet yukleniyor...', 'info');
+                const url = await uploadFile(file, 'badges');
+                await db.ref(`clubs/${currentClubId}/badge`).set(url);
+                
+                // Update badge for all members
+                const clubSnapshot = await db.ref('clubs/' + currentClubId).once('value');
+                const club = clubSnapshot.val();
+                
+                if (club.members) {
+                    for (const memberId of Object.keys(club.members)) {
+                        await db.ref(`users/${memberId}/badges/${currentClubId}`).set({
+                            name: club.name,
+                            image: url,
+                            clubId: currentClubId
+                        });
+                    }
+                }
+                
+                showToast('Rozet guncellendi', 'success');
+                openClubDetail(currentClubId);
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Upload Club Cover
+        async function uploadClubCover(e) {
+            if (!currentClubId) return;
+            
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                showToast('Kapak yukleniyor...', 'info');
+                const url = await uploadFile(file, 'covers');
+                await db.ref(`clubs/${currentClubId}/cover`).set(url);
+                showToast('Kapak guncellendi', 'success');
+                openClubDetail(currentClubId);
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Open Add Moderator Modal
+        async function openAddModeratorModal() {
+            if (!currentClubId) return;
+
+            const clubSnapshot = await db.ref('clubs/' + currentClubId).once('value');
+            const club = clubSnapshot.val();
+
+            const container = document.getElementById('addModeratorList');
+            container.innerHTML = '';
+
+            if (!club.members) {
+                container.innerHTML = '<p style="color: var(--gray-light);">Uye bulunamadi</p>';
+                document.getElementById('addModeratorModal').style.display = 'flex';
+                return;
+            }
+
+            for (const memberId of Object.keys(club.members)) {
+                if (memberId !== club.ownerId && (!club.moderators || !club.moderators[memberId])) {
+                    const memberSnapshot = await db.ref('users/' + memberId).once('value');
+                    const member = memberSnapshot.val();
+                    
+                    if (member) {
+                        const el = document.createElement('div');
+                        el.className = 'member-item';
+                        el.innerHTML = `
+                            <img src="${member.avatar || 'https://via.placeholder.com/44'}" alt="" class="member-avatar">
+                            <div class="member-info">
+                                <div class="member-name">${member.name}</div>
+                                <div class="member-role">${member.email}</div>
+                            </div>
+                            <button class="btn btn-small btn-primary" onclick="addModerator('${memberId}')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        `;
+                        container.appendChild(el);
+                    }
+                }
+            }
+
+            if (container.children.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray-light);">Moderator olabilecek uye bulunamadi</p>';
+            }
+
+            document.getElementById('addModeratorModal').style.display = 'flex';
+        }
+
+        // Close Add Moderator Modal
+        function closeAddModeratorModal() {
+            document.getElementById('addModeratorModal').style.display = 'none';
+        }
+
+        // Add Moderator
+        async function addModerator(userId) {
+            if (!currentClubId) return;
+
+            try {
+                await db.ref(`clubs/${currentClubId}/moderators/${userId}`).set(true);
+                showToast('Moderator eklendi', 'success');
+                closeAddModeratorModal();
+                openClubDetail(currentClubId);
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Remove Moderator
+        async function removeModerator(userId) {
+            if (!currentClubId) return;
+            if (!confirm('Bu moderatoru kaldirmak istediginize emin misiniz?')) return;
+
+            try {
+                await db.ref(`clubs/${currentClubId}/moderators/${userId}`).remove();
+                showToast('Moderator kaldirildi', 'success');
+                openClubDetail(currentClubId);
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Handle Announcement Image
+        function handleAnnouncementImage(e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    document.getElementById('eventImagePreview').src = ev.target.result;
-                    document.getElementById('eventImagePreview').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
+                pendingAnnouncementImage = file;
+                showToast('Gorsel eklendi', 'success');
             }
         }
 
-        async function saveEvent() {
-            const title = document.getElementById('eventTitle').value.trim();
-            const description = document.getElementById('eventDescription').value.trim();
-            const date = document.getElementById('eventDate').value;
-            const time = document.getElementById('eventTime').value;
-            const location = document.getElementById('eventLocation').value.trim();
-            const organizer = document.getElementById('eventOrganizer').value.trim();
-            const imageInput = document.getElementById('eventImageInput');
+        // Handle Announcement File
+        function handleAnnouncementFile(e) {
+            const file = e.target.files[0];
+            if (file) {
+                pendingAnnouncementFile = file;
+                showToast('Dosya eklendi: ' + file.name, 'success');
+            }
+        }
 
-            if (!title || !date) {
-                showToast('Baslik ve tarih zorunlu', 'error');
+        // Send Announcement
+        async function sendAnnouncement() {
+            if (!currentClubId || !currentUser) return;
+
+            const input = document.getElementById('announcementInput');
+            const text = input.value.trim();
+
+            if (!text && !pendingAnnouncementImage && !pendingAnnouncementFile) {
+                showToast('Lutfen bir mesaj, gorsel veya dosya ekleyin', 'error');
+                return;
+            }
+
+            try {
+                let imageUrl = null;
+                let fileUrl = null;
+                let fileName = null;
+
+                if (pendingAnnouncementImage) {
+                    imageUrl = await uploadFile(pendingAnnouncementImage, 'announcements');
+                    pendingAnnouncementImage = null;
+                }
+
+                if (pendingAnnouncementFile) {
+                    fileName = pendingAnnouncementFile.name;
+                    fileUrl = await uploadFile(pendingAnnouncementFile, 'files');
+                    pendingAnnouncementFile = null;
+                }
+
+                await db.ref('clubAnnouncements/' + currentClubId).push({
+                    text: text,
+                    image: imageUrl,
+                    file: fileUrl,
+                    fileName: fileName,
+                    userId: currentUser.uid,
+                    userName: currentUserData.name,
+                    userAvatar: currentUserData.avatar,
+                    userBadges: currentUserData.activeBadges || {},
+                    timestamp: Date.now()
+                });
+
+                input.value = '';
+                document.getElementById('announcementImageInput').value = '';
+                document.getElementById('announcementFileInput').value = '';
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Handle Club Chat Image
+        function handleClubChatImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                pendingClubChatImage = file;
+                showToast('Gorsel eklendi', 'success');
+            }
+        }
+
+        // Handle Club Chat File
+        function handleClubChatFile(e) {
+            const file = e.target.files[0];
+            if (file) {
+                pendingClubChatFile = file;
+                showToast('Dosya eklendi: ' + file.name, 'success');
+            }
+        }
+
+        // Send Club Chat Message
+        async function sendClubChatMessage() {
+            if (!currentClubId || !currentUser) return;
+
+            const input = document.getElementById('clubChatInput');
+            const text = input.value.trim();
+
+            if (!text && !pendingClubChatImage && !pendingClubChatFile) {
+                showToast('Lutfen bir mesaj, gorsel veya dosya ekleyin', 'error');
+                return;
+            }
+
+            try {
+                let imageUrl = null;
+                let fileUrl = null;
+                let fileName = null;
+
+                if (pendingClubChatImage) {
+                    imageUrl = await uploadFile(pendingClubChatImage, 'chat');
+                    pendingClubChatImage = null;
+                }
+
+                if (pendingClubChatFile) {
+                    fileName = pendingClubChatFile.name;
+                    fileUrl = await uploadFile(pendingClubChatFile, 'files');
+                    pendingClubChatFile = null;
+                }
+
+                await db.ref('clubChats/' + currentClubId).push({
+                    text: text,
+                    image: imageUrl,
+                    file: fileUrl,
+                    fileName: fileName,
+                    userId: currentUser.uid,
+                    userName: currentUserData.name,
+                    userAvatar: currentUserData.avatar,
+                    userBadges: currentUserData.activeBadges || {},
+                    timestamp: Date.now()
+                });
+
+                input.value = '';
+                document.getElementById('clubChatImageInput').value = '';
+                document.getElementById('clubChatFileInput').value = '';
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Load General Chat
+        function loadGeneralChat() {
+            db.ref('generalChat').orderByChild('timestamp').limitToLast(50).on('value', (snapshot) => {
+                const container = document.getElementById('generalChatMessages');
+                container.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    container.innerHTML = '<p style="color: var(--gray-light); text-align: center; padding: 40px;">Henuz mesaj yok</p>';
+                    return;
+                }
+
+                const messages = [];
+                snapshot.forEach((child) => {
+                    messages.push({ id: child.key, ...child.val() });
+                });
+
+                messages.forEach((msg) => {
+                    const messageEl = createChatMessage(msg);
+                    container.appendChild(messageEl);
+                });
+
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        // Handle General Chat Image
+        function handleGeneralChatImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                pendingGeneralChatImage = file;
+                showToast('Gorsel eklendi', 'success');
+            }
+        }
+
+        // Send General Chat Message
+        async function sendGeneralChatMessage() {
+            if (!currentUser) return;
+
+            const input = document.getElementById('generalChatInput');
+            const text = input.value.trim();
+
+            if (!text && !pendingGeneralChatImage) {
+                showToast('Lutfen bir mesaj veya gorsel ekleyin', 'error');
                 return;
             }
 
             try {
                 let imageUrl = null;
 
-                if (imageInput.files[0]) {
-                    imageUrl = await uploadFile(imageInput.files[0], 'events');
-                } else if (editingEventId) {
-                    const existing = allEvents.find(e => e.id === editingEventId);
-                    imageUrl = existing ? existing.image : null;
+                if (pendingGeneralChatImage) {
+                    imageUrl = await uploadFile(pendingGeneralChatImage, 'chat');
+                    pendingGeneralChatImage = null;
                 }
 
-                const eventData = {
-                    title,
-                    description,
-                    date,
-                    time,
-                    location,
-                    organizer,
+                await db.ref('generalChat').push({
+                    text: text,
                     image: imageUrl,
-                    updatedAt: Date.now()
-                };
+                    userId: currentUser.uid,
+                    userName: currentUserData.name,
+                    userAvatar: currentUserData.avatar,
+                    userBadges: currentUserData.activeBadges || {},
+                    timestamp: Date.now()
+                });
 
-                if (editingEventId) {
-                    await db.ref(`events/${editingEventId}`).update(eventData);
-                    showToast('Etkinlik guncellendi', 'success');
-                } else {
-                    eventData.createdAt = Date.now();
-                    eventData.participants = {};
-                    await db.ref('events').push(eventData);
-                    showToast('Etkinlik olusturuldu', 'success');
+                input.value = '';
+                document.getElementById('generalChatImageInput').value = '';
+            } catch (error) {
+                showToast('Hata: ' + error.message, 'error');
+            }
+        }
+
+        // Load Notifications
+        function loadNotifications() {
+            db.ref('notifications/' + currentUser.uid).orderByChild('timestamp').on('value', (snapshot) => {
+                const container = document.getElementById('notificationsList');
+                const badge = document.getElementById('notificationBadge');
+                container.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    container.innerHTML = '<p style="color: var(--gray-light); padding: 20px; text-align: center;">Bildirim yok</p>';
+                    badge.classList.add('hidden');
+                    return;
                 }
 
-                closeEventModal();
-            } catch (error) {
-                showToast('Hata: ' + error.message, 'error');
-            }
-        }
-
-        async function deleteEvent(eventId) {
-            if (!confirm('Bu etkinligi silmek istediginize emin misiniz?')) return;
-
-            try {
-                await db.ref(`events/${eventId}`).remove();
-                await db.ref(`eventQuestions/${eventId}`).remove();
-                showToast('Etkinlik silindi', 'success');
-            } catch (error) {
-                showToast('Hata: ' + error.message, 'error');
-            }
-        }
-
-        // Load Clubs
-        function loadClubs() {
-            db.ref('clubs').on('value', (snapshot) => {
-                allClubs = [];
+                let unreadCount = 0;
+                const notifications = [];
+                
                 snapshot.forEach((child) => {
-                    allClubs.push({ id: child.key, ...child.val() });
-                });
-                renderClubs(allClubs);
-                renderBadges(allClubs);
-            });
-        }
-
-        function renderClubs(clubs) {
-            const container = document.getElementById('clubsListContainer');
-            container.innerHTML = '';
-
-            if (clubs.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-users-slash"></i>
-                        <h3>Henuz kulup yok</h3>
-                    </div>
-                `;
-                return;
-            }
-
-            clubs.forEach((club) => {
-                const memberCount = club.members ? Object.keys(club.members).length : 0;
-                const el = document.createElement('div');
-                el.className = 'club-item';
-                el.innerHTML = `
-                    <img src="${club.cover || club.badge || 'https://via.placeholder.com/60'}" alt="${club.name}">
-                    <div class="club-item-info">
-                        <div class="club-item-name">${club.name}</div>
-                        <div class="club-item-stats">${memberCount} uye</div>
-                    </div>
-                    <div class="club-item-actions">
-                        <button class="action-btn view" onclick="viewClubDetail('${club.id}')" title="Detay">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="action-btn delete" onclick="deleteClub('${club.id}')" title="Sil">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(el);
-            });
-        }
-
-        function renderBadges(clubs) {
-            const container = document.getElementById('badgesListContainer');
-            container.innerHTML = '';
-
-            const clubsWithBadges = clubs.filter(c => c.badge);
-
-            if (clubsWithBadges.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-medal"></i>
-                        <h3>Rozet bulunamadi</h3>
-                    </div>
-                `;
-                return;
-            }
-
-            clubsWithBadges.forEach((club) => {
-                const el = document.createElement('div');
-                el.className = 'club-item';
-                el.innerHTML = `
-                    <img src="${club.badge}" alt="${club.name}" style="border-radius: 8px;">
-                    <div class="club-item-info">
-                        <div class="club-item-name">${club.name}</div>
-                        <div class="club-item-stats">Kulup Rozeti</div>
-                    </div>
-                `;
-                container.appendChild(el);
-            });
-        }
-
-        function filterClubs() {
-            const search = document.getElementById('clubSearchInput').value.toLowerCase();
-            const filtered = allClubs.filter(c => c.name.toLowerCase().includes(search));
-            renderClubs(filtered);
-        }
-
-        function switchClubTab(tab) {
-            document.querySelectorAll('#section-clubs .tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            document.getElementById('clubsTab-all').style.display = tab === 'all' ? 'block' : 'none';
-            document.getElementById('clubsTab-badges').style.display = tab === 'badges' ? 'block' : 'none';
-        }
-
-        async function viewClubDetail(clubId) {
-            currentClubId = clubId;
-            const club = allClubs.find(c => c.id === clubId);
-            if (!club) return;
-
-            const ownerSnapshot = await db.ref(`users/${club.ownerId}`).once('value');
-            const owner = ownerSnapshot.val();
-
-            const memberCount = club.members ? Object.keys(club.members).length : 0;
-            const modCount = club.moderators ? Object.keys(club.moderators).length : 0;
-
-            document.getElementById('clubDetailContent').innerHTML = `
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="${club.cover || 'https://via.placeholder.com/200x100'}" alt="" style="width: 100%; height: 100px; object-fit: cover; border-radius: 12px; margin-bottom: 12px;">
-                    ${club.badge ? `<img src="${club.badge}" alt="" style="width: 60px; height: 60px; border-radius: 12px; margin-top: -40px; border: 3px solid var(--dark-light);">` : ''}
-                    <h3 style="margin-top: 12px;">${club.name}</h3>
-                    <p style="color: var(--gray-light); font-size: 14px;">${club.description || 'Aciklama yok'}</p>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
-                    <div style="text-align: center; padding: 12px; background: var(--dark); border-radius: 12px;">
-                        <div style="font-size: 24px; font-weight: 700; color: var(--primary);">${memberCount}</div>
-                        <div style="font-size: 12px; color: var(--gray-light);">Uye</div>
-                    </div>
-                    <div style="text-align: center; padding: 12px; background: var(--dark); border-radius: 12px;">
-                        <div style="font-size: 24px; font-weight: 700; color: var(--secondary);">${modCount}</div>
-                        <div style="font-size: 12px; color: var(--gray-light);">Moderator</div>
-                    </div>
-                    <div style="text-align: center; padding: 12px; background: var(--dark); border-radius: 12px;">
-                        <div style="width: 24px; height: 24px; background: ${club.chatColor || '#ffffff'}; border-radius: 6px; margin: 0 auto 4px;"></div>
-                        <div style="font-size: 12px; color: var(--gray-light);">Sohbet Rengi</div>
-                    </div>
-                </div>
-                <div style="padding: 12px; background: var(--dark); border-radius: 12px;">
-                    <div style="font-size: 12px; color: var(--gray-light); margin-bottom: 4px;">Kulup Sahibi</div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <img src="${owner ? owner.avatar : 'https://via.placeholder.com/32'}" alt="" style="width: 32px; height: 32px; border-radius: 50%;">
-                        <span>${owner ? owner.name : 'Bilinmiyor'}</span>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('clubDetailModal').style.display = 'flex';
-        }
-
-        function closeClubDetailModal() {
-            document.getElementById('clubDetailModal').style.display = 'none';
-            currentClubId = null;
-        }
-
-        async function deleteCurrentClub() {
-            if (!currentClubId) return;
-            await deleteClub(currentClubId);
-            closeClubDetailModal();
-        }
-
-        async function deleteClub(clubId) {
-            if (!confirm('Bu kulubu silmek istediginize emin misiniz? Tum veriler silinecek.')) return;
-
-            try {
-                // Get club data first
-                const clubSnapshot = await db.ref(`clubs/${clubId}`).once('value');
-                const club = clubSnapshot.val();
-
-                // Remove badge from all members
-                if (club && club.members) {
-                    for (const memberId of Object.keys(club.members)) {
-                        await db.ref(`users/${memberId}/badges/${clubId}`).remove();
-                        await db.ref(`users/${memberId}/activeBadges/${clubId}`).remove();
-                        await db.ref(`users/${memberId}/clubs/${clubId}`).remove();
-                    }
-                }
-
-                // Delete club data
-                await db.ref(`clubs/${clubId}`).remove();
-                await db.ref(`clubChats/${clubId}`).remove();
-                await db.ref(`clubAnnouncements/${clubId}`).remove();
-
-                showToast('Kulup silindi', 'success');
-            } catch (error) {
-                showToast('Hata: ' + error.message, 'error');
-            }
-        }
-
-        // Load Club Creators
-        function loadClubCreators() {
-            db.ref('users').on('value', (snapshot) => {
-                const approvedContainer = document.getElementById('approvedCreatorsContainer');
-                const pendingContainer = document.getElementById('pendingCreatorsContainer');
-                const allContainer = document.getElementById('allCreatorsContainer');
-
-                approvedContainer.innerHTML = '';
-                pendingContainer.innerHTML = '';
-                allContainer.innerHTML = '';
-
-                const approved = [];
-                const pending = [];
-                const all = [];
-
-                snapshot.forEach((child) => {
-                    const user = { id: child.key, ...child.val() };
-                    all.push(user);
-
-                    if (user.canCreateClub) {
-                        approved.push(user);
-                    }
-
-                    if (user.clubCreatorRequest && !user.canCreateClub) {
-                        pending.push(user);
-                    }
+                    const notif = { id: child.key, ...child.val() };
+                    notifications.push(notif);
+                    if (!notif.read) unreadCount++;
                 });
 
-                // Render approved
-                if (approved.length === 0) {
-                    approvedContainer.innerHTML = '<p style="color: var(--gray-light);">Henuz yetkili kullanici yok</p>';
-                } else {
-                    approved.forEach(user => {
-                        approvedContainer.appendChild(createCreatorItem(user, true));
-                    });
-                }
-
-                // Render pending
-                if (pending.length === 0) {
-                    pendingContainer.innerHTML = '<p style="color: var(--gray-light);">Bekleyen talep yok</p>';
-                } else {
-                    pending.forEach(user => {
-                        pendingContainer.appendChild(createCreatorItem(user, false, true));
-                    });
-                }
-
-                // Render all
-                all.forEach(user => {
-                    allContainer.appendChild(createCreatorItem(user, user.canCreateClub));
-                });
-            });
-        }
-
-        function createCreatorItem(user, isApproved, isPending = false) {
-            const el = document.createElement('div');
-            el.className = 'club-item';
-            el.innerHTML = `
-                <img src="${user.avatar || 'https://via.placeholder.com/60'}" alt="${user.name}">
-                <div class="club-item-info">
-                    <div class="club-item-name">${user.name}</div>
-                    <div class="club-item-stats">${user.email}</div>
-                </div>
-                <div class="club-item-actions">
-                    ${isPending ? `
-                        <button class="action-btn approve" onclick="approveCreator('${user.id}')" title="Onayla">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button class="action-btn delete" onclick="rejectCreator('${user.id}')" title="Reddet">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    ` : `
-                        <button class="action-btn ${isApproved ? 'delete' : 'approve'}" onclick="toggleClubPermission('${user.id}', ${!isApproved})" title="${isApproved ? 'Yetkiyi Kaldir' : 'Yetki Ver'}">
-                            <i class="fas ${isApproved ? 'fa-times' : 'fa-check'}"></i>
-                        </button>
-                    `}
-                </div>
-            `;
-            return el;
-        }
-
-        async function approveCreator(userId) {
-            try {
-                await db.ref(`users/${userId}`).update({
-                    canCreateClub: true,
-                    clubCreatorRequest: null
-                });
-                showToast('Kulup olusturma yetkisi verildi', 'success');
-            } catch (error) {
-                showToast('Hata: ' + error.message, 'error');
-            }
-        }
-
-        async function rejectCreator(userId) {
-            try {
-                await db.ref(`users/${userId}/clubCreatorRequest`).remove();
-                showToast('Talep reddedildi', 'info');
-            } catch (error) {
-                showToast('Hata: ' + error.message, 'error');
-            }
-        }
-
-        function switchCreatorTab(tab) {
-            document.querySelectorAll('#section-creators .tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            document.getElementById('creatorsTab-approved').style.display = tab === 'approved' ? 'block' : 'none';
-            document.getElementById('creatorsTab-pending').style.display = tab === 'pending' ? 'block' : 'none';
-            document.getElementById('creatorsTab-all').style.display = tab === 'all' ? 'block' : 'none';
-        }
-
-        function filterCreators() {
-            const search = document.getElementById('creatorSearchInput').value.toLowerCase();
-            const container = document.getElementById('allCreatorsContainer');
-            container.innerHTML = '';
-
-            allUsers.filter(u => 
-                u.name.toLowerCase().includes(search) || 
-                u.email.toLowerCase().includes(search)
-            ).forEach(user => {
-                container.appendChild(createCreatorItem(user, user.canCreateClub));
-            });
-        }
-
-        // Load Questions
-        function loadQuestions() {
-            db.ref('eventQuestions').on('value', (snapshot) => {
-                allQuestions = [];
-                
-                snapshot.forEach((eventChild) => {
-                    const eventId = eventChild.key;
-                    eventChild.forEach((questionChild) => {
-                        allQuestions.push({
-                            id: questionChild.key,
-                            eventId: eventId,
-                            ...questionChild.val()
-                        });
-                    });
+                notifications.reverse().forEach((notif) => {
+                    const el = document.createElement('div');
+                    el.className = `notification-item ${notif.read ? '' : 'unread'}`;
+                    el.innerHTML = `
+                        <div class="notification-content">${notif.message}</div>
+                        <div class="notification-time">${formatTime(notif.timestamp)}</div>
+                    `;
+                    el.onclick = () => markNotificationRead(notif.id);
+                    container.appendChild(el);
                 });
 
-                renderQuestions();
-            });
-        }
-
-        function loadUnansweredQuestionsCount() {
-            db.ref('eventQuestions').on('value', (snapshot) => {
-                let count = 0;
-                
-                snapshot.forEach((eventChild) => {
-                    eventChild.forEach((questionChild) => {
-                        const question = questionChild.val();
-                        if (!question.answer) count++;
-                    });
-                });
-
-                document.getElementById('statQuestions').textContent = count;
-                
-                const badge = document.getElementById('questionsBadge');
-                if (count > 0) {
-                    badge.textContent = count;
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount;
                     badge.classList.remove('hidden');
                 } else {
                     badge.classList.add('hidden');
@@ -2157,144 +3335,175 @@
             });
         }
 
-        async function renderQuestions() {
-            const unansweredContainer = document.getElementById('unansweredQuestionsContainer');
-            const answeredContainer = document.getElementById('answeredQuestionsContainer');
-            
-            unansweredContainer.innerHTML = '';
-            answeredContainer.innerHTML = '';
+        // Toggle Notifications Panel
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationsPanel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
 
-            const unanswered = allQuestions.filter(q => !q.answer);
-            const answered = allQuestions.filter(q => q.answer);
-
-            if (unanswered.length === 0) {
-                unansweredContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-check-circle"></i>
-                        <h3>Tum sorular cevaplandi</h3>
-                    </div>
-                `;
-            } else {
-                for (const q of unanswered) {
-                    const event = allEvents.find(e => e.id === q.eventId);
-                    const el = await createQuestionCard(q, event, false);
-                    unansweredContainer.appendChild(el);
-                }
-            }
-
-            if (answered.length === 0) {
-                answeredContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <h3>Cevaplanan soru yok</h3>
-                    </div>
-                `;
-            } else {
-                for (const q of answered) {
-                    const event = allEvents.find(e => e.id === q.eventId);
-                    const el = await createQuestionCard(q, event, true);
-                    answeredContainer.appendChild(el);
-                }
+        // Mark Notification Read
+        async function markNotificationRead(notifId) {
+            try {
+                await db.ref(`notifications/${currentUser.uid}/${notifId}/read`).set(true);
+            } catch (error) {
+                console.error(error);
             }
         }
 
-        async function createQuestionCard(question, event, isAnswered) {
-            const el = document.createElement('div');
-            el.className = 'question-card';
-            
-            el.innerHTML = `
-                <div class="question-header">
-                    <img src="${question.userAvatar || 'https://via.placeholder.com/40'}" alt="">
-                    <div>
-                        <div class="question-user">${question.userName}</div>
-                        <div class="question-event">${event ? event.title : 'Bilinmeyen Etkinlik'}</div>
-                    </div>
-                </div>
-                <p class="question-text">${question.text}</p>
-                ${isAnswered ? `
-                    <div style="padding: 12px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border-left: 3px solid var(--primary); margin-top: 12px;">
-                        <div style="font-size: 12px; color: var(--primary); margin-bottom: 4px;">Cevap</div>
-                        <p style="font-size: 14px; color: var(--gray-light);">${question.answer}</p>
-                    </div>
-                ` : `
-                    <div class="question-answer-input">
-                        <input type="text" id="answer-${question.id}" placeholder="Cevaplayin...">
-                        <button class="btn btn-primary btn-small" onclick="answerQuestion('${question.eventId}', '${question.id}')">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                `}
-            `;
-            
-            return el;
+        // Create Club Modal
+        function openCreateClubModal() {
+            document.getElementById('newClubName').value = '';
+            document.getElementById('newClubDescription').value = '';
+            document.getElementById('newClubCoverPreview').classList.add('hidden');
+            document.getElementById('newClubBadgePreview').classList.add('hidden');
+            document.getElementById('createClubModal').style.display = 'flex';
         }
 
-        async function answerQuestion(eventId, questionId) {
-            const input = document.getElementById(`answer-${questionId}`);
-            const answer = input.value.trim();
+        function closeCreateClubModal() {
+            document.getElementById('createClubModal').style.display = 'none';
+        }
 
-            if (!answer) {
-                showToast('Lutfen bir cevap yazin', 'error');
+        function previewNewClubCover(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('newClubCoverPreview').src = ev.target.result;
+                    document.getElementById('newClubCoverPreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewNewClubBadge(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('newClubBadgePreview').src = ev.target.result;
+                    document.getElementById('newClubBadgePreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function createClub() {
+            const name = document.getElementById('newClubName').value.trim();
+            const description = document.getElementById('newClubDescription').value.trim();
+            const coverInput = document.getElementById('newClubCoverInput');
+            const badgeInput = document.getElementById('newClubBadgeInput');
+
+            if (!name) {
+                showToast('Kulup adi gerekli', 'error');
                 return;
             }
 
             try {
-                await db.ref(`eventQuestions/${eventId}/${questionId}/answer`).set(answer);
-                showToast('Soru cevaplandi', 'success');
+                showToast('Kulup olusturuluyor...', 'info');
+
+                let coverUrl = null;
+                let badgeUrl = null;
+
+                if (coverInput.files[0]) {
+                    coverUrl = await uploadFile(coverInput.files[0], 'covers');
+                }
+
+                if (badgeInput.files[0]) {
+                    badgeUrl = await uploadFile(badgeInput.files[0], 'badges');
+                }
+
+                const clubRef = await db.ref('clubs').push({
+                    name: name,
+                    description: description,
+                    cover: coverUrl,
+                    badge: badgeUrl,
+                    ownerId: currentUser.uid,
+                    chatColor: '#ffffff',
+                    members: {
+                        [currentUser.uid]: {
+                            joinedAt: Date.now(),
+                            name: currentUserData.name,
+                            avatar: currentUserData.avatar
+                        }
+                    },
+                    createdAt: Date.now()
+                });
+
+                // Add club to user's clubs
+                await db.ref(`users/${currentUser.uid}/clubs/${clubRef.key}`).set(true);
+
+                // Add badge to user if exists
+                if (badgeUrl) {
+                    await db.ref(`users/${currentUser.uid}/badges/${clubRef.key}`).set({
+                        name: name,
+                        image: badgeUrl,
+                        clubId: clubRef.key
+                    });
+                }
+
+                showToast('Kulup olusturuldu!', 'success');
+                closeCreateClubModal();
+                await loadUserData();
             } catch (error) {
                 showToast('Hata: ' + error.message, 'error');
             }
         }
 
-        function switchQuestionTab(tab) {
-            document.querySelectorAll('#section-questions .tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+        // Edit Profile
+        function openEditProfile() {
+            document.getElementById('editName').value = currentUserData.name || '';
+            document.getElementById('editBio').value = currentUserData.bio || '';
             
-            document.getElementById('questionsTab-unanswered').style.display = tab === 'unanswered' ? 'block' : 'none';
-            document.getElementById('questionsTab-answered').style.display = tab === 'answered' ? 'block' : 'none';
+            if (currentUserData.avatar) {
+                document.getElementById('editAvatarPreview').src = currentUserData.avatar;
+                document.getElementById('editAvatarPreview').classList.remove('hidden');
+            }
+            
+            document.getElementById('editProfileModal').style.display = 'flex';
         }
 
-        // Send Mass Notification
-        async function sendMassNotification() {
-            const title = document.getElementById('notificationTitle').value.trim();
-            const message = document.getElementById('notificationMessage').value.trim();
-            const target = document.getElementById('notificationTarget').value;
+        function closeEditProfile() {
+            document.getElementById('editProfileModal').style.display = 'none';
+        }
 
-            if (!title || !message) {
-                showToast('Baslik ve mesaj gerekli', 'error');
+        function previewEditAvatar(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('editAvatarPreview').src = ev.target.result;
+                    document.getElementById('editAvatarPreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('editName').value.trim();
+            const bio = document.getElementById('editBio').value.trim();
+            const avatarInput = document.getElementById('editAvatarInput');
+
+            if (!name) {
+                showToast('Ad soyad gerekli', 'error');
                 return;
             }
 
             try {
-                let targetUsers = [];
+                let avatarUrl = currentUserData.avatar;
 
-                if (target === 'all') {
-                    targetUsers = allUsers.map(u => u.id);
-                } else if (target === 'clubOwners') {
-                    const clubOwnerIds = allClubs.map(c => c.ownerId);
-                    targetUsers = [...new Set(clubOwnerIds)];
-                } else if (target === 'eventParticipants') {
-                    const participantIds = [];
-                    allEvents.forEach(e => {
-                        if (e.participants) {
-                            participantIds.push(...Object.keys(e.participants));
-                        }
-                    });
-                    targetUsers = [...new Set(participantIds)];
+                if (avatarInput.files[0]) {
+                    avatarUrl = await uploadFile(avatarInput.files[0], 'avatars');
                 }
 
-                for (const userId of targetUsers) {
-                    await db.ref(`notifications/${userId}`).push({
-                        title: title,
-                        message: `${title}: ${message}`,
-                        read: false,
-                        timestamp: Date.now()
-                    });
-                }
+                await db.ref('users/' + currentUser.uid).update({
+                    name: name,
+                    bio: bio,
+                    avatar: avatarUrl
+                });
 
-                showToast(`${targetUsers.length} kullaniciya bildirim gonderildi`, 'success');
-                document.getElementById('notificationTitle').value = '';
-                document.getElementById('notificationMessage').value = '';
+                await loadUserData();
+                showToast('Profil guncellendi', 'success');
+                closeEditProfile();
             } catch (error) {
                 showToast('Hata: ' + error.message, 'error');
             }
@@ -2303,17 +3512,25 @@
         // Upload File to Storage
         async function uploadFile(file, folder) {
             const timestamp = Date.now();
-            const filename = `${folder}/admin_${timestamp}_${file.name}`;
+            const filename = `${folder}/${currentUser.uid}_${timestamp}_${file.name}`;
             const storageRef = storage.ref(filename);
             
             await storageRef.put(file);
             return await storageRef.getDownloadURL();
         }
 
-        // Format Date
-        function formatDate(timestamp) {
-            if (!timestamp) return '-';
+        // Format Time
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
             const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Simdi';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' dk once';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' saat once';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + ' gun once';
+            
             return date.toLocaleDateString('tr-TR');
         }
 
