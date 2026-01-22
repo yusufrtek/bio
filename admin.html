@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Panel - Kampus Sosyal</title>
+    <title>Admin Panel - LENG</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -128,6 +128,23 @@
             width: 100%;
         }
 
+        .btn-google {
+            background: var(--white);
+            color: #333;
+            border: 1px solid var(--glass);
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .btn-google:hover {
+            background: var(--light);
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+
         .btn-success {
             background: linear-gradient(135deg, var(--success), #059669);
             color: var(--white);
@@ -156,6 +173,26 @@
 
         .btn:hover {
             transform: translateY(-2px);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--glass);
+        }
+
+        .divider span {
+            padding: 0 16px;
         }
 
         /* Admin Layout */
@@ -698,35 +735,128 @@
             object-fit: cover;
         }
 
-        /* Toggle */
-        .toggle {
-            width: 50px;
-            height: 28px;
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
             background: var(--dark);
-            border-radius: 14px;
-            position: relative;
+            border: 1px solid var(--glass);
+            border-radius: 10px;
+            color: var(--gray-light);
             cursor: pointer;
-            transition: background 0.3s ease;
+            font-size: 14px;
+            transition: all 0.3s ease;
         }
 
-        .toggle::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 22px;
-            height: 22px;
-            background: var(--white);
-            border-radius: 50%;
-            transition: transform 0.3s ease;
+        .tab:hover {
+            border-color: var(--primary);
         }
 
-        .toggle.active {
+        .tab.active {
             background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
         }
 
-        .toggle.active::after {
-            transform: translateX(22px);
+        /* Club Item */
+        .club-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--dark);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .club-item img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .club-item-info {
+            flex: 1;
+        }
+
+        .club-item-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .club-item-stats {
+            font-size: 13px;
+            color: var(--gray-light);
+        }
+
+        .club-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Question Item */
+        .question-card {
+            background: var(--dark);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .question-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .question-user {
+            font-weight: 600;
+        }
+
+        .question-event {
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        .question-text {
+            font-size: 14px;
+            color: var(--gray-light);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .question-answer-input {
+            display: flex;
+            gap: 12px;
+        }
+
+        .question-answer-input input {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--dark-light);
+            border: 1px solid var(--glass);
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 14px;
+        }
+
+        .question-answer-input input:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         /* Page Sections */
@@ -808,216 +938,93 @@
         }
 
         .empty-state i {
-            font-size: 64px;
+            font-size: 48px;
             color: var(--gray);
             margin-bottom: 16px;
         }
 
         .empty-state h3 {
-            font-size: 20px;
+            font-size: 18px;
+            color: var(--gray-light);
             margin-bottom: 8px;
         }
 
         .empty-state p {
-            color: var(--gray-light);
+            font-size: 14px;
+            color: var(--gray);
         }
 
-        /* Question Answer Section */
-        .question-item {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .question-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .question-header img {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-        }
-
-        .question-user {
-            font-weight: 500;
-        }
-
-        .question-event {
-            font-size: 12px;
-            color: var(--primary);
-        }
-
-        .question-text {
-            margin-bottom: 12px;
-            color: var(--light);
-        }
-
-        .question-answer-form {
-            display: flex;
-            gap: 12px;
-        }
-
-        .question-answer-form input {
-            flex: 1;
-            padding: 10px 14px;
-            background: var(--dark-light);
-            border: 1px solid var(--glass);
-            border-radius: 8px;
-            color: var(--white);
-        }
-
-        .question-answer-form input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        /* Club Management Specific */
-        .club-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 16px;
-            background: var(--dark);
-            border-radius: 12px;
-            margin-bottom: 12px;
-        }
-
-        .club-item img {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            object-fit: cover;
-        }
-
-        .club-item-info {
-            flex: 1;
-        }
-
-        .club-item-name {
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .club-item-stats {
-            font-size: 13px;
-            color: var(--gray-light);
-        }
-
-        .club-item-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            background: var(--dark);
-            border: 1px solid var(--glass);
-            border-radius: 10px;
-            color: var(--gray-light);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-        }
-
-        /* Hidden */
+        /* Hidden class */
         .hidden {
             display: none !important;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--dark);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--gray);
-            border-radius: 3px;
         }
     </style>
 </head>
 <body>
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <!-- Login Screen -->
+    <!-- Login Container -->
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="login-logo">
-                <i class="fas fa-shield-halved"></i>
-                <h1>Admin Panel</h1>
-                <p>Kampus Sosyal Yonetim Sistemi</p>
+                <i class="fas fa-shield-alt"></i>
+                <h1>LENG Admin</h1>
+                <p>Admin paneline erisim</p>
             </div>
-            
+
             <form onsubmit="handleAdminLogin(event)">
                 <div class="form-group">
                     <label>E-posta</label>
-                    <input type="email" id="adminEmail" placeholder="admin@universite.edu.tr" required>
+                    <input type="email" id="adminEmail" placeholder="admin@example.com" required>
                 </div>
                 <div class="form-group">
                     <label>Sifre</label>
-                    <input type="password" id="adminPassword" placeholder="Admin sifresi" required>
+                    <input type="password" id="adminPassword" placeholder="Sifrenizi girin" required>
                 </div>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-sign-in-alt"></i>
                     Giris Yap
                 </button>
             </form>
+
+            <div class="divider">
+                <span>veya</span>
+            </div>
+
+            <button class="btn btn-google" onclick="handleGoogleAdminLogin()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Google ile Giris Yap
+            </button>
         </div>
     </div>
 
-    <!-- Admin Panel -->
+    <!-- Admin Container -->
     <div class="admin-container" id="adminContainer">
         <!-- Header -->
         <header class="admin-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="admin-logo">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="admin-logo">
-                    <i class="fas fa-shield-halved"></i>
-                    <span>Admin Panel</span>
-                </div>
+                <i class="fas fa-shield-alt"></i>
+                <span>LENG Admin</span>
             </div>
             <div class="admin-user">
                 <span id="adminName">Admin</span>
-                <button class="btn btn-secondary btn-small" onclick="handleLogout()">
+                <button class="btn btn-small btn-danger" onclick="handleLogout()">
                     <i class="fas fa-sign-out-alt"></i>
+                    Cikis
                 </button>
             </div>
         </header>
 
         <div class="admin-body">
+            <!-- Sidebar Overlay -->
+            <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
             <!-- Sidebar -->
             <aside class="admin-sidebar" id="adminSidebar">
                 <ul class="sidebar-menu">
                     <li class="sidebar-item active" onclick="switchSection('dashboard')">
-                        <i class="fas fa-chart-pie"></i>
+                        <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </li>
                     <li class="sidebar-item" onclick="switchSection('users')">
@@ -1029,19 +1036,17 @@
                         <span>Etkinlikler</span>
                     </li>
                     <li class="sidebar-item" onclick="switchSection('clubs')">
-                        <i class="fas fa-users-rectangle"></i>
+                        <i class="fas fa-users-cog"></i>
                         <span>Kulupler</span>
-                        <span class="sidebar-badge" id="clubsBadge" style="display: none;">0</span>
                     </li>
-                    <li class="sidebar-item" onclick="switchSection('clubCreators')">
+                    <li class="sidebar-item" onclick="switchSection('creators')">
                         <i class="fas fa-user-check"></i>
-                        <span>Kulup Olusturucular</span>
-                        <span class="sidebar-badge" id="creatorsBadge" style="display: none;">0</span>
+                        <span>Kulup Izinleri</span>
                     </li>
                     <li class="sidebar-item" onclick="switchSection('questions')">
                         <i class="fas fa-question-circle"></i>
                         <span>Sorular</span>
-                        <span class="sidebar-badge" id="questionsBadge" style="display: none;">0</span>
+                        <span class="sidebar-badge hidden" id="questionsBadge">0</span>
                     </li>
                     <li class="sidebar-item" onclick="switchSection('notifications')">
                         <i class="fas fa-bell"></i>
@@ -1050,42 +1055,47 @@
                 </ul>
             </aside>
 
-            <!-- Sidebar Overlay (Mobile) -->
-            <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-            <!-- Content -->
+            <!-- Main Content -->
             <main class="admin-content">
                 <!-- Dashboard Section -->
                 <section class="page-section active" id="section-dashboard">
                     <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-chart-pie"></i> Dashboard</h1>
+                        <h1 class="content-title"><i class="fas fa-chart-line"></i> Dashboard</h1>
                     </div>
 
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <div class="stat-icon primary"><i class="fas fa-users"></i></div>
+                                <div class="stat-icon primary">
+                                    <i class="fas fa-users"></i>
+                                </div>
                             </div>
                             <div class="stat-value" id="statUsers">0</div>
                             <div class="stat-label">Toplam Kullanici</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <div class="stat-icon success"><i class="fas fa-calendar"></i></div>
+                                <div class="stat-icon success">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
                             </div>
                             <div class="stat-value" id="statEvents">0</div>
-                            <div class="stat-label">Aktif Etkinlik</div>
+                            <div class="stat-label">Toplam Etkinlik</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <div class="stat-icon secondary"><i class="fas fa-users-rectangle"></i></div>
+                                <div class="stat-icon warning">
+                                    <i class="fas fa-users-cog"></i>
+                                </div>
                             </div>
                             <div class="stat-value" id="statClubs">0</div>
-                            <div class="stat-label">Kulup Sayisi</div>
+                            <div class="stat-label">Toplam Kulup</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <div class="stat-icon warning"><i class="fas fa-question-circle"></i></div>
+                                <div class="stat-icon danger">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
                             </div>
                             <div class="stat-value" id="statQuestions">0</div>
                             <div class="stat-label">Bekleyen Soru</div>
@@ -1096,7 +1106,7 @@
                         <div class="data-card-header">
                             <h3 class="data-card-title">Son Kayit Olan Kullanicilar</h3>
                         </div>
-                        <div id="recentUsersContainer"></div>
+                        <div id="recentUsersContainer" style="padding: 20px;"></div>
                     </div>
                 </section>
 
@@ -1104,16 +1114,14 @@
                 <section class="page-section" id="section-users">
                     <div class="content-header">
                         <h1 class="content-title"><i class="fas fa-users"></i> Kullanicilar</h1>
-                        <div class="data-card-actions">
-                            <input type="text" class="search-input" placeholder="Kullanici ara..." id="userSearchInput" oninput="filterUsers()">
-                        </div>
                     </div>
 
                     <div class="data-card">
                         <div class="data-card-header">
                             <h3 class="data-card-title">Tum Kullanicilar</h3>
+                            <input type="text" class="search-input" placeholder="Kullanici ara..." id="userSearchInput" oninput="filterUsers()">
                         </div>
-                        <div class="table-responsive">
+                        <div style="overflow-x: auto;">
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -1144,7 +1152,7 @@
                         <div class="data-card-header">
                             <h3 class="data-card-title">Tum Etkinlikler</h3>
                         </div>
-                        <div class="table-responsive">
+                        <div style="overflow-x: auto;">
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -1165,26 +1173,26 @@
                 <!-- Clubs Section -->
                 <section class="page-section" id="section-clubs">
                     <div class="content-header">
-                        <h1 class="content-title"><i class="fas fa-users-rectangle"></i> Kulupler</h1>
+                        <h1 class="content-title"><i class="fas fa-users-cog"></i> Kulupler</h1>
                     </div>
 
                     <div class="tabs">
                         <button class="tab active" onclick="switchClubTab('all')">Tum Kulupler</button>
-                        <button class="tab" onclick="switchClubTab('badges')">Rozet Yonetimi</button>
+                        <button class="tab" onclick="switchClubTab('badges')">Rozetler</button>
                     </div>
 
-                    <!-- All Clubs Tab -->
+                    <!-- All Clubs -->
                     <div id="clubsTab-all">
                         <div class="data-card">
                             <div class="data-card-header">
-                                <h3 class="data-card-title">Aktif Kulupler</h3>
+                                <h3 class="data-card-title">Kulup Listesi</h3>
                                 <input type="text" class="search-input" placeholder="Kulup ara..." id="clubSearchInput" oninput="filterClubs()">
                             </div>
                             <div id="clubsListContainer" style="padding: 20px;"></div>
                         </div>
                     </div>
 
-                    <!-- Badges Tab -->
+                    <!-- Badges -->
                     <div id="clubsTab-badges" style="display: none;">
                         <div class="data-card">
                             <div class="data-card-header">
@@ -1196,7 +1204,7 @@
                 </section>
 
                 <!-- Club Creators Section -->
-                <section class="page-section" id="section-clubCreators">
+                <section class="page-section" id="section-creators">
                     <div class="content-header">
                         <h1 class="content-title"><i class="fas fa-user-check"></i> Kulup Olusturma Izinleri</h1>
                     </div>
@@ -1368,6 +1376,9 @@
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -1382,8 +1393,8 @@
             databaseURL: "https://event-dcf0f-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "event-dcf0f",
             storageBucket: "event-dcf0f.firebasestorage.app",
-            messagingSenderId: "79843broken3104",
-            appId: "1:79843310broken4:web:ae16ae41afeae4cdb2c8ef",
+            messagingSenderId: "798433104",
+            appId: "1:798433104:web:ae16ae41afeae4cdb2c8ef",
             measurementId: "G-G0CHQJ5X8W"
         };
 
@@ -1392,6 +1403,7 @@
         const auth = firebase.auth();
         const db = firebase.database();
         const storage = firebase.storage();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
 
         // Global State
         let currentAdmin = null;
@@ -1402,25 +1414,60 @@
         let editingEventId = null;
         let currentClubId = null;
 
-        // Admin Emails (configure these)
-        const ADMIN_EMAILS = ['admin@universite.edu.tr', 'admin@test.com'];
+        // Hardcoded admin email (always has access)
+        const HARDCODED_ADMIN = 'm.yusufertek@gmail.com';
 
         // Auth State
         auth.onAuthStateChanged(async (user) => {
-            if (user && ADMIN_EMAILS.includes(user.email)) {
-                currentAdmin = user;
-                showAdmin();
-                loadDashboardData();
-                loadUsers();
-                loadEvents();
-                loadClubs();
-                loadQuestions();
-                loadClubCreators();
+            if (user) {
+                // Check if user is admin from database or hardcoded
+                const isAdmin = await checkAdminPermission(user.email);
+                
+                if (isAdmin) {
+                    currentAdmin = user;
+                    showAdmin();
+                    loadDashboardData();
+                    loadUsers();
+                    loadEvents();
+                    loadClubs();
+                    loadQuestions();
+                    loadClubCreators();
+                } else {
+                    showToast('Admin yetkisi bulunamadi!', 'error');
+                    auth.signOut();
+                    showLogin();
+                }
             } else {
                 currentAdmin = null;
                 showLogin();
             }
         });
+
+        // Check Admin Permission
+        async function checkAdminPermission(email) {
+            // Check hardcoded admin
+            if (email === HARDCODED_ADMIN) {
+                return true;
+            }
+
+            // Check from database
+            try {
+                const snapshot = await db.ref('admins').once('value');
+                if (snapshot.exists()) {
+                    const admins = snapshot.val();
+                    // Check if email exists in admins (as key or value)
+                    for (const key in admins) {
+                        if (admins[key] === email || admins[key].email === email || key === email.replace(/\./g, '_')) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Admin check error:', error);
+            }
+            
+            return false;
+        }
 
         // Show/Hide
         function showLogin() {
@@ -1434,22 +1481,25 @@
             document.getElementById('adminName').textContent = currentAdmin.email;
         }
 
-        // Admin Login
+        // Admin Login with Email/Password
         async function handleAdminLogin(e) {
             e.preventDefault();
             const email = document.getElementById('adminEmail').value;
             const password = document.getElementById('adminPassword').value;
 
-            if (!ADMIN_EMAILS.includes(email)) {
-                showToast('Admin yetkisi yok!', 'error');
-                return;
-            }
-
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                showToast('Giris basarili!', 'success');
             } catch (error) {
                 showToast('Giris hatasi: ' + error.message, 'error');
+            }
+        }
+
+        // Admin Login with Google
+        async function handleGoogleAdminLogin() {
+            try {
+                await auth.signInWithPopup(googleProvider);
+            } catch (error) {
+                showToast('Google giris hatasi: ' + error.message, 'error');
             }
         }
 
@@ -1886,7 +1936,7 @@
                         <div style="font-size: 12px; color: var(--gray-light);">Moderator</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background: var(--dark); border-radius: 12px;">
-                        <div style="font-size: 24px; font-weight: 700; color: var(--success);">${club.chatColor || 'white'}</div>
+                        <div style="width: 24px; height: 24px; background: ${club.chatColor || '#ffffff'}; border-radius: 6px; margin: 0 auto 4px;"></div>
                         <div style="font-size: 12px; color: var(--gray-light);">Sohbet Rengi</div>
                     </div>
                 </div>
@@ -1941,9 +1991,17 @@
             }
         }
 
-        // Club Creators Management
+        // Load Club Creators
         function loadClubCreators() {
             db.ref('users').on('value', (snapshot) => {
+                const approvedContainer = document.getElementById('approvedCreatorsContainer');
+                const pendingContainer = document.getElementById('pendingCreatorsContainer');
+                const allContainer = document.getElementById('allCreatorsContainer');
+
+                approvedContainer.innerHTML = '';
+                pendingContainer.innerHTML = '';
+                allContainer.innerHTML = '';
+
                 const approved = [];
                 const pending = [];
                 const all = [];
@@ -1951,131 +2009,75 @@
                 snapshot.forEach((child) => {
                     const user = { id: child.key, ...child.val() };
                     all.push(user);
-                    
+
                     if (user.canCreateClub) {
                         approved.push(user);
                     }
-                    if (user.requestClubCreation) {
+
+                    if (user.clubCreatorRequest && !user.canCreateClub) {
                         pending.push(user);
                     }
                 });
 
-                renderApprovedCreators(approved);
-                renderPendingCreators(pending);
-                renderAllCreators(all);
-
-                // Update badge
-                if (pending.length > 0) {
-                    document.getElementById('creatorsBadge').textContent = pending.length;
-                    document.getElementById('creatorsBadge').style.display = 'block';
+                // Render approved
+                if (approved.length === 0) {
+                    approvedContainer.innerHTML = '<p style="color: var(--gray-light);">Henuz yetkili kullanici yok</p>';
                 } else {
-                    document.getElementById('creatorsBadge').style.display = 'none';
+                    approved.forEach(user => {
+                        approvedContainer.appendChild(createCreatorItem(user, true));
+                    });
                 }
+
+                // Render pending
+                if (pending.length === 0) {
+                    pendingContainer.innerHTML = '<p style="color: var(--gray-light);">Bekleyen talep yok</p>';
+                } else {
+                    pending.forEach(user => {
+                        pendingContainer.appendChild(createCreatorItem(user, false, true));
+                    });
+                }
+
+                // Render all
+                all.forEach(user => {
+                    allContainer.appendChild(createCreatorItem(user, user.canCreateClub));
+                });
             });
         }
 
-        function renderApprovedCreators(users) {
-            const container = document.getElementById('approvedCreatorsContainer');
-            container.innerHTML = '';
-
-            if (users.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray-light);">Henuz yetkili kullanici yok</p>';
-                return;
-            }
-
-            users.forEach((user) => {
-                const el = document.createElement('div');
-                el.className = 'club-item';
-                el.innerHTML = `
-                    <img src="${user.avatar || 'https://via.placeholder.com/60'}" alt="${user.name}">
-                    <div class="club-item-info">
-                        <div class="club-item-name">${user.name}</div>
-                        <div class="club-item-stats">${user.email}</div>
-                    </div>
-                    <div class="club-item-actions">
-                        <button class="action-btn delete" onclick="toggleClubPermission('${user.id}', false)" title="Yetkiyi Kaldir">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(el);
-            });
-        }
-
-        function renderPendingCreators(users) {
-            const container = document.getElementById('pendingCreatorsContainer');
-            container.innerHTML = '';
-
-            if (users.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray-light);">Bekleyen talep yok</p>';
-                return;
-            }
-
-            users.forEach((user) => {
-                const el = document.createElement('div');
-                el.className = 'club-item';
-                el.innerHTML = `
-                    <img src="${user.avatar || 'https://via.placeholder.com/60'}" alt="${user.name}">
-                    <div class="club-item-info">
-                        <div class="club-item-name">${user.name}</div>
-                        <div class="club-item-stats">${user.email}</div>
-                    </div>
-                    <div class="club-item-actions">
+        function createCreatorItem(user, isApproved, isPending = false) {
+            const el = document.createElement('div');
+            el.className = 'club-item';
+            el.innerHTML = `
+                <img src="${user.avatar || 'https://via.placeholder.com/60'}" alt="${user.name}">
+                <div class="club-item-info">
+                    <div class="club-item-name">${user.name}</div>
+                    <div class="club-item-stats">${user.email}</div>
+                </div>
+                <div class="club-item-actions">
+                    ${isPending ? `
                         <button class="action-btn approve" onclick="approveCreator('${user.id}')" title="Onayla">
                             <i class="fas fa-check"></i>
                         </button>
                         <button class="action-btn delete" onclick="rejectCreator('${user.id}')" title="Reddet">
                             <i class="fas fa-times"></i>
                         </button>
-                    </div>
-                `;
-                container.appendChild(el);
-            });
-        }
-
-        function renderAllCreators(users) {
-            const container = document.getElementById('allCreatorsContainer');
-            container.innerHTML = '';
-
-            users.forEach((user) => {
-                const el = document.createElement('div');
-                el.className = 'club-item';
-                el.innerHTML = `
-                    <img src="${user.avatar || 'https://via.placeholder.com/60'}" alt="${user.name}">
-                    <div class="club-item-info">
-                        <div class="club-item-name">${user.name}</div>
-                        <div class="club-item-stats">${user.email}</div>
-                    </div>
-                    <div class="club-item-actions">
-                        ${user.canCreateClub ? 
-                            `<span class="status-badge active">Yetkili</span>` : 
-                            `<button class="action-btn approve" onclick="toggleClubPermission('${user.id}', true)" title="Yetki Ver">
-                                <i class="fas fa-plus"></i>
-                            </button>`
-                        }
-                    </div>
-                `;
-                container.appendChild(el);
-            });
+                    ` : `
+                        <button class="action-btn ${isApproved ? 'delete' : 'approve'}" onclick="toggleClubPermission('${user.id}', ${!isApproved})" title="${isApproved ? 'Yetkiyi Kaldir' : 'Yetki Ver'}">
+                            <i class="fas ${isApproved ? 'fa-times' : 'fa-check'}"></i>
+                        </button>
+                    `}
+                </div>
+            `;
+            return el;
         }
 
         async function approveCreator(userId) {
             try {
                 await db.ref(`users/${userId}`).update({
                     canCreateClub: true,
-                    requestClubCreation: null
+                    clubCreatorRequest: null
                 });
-
-                // Send notification
-                await db.ref(`notifications/${userId}`).push({
-                    title: 'Kulup Olusturma Yetkisi',
-                    message: 'Kulup olusturma talebiniz onaylandi! Artik kulup olusturabilirsiniz.',
-                    type: 'club',
-                    timestamp: Date.now(),
-                    read: false
-                });
-
-                showToast('Kullanici onaylandi', 'success');
+                showToast('Kulup olusturma yetkisi verildi', 'success');
             } catch (error) {
                 showToast('Hata: ' + error.message, 'error');
             }
@@ -2083,16 +2085,7 @@
 
         async function rejectCreator(userId) {
             try {
-                await db.ref(`users/${userId}/requestClubCreation`).remove();
-
-                await db.ref(`notifications/${userId}`).push({
-                    title: 'Kulup Olusturma Talebi',
-                    message: 'Kulup olusturma talebiniz reddedildi.',
-                    type: 'club',
-                    timestamp: Date.now(),
-                    read: false
-                });
-
+                await db.ref(`users/${userId}/clubCreatorRequest`).remove();
                 showToast('Talep reddedildi', 'info');
             } catch (error) {
                 showToast('Hata: ' + error.message, 'error');
@@ -2100,7 +2093,7 @@
         }
 
         function switchCreatorTab(tab) {
-            document.querySelectorAll('#section-clubCreators .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#section-creators .tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
             
             document.getElementById('creatorsTab-approved').style.display = tab === 'approved' ? 'block' : 'none';
@@ -2110,14 +2103,18 @@
 
         function filterCreators() {
             const search = document.getElementById('creatorSearchInput').value.toLowerCase();
-            const filtered = allUsers.filter(u => 
+            const container = document.getElementById('allCreatorsContainer');
+            container.innerHTML = '';
+
+            allUsers.filter(u => 
                 u.name.toLowerCase().includes(search) || 
                 u.email.toLowerCase().includes(search)
-            );
-            renderAllCreators(filtered);
+            ).forEach(user => {
+                container.appendChild(createCreatorItem(user, user.canCreateClub));
+            });
         }
 
-        // Questions Management
+        // Load Questions
         function loadQuestions() {
             db.ref('eventQuestions').on('value', (snapshot) => {
                 allQuestions = [];
@@ -2133,81 +2130,103 @@
                     });
                 });
 
-                const unanswered = allQuestions.filter(q => !q.answer);
-                const answered = allQuestions.filter(q => q.answer);
-
-                renderQuestions(unanswered, 'unansweredQuestionsContainer', false);
-                renderQuestions(answered, 'answeredQuestionsContainer', true);
-
-                // Update badges
-                document.getElementById('statQuestions').textContent = unanswered.length;
-                if (unanswered.length > 0) {
-                    document.getElementById('questionsBadge').textContent = unanswered.length;
-                    document.getElementById('questionsBadge').style.display = 'block';
-                } else {
-                    document.getElementById('questionsBadge').style.display = 'none';
-                }
+                renderQuestions();
             });
         }
 
         function loadUnansweredQuestionsCount() {
             db.ref('eventQuestions').on('value', (snapshot) => {
                 let count = 0;
+                
                 snapshot.forEach((eventChild) => {
                     eventChild.forEach((questionChild) => {
-                        const q = questionChild.val();
-                        if (!q.answer) count++;
+                        const question = questionChild.val();
+                        if (!question.answer) count++;
                     });
                 });
+
                 document.getElementById('statQuestions').textContent = count;
+                
+                const badge = document.getElementById('questionsBadge');
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
             });
         }
 
-        async function renderQuestions(questions, containerId, isAnswered) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
+        async function renderQuestions() {
+            const unansweredContainer = document.getElementById('unansweredQuestionsContainer');
+            const answeredContainer = document.getElementById('answeredQuestionsContainer');
+            
+            unansweredContainer.innerHTML = '';
+            answeredContainer.innerHTML = '';
 
-            if (questions.length === 0) {
-                container.innerHTML = `
+            const unanswered = allQuestions.filter(q => !q.answer);
+            const answered = allQuestions.filter(q => q.answer);
+
+            if (unanswered.length === 0) {
+                unansweredContainer.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-question-circle"></i>
-                        <h3>${isAnswered ? 'Cevaplanan soru yok' : 'Bekleyen soru yok'}</h3>
+                        <i class="fas fa-check-circle"></i>
+                        <h3>Tum sorular cevaplandi</h3>
                     </div>
                 `;
-                return;
+            } else {
+                for (const q of unanswered) {
+                    const event = allEvents.find(e => e.id === q.eventId);
+                    const el = await createQuestionCard(q, event, false);
+                    unansweredContainer.appendChild(el);
+                }
             }
 
-            for (const question of questions) {
-                // Get event name
-                const eventSnapshot = await db.ref(`events/${question.eventId}/title`).once('value');
-                const eventTitle = eventSnapshot.val() || 'Bilinmeyen Etkinlik';
-
-                const el = document.createElement('div');
-                el.className = 'question-item';
-                el.innerHTML = `
-                    <div class="question-header">
-                        <img src="${question.userAvatar || 'https://via.placeholder.com/36'}" alt="">
-                        <div>
-                            <div class="question-user">${question.userName}</div>
-                            <div class="question-event">${eventTitle}</div>
-                        </div>
+            if (answered.length === 0) {
+                answeredContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>Cevaplanan soru yok</h3>
                     </div>
-                    <p class="question-text">${question.text}</p>
-                    ${isAnswered ? 
-                        `<div style="padding: 12px; background: var(--dark-light); border-radius: 8px; border-left: 3px solid var(--primary);">
-                            <div style="font-size: 12px; color: var(--primary); margin-bottom: 4px;">Cevap:</div>
-                            <p style="font-size: 14px;">${question.answer}</p>
-                        </div>` :
-                        `<div class="question-answer-form">
-                            <input type="text" id="answer-${question.id}" placeholder="Cevabinizi yazin...">
-                            <button class="btn btn-primary btn-small" onclick="answerQuestion('${question.eventId}', '${question.id}')">
-                                <i class="fas fa-reply"></i>
-                            </button>
-                        </div>`
-                    }
                 `;
-                container.appendChild(el);
+            } else {
+                for (const q of answered) {
+                    const event = allEvents.find(e => e.id === q.eventId);
+                    const el = await createQuestionCard(q, event, true);
+                    answeredContainer.appendChild(el);
+                }
             }
+        }
+
+        async function createQuestionCard(question, event, isAnswered) {
+            const el = document.createElement('div');
+            el.className = 'question-card';
+            
+            el.innerHTML = `
+                <div class="question-header">
+                    <img src="${question.userAvatar || 'https://via.placeholder.com/40'}" alt="">
+                    <div>
+                        <div class="question-user">${question.userName}</div>
+                        <div class="question-event">${event ? event.title : 'Bilinmeyen Etkinlik'}</div>
+                    </div>
+                </div>
+                <p class="question-text">${question.text}</p>
+                ${isAnswered ? `
+                    <div style="padding: 12px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border-left: 3px solid var(--primary); margin-top: 12px;">
+                        <div style="font-size: 12px; color: var(--primary); margin-bottom: 4px;">Cevap</div>
+                        <p style="font-size: 14px; color: var(--gray-light);">${question.answer}</p>
+                    </div>
+                ` : `
+                    <div class="question-answer-input">
+                        <input type="text" id="answer-${question.id}" placeholder="Cevaplayin...">
+                        <button class="btn btn-primary btn-small" onclick="answerQuestion('${question.eventId}', '${question.id}')">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                `}
+            `;
+            
+            return el;
         }
 
         async function answerQuestion(eventId, questionId) {
@@ -2221,7 +2240,7 @@
 
             try {
                 await db.ref(`eventQuestions/${eventId}/${questionId}/answer`).set(answer);
-                showToast('Cevap gonderildi', 'success');
+                showToast('Soru cevaplandi', 'success');
             } catch (error) {
                 showToast('Hata: ' + error.message, 'error');
             }
@@ -2235,80 +2254,80 @@
             document.getElementById('questionsTab-answered').style.display = tab === 'answered' ? 'block' : 'none';
         }
 
-        // Mass Notifications
+        // Send Mass Notification
         async function sendMassNotification() {
             const title = document.getElementById('notificationTitle').value.trim();
             const message = document.getElementById('notificationMessage').value.trim();
             const target = document.getElementById('notificationTarget').value;
 
             if (!title || !message) {
-                showToast('Baslik ve mesaj zorunlu', 'error');
+                showToast('Baslik ve mesaj gerekli', 'error');
                 return;
             }
 
             try {
-                let userIds = [];
+                let targetUsers = [];
 
                 if (target === 'all') {
-                    userIds = allUsers.map(u => u.id);
+                    targetUsers = allUsers.map(u => u.id);
                 } else if (target === 'clubOwners') {
-                    userIds = allClubs.map(c => c.ownerId);
+                    const clubOwnerIds = allClubs.map(c => c.ownerId);
+                    targetUsers = [...new Set(clubOwnerIds)];
                 } else if (target === 'eventParticipants') {
+                    const participantIds = [];
                     allEvents.forEach(e => {
                         if (e.participants) {
-                            userIds.push(...Object.keys(e.participants));
+                            participantIds.push(...Object.keys(e.participants));
                         }
+                    });
+                    targetUsers = [...new Set(participantIds)];
+                }
+
+                for (const userId of targetUsers) {
+                    await db.ref(`notifications/${userId}`).push({
+                        title: title,
+                        message: `${title}: ${message}`,
+                        read: false,
+                        timestamp: Date.now()
                     });
                 }
 
-                // Remove duplicates
-                userIds = [...new Set(userIds)];
-
-                const notification = {
-                    title,
-                    message,
-                    type: 'message',
-                    timestamp: Date.now(),
-                    read: false
-                };
-
-                for (const userId of userIds) {
-                    await db.ref(`notifications/${userId}`).push(notification);
-                }
-
+                showToast(`${targetUsers.length} kullaniciya bildirim gonderildi`, 'success');
                 document.getElementById('notificationTitle').value = '';
                 document.getElementById('notificationMessage').value = '';
-                
-                showToast(`${userIds.length} kullaniciya bildirim gonderildi`, 'success');
             } catch (error) {
                 showToast('Hata: ' + error.message, 'error');
             }
         }
 
-        // Utility Functions
+        // Upload File to Storage
         async function uploadFile(file, folder) {
-            const fileName = `${folder}/${Date.now()}_${file.name}`;
-            const ref = storage.ref(fileName);
-            await ref.put(file);
-            return await ref.getDownloadURL();
+            const timestamp = Date.now();
+            const filename = `${folder}/admin_${timestamp}_${file.name}`;
+            const storageRef = storage.ref(filename);
+            
+            await storageRef.put(file);
+            return await storageRef.getDownloadURL();
         }
 
+        // Format Date
         function formatDate(timestamp) {
             if (!timestamp) return '-';
             const date = new Date(timestamp);
             return date.toLocaleDateString('tr-TR');
         }
 
+        // Show Toast
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.innerHTML = `
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle'}"></i>
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
                 <span>${message}</span>
             `;
             container.appendChild(toast);
-            
+
             setTimeout(() => {
                 toast.remove();
             }, 3000);
