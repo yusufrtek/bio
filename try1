@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Mail Doğrulama</title>
+</head>
+<body>
+
+<h2>Kayıt Ol</h2>
+
+<input id="email" type="email" placeholder="E-posta"><br><br>
+<input id="password" type="password" placeholder="Şifre"><br><br>
+
+<button onclick="register()">Kayıt Ol</button>
+
+<p id="result"></p>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { 
+    getAuth,
+    createUserWithEmailAndPassword,
+    sendEmailVerification
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  // 🔴 SENİN CONFIG
+  const firebaseConfig = {
+    apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+    authDomain: "maps-52b00.firebaseapp.com",
+    projectId: "maps-52b00",
+    appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.register = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      await sendEmailVerification(userCredential.user);
+
+      document.getElementById("result").innerText =
+        "✅ Kayıt başarılı. Mailine doğrulama kodu/linki gönderildi.";
+    } catch (error) {
+      document.getElementById("result").innerText =
+        "❌ Hata: " + error.message;
+    }
+  };
+</script>
+
+</body>
+</html>
