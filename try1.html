@@ -2,49 +2,164 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Firebase Telefon (SMS) Doğrulama</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Firebase Giriş / Kayıt (Google + Email)</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 520px; margin: 40px auto; }
-    input, button { width: 100%; padding: 10px; margin: 8px 0; }
-    #recaptcha-container { margin: 12px 0; }
+    :root { color-scheme: dark; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: #0b0f17; color: #e7eaf0;
+      display: grid; place-items: center; min-height: 100vh;
+    }
+    .wrap { width: min(980px, 92vw); display: grid; gap: 16px; }
+    .card {
+      background: #111827; border: 1px solid #1f2a44; border-radius: 14px;
+      padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+    h1 { margin: 0 0 8px; font-size: 20px; }
+    h2 { margin: 0 0 12px; font-size: 16px; opacity: .95; }
+    label { font-size: 12px; opacity: .85; display: block; margin: 10px 0 6px; }
+    input {
+      width: 100%; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid #263457; background: #0b1222; color: #e7eaf0;
+      outline: none;
+    }
+    input:focus { border-color: #3b82f6; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .small { font-size: 12px; opacity: .8; }
+    .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button {
+      border: 1px solid #2a3b64; background: #0b1222; color: #e7eaf0;
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+    }
+    button.primary { background: #1d4ed8; border-color: #1d4ed8; }
+    button.danger { background: #991b1b; border-color: #991b1b; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .hint { font-size: 12px; opacity: .75; margin-top: 8px; line-height: 1.4; }
+    .msg {
+      margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid #263457; background: #0b1222; font-size: 13px;
+      white-space: pre-wrap;
+    }
+    .ok { border-color: #14532d; background: #052012; }
+    .err { border-color: #7f1d1d; background: #1a0606; }
+    .warn { border-color: #7c5e10; background: #1a1405; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .pill { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px solid #263457; background: #0b1222; opacity: .9; }
+    .mini { font-size: 12px; opacity: .75; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="card">
+      <div class="topbar">
+        <h1>Firebase Auth Demo (Google + Email/Şifre)</h1>
+        <div class="pill" id="statusPill">Durum: —</div>
+      </div>
+      <div class="mini">
+        Not: Firebase Console’da <b>Authentication → Sign-in method</b> kısmından <b>Email/Password</b> ve <b>Google</b> provider’ını açmalısın.
+        Google için ayrıca <b>Authorized domains</b> kısmında test ettiğin domain (örn. <code>localhost</code>) olmalı.
+      </div>
+    </div>
 
-  <h2>Telefon Doğrulama (SMS)</h2>
+    <div class="grid">
+      <!-- SIGN UP -->
+      <div class="card">
+        <h2>Üye Ol (Email + Şifre)</h2>
 
-  <label>Telefon (E.164 formatında)</label>
-  <input id="phone" placeholder="+905xxxxxxxxx" />
+        <label>Kullanıcı adı</label>
+        <input id="su_username" placeholder="örn: yusuf_06" autocomplete="nickname" />
 
-  <div id="recaptcha-container"></div>
+        <label>Doğum tarihi</label>
+        <input id="su_birth" type="date" />
 
-  <button id="sendBtn">SMS Kodunu Gönder</button>
+        <label>E-posta</label>
+        <input id="su_email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
 
-  <label>SMS Kodu</label>
-  <input id="code" placeholder="123456" />
+        <label>Şifre</label>
+        <input id="su_pass" type="password" placeholder="En az 6 karakter" autocomplete="new-password" />
 
-  <button id="verifyBtn" disabled>Kodu Doğrula</button>
+        <div class="btns">
+          <button class="primary" id="btnSignUp">Üye Ol</button>
+          <button id="btnSendVerify" disabled>Doğrulama Maili Gönder</button>
+        </div>
 
-  <p id="result"></p>
-  <p class="small">
-    Not: Telefon doğrulama için Firebase Console → Authentication → Sign-in method → Phone ENABLED olmalı.
-  </p>
+        <div class="hint">
+          • Üyelik sonrası kullanıcı adı + doğum tarihi <b>Realtime Database</b> içine kaydedilir.<br/>
+          • İstersen bunu Firestore’a çevirebilirim.
+        </div>
+
+        <div class="msg" id="su_msg">—</div>
+      </div>
+
+      <!-- LOGIN -->
+      <div class="card">
+        <h2>Giriş Yap</h2>
+
+        <label>E-posta</label>
+        <input id="li_email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
+
+        <label>Şifre</label>
+        <input id="li_pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+        <div class="btns">
+          <button class="primary" id="btnLogin">Giriş Yap</button>
+          <button id="btnReset">Şifre Sıfırlama Maili</button>
+          <button class="danger" id="btnLogout" disabled>Çıkış Yap</button>
+        </div>
+
+        <hr style="border:0;border-top:1px solid #1f2a44;margin:14px 0;"/>
+
+        <h2>Google ile Giriş</h2>
+        <div class="btns">
+          <button class="primary" id="btnGoogle">Google ile Giriş Yap</button>
+        </div>
+
+        <div class="msg" id="li_msg">—</div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="card">
+      <h2>Oturum Bilgisi</h2>
+      <div class="msg" id="me_msg">—</div>
+      <div class="hint">
+        Realtime Database yolu: <code>/users/{uid}</code> (username, birthdate, email, provider, createdAt)
+      </div>
+    </div>
+  </div>
 
   <script type="module">
+    // Firebase SDK (CDN)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
       getAuth,
-      RecaptchaVerifier,
-      signInWithPhoneNumber
+      onAuthStateChanged,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signInWithPopup,
+      GoogleAuthProvider,
+      sendEmailVerification,
+      sendPasswordResetEmail,
+      updateProfile,
+      reload,
+      signOut
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ✅ SENİN CONFIG (AYNISI)
+    import {
+      getDatabase,
+      ref,
+      set,
+      get
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // ✅ SENİN CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
       authDomain: "maps-52b00.firebaseapp.com",
-      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebaseapp.com",
       projectId: "maps-52b00",
       storageBucket: "maps-52b00.firebasestorage.app",
       messagingSenderId: "485125559932",
@@ -54,61 +169,290 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getDatabase(app);
+    const googleProvider = new GoogleAuthProvider();
 
-    const result = document.getElementById("result");
-    const sendBtn = document.getElementById("sendBtn");
-    const verifyBtn = document.getElementById("verifyBtn");
+    // --- UI helpers ---
+    const $ = (id) => document.getElementById(id);
+    const statusPill = $("statusPill");
 
-    // reCAPTCHA (visible)
-    const recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-      size: "normal",
-      callback: () => {
-        // captcha solved
+    function setMsg(el, text, type = "warn") {
+      el.classList.remove("ok","err","warn");
+      el.classList.add(type);
+      el.textContent = text;
+    }
+
+    function prettyErr(e) {
+      const code = e?.code || "";
+      // Kullanıcı dostu birkaç yaygın hata
+      const map = {
+        "auth/email-already-in-use": "Bu e-posta zaten kayıtlı. Giriş yapmayı deneyin.",
+        "auth/invalid-email": "E-posta formatı hatalı.",
+        "auth/weak-password": "Şifre zayıf. En az 6 karakter olmalı.",
+        "auth/wrong-password": "Şifre yanlış.",
+        "auth/user-not-found": "Bu e-posta ile kullanıcı bulunamadı.",
+        "auth/popup-closed-by-user": "Google giriş penceresi kapatıldı.",
+        "auth/operation-not-allowed": "Bu giriş yöntemi Firebase Console’da kapalı. (Email/Password veya Google)",
+        "auth/network-request-failed": "Ağ hatası. İnternet bağlantını kontrol et."
+      };
+      return map[code] ? `${map[code]} (${code})` : `${e?.message || e} ${code ? "(" + code + ")" : ""}`;
+    }
+
+    function normalizeUsername(u) {
+      return (u || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/[^a-z0-9_\.]/g, "");
+    }
+
+    function validateBirthdate(iso) {
+      // Basit doğrulama: boş değil ve gelecekte değil
+      if (!iso) return "Doğum tarihi zorunlu.";
+      const d = new Date(iso + "T00:00:00");
+      if (Number.isNaN(d.getTime())) return "Doğum tarihi geçersiz.";
+      const now = new Date();
+      if (d > now) return "Doğum tarihi gelecekte olamaz.";
+      return null;
+    }
+
+    async function upsertUserProfile(user, extra = {}) {
+      const userRef = ref(db, `users/${user.uid}`);
+      const snapshot = await get(userRef).catch(() => null);
+
+      const base = {
+        uid: user.uid,
+        email: user.email || null,
+        displayName: user.displayName || null,
+        photoURL: user.photoURL || null,
+        provider: (user.providerData?.[0]?.providerId) || null,
+        updatedAt: Date.now()
+      };
+
+      // İlk kez set ediyorsak createdAt da ekleyelim
+      const payload = snapshot?.exists()
+        ? { ...(snapshot.val() || {}), ...base, ...extra }
+        : { ...base, ...extra, createdAt: Date.now() };
+
+      await set(userRef, payload);
+      return payload;
+    }
+
+    // --- Elements ---
+    const su_msg = $("su_msg");
+    const li_msg = $("li_msg");
+    const me_msg = $("me_msg");
+
+    const btnSignUp = $("btnSignUp");
+    const btnSendVerify = $("btnSendVerify");
+    const btnLogin = $("btnLogin");
+    const btnReset = $("btnReset");
+    const btnGoogle = $("btnGoogle");
+    const btnLogout = $("btnLogout");
+
+    // --- Actions ---
+    btnSignUp.onclick = async () => {
+      setMsg(su_msg, "⏳ Üye olunuyor...", "warn");
+
+      const usernameRaw = $("su_username").value;
+      const username = normalizeUsername(usernameRaw);
+      const birth = $("su_birth").value;
+      const email = $("su_email").value.trim();
+      const pass = $("su_pass").value;
+
+      if (!username) {
+        setMsg(su_msg, "❌ Kullanıcı adı zorunlu. (Sadece harf/rakam/_/.)", "err");
+        return;
+      }
+      if (username.length < 3) {
+        setMsg(su_msg, "❌ Kullanıcı adı en az 3 karakter olmalı.", "err");
+        return;
+      }
+      const birthErr = validateBirthdate(birth);
+      if (birthErr) {
+        setMsg(su_msg, "❌ " + birthErr, "err");
+        return;
+      }
+      if (!email) {
+        setMsg(su_msg, "❌ E-posta zorunlu.", "err");
+        return;
+      }
+      if (!pass || pass.length < 6) {
+        setMsg(su_msg, "❌ Şifre en az 6 karakter olmalı.", "err");
+        return;
+      }
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+
+        // Auth profiline displayName yazalım
+        await updateProfile(cred.user, { displayName: username });
+
+        // DB'ye kullanıcı profilini kaydet
+        await upsertUserProfile(cred.user, {
+          username,
+          birthdate: birth,
+          email,
+          provider: "password"
+        });
+
+        // Doğrulama maili isteği (teslimat mail sağlayıcına göre değişebilir)
+        await sendEmailVerification(cred.user);
+
+        setMsg(
+          su_msg,
+          "✅ Üyelik tamamlandı.\n📩 Doğrulama maili gönderme isteği yapıldı.\n" +
+          "➡️ Mail doğrulaması gelmezse Spam/Tanıtımlar kontrol et ve giriş yaptıktan sonra 'Doğrulama Maili Gönder' butonunu deneyebilirsin.",
+          "ok"
+        );
+
+        btnSendVerify.disabled = false;
+      } catch (e) {
+        setMsg(su_msg, "❌ " + prettyErr(e), "err");
+      }
+    };
+
+    btnSendVerify.onclick = async () => {
+      try {
+        if (!auth.currentUser) {
+          setMsg(su_msg, "❌ Önce giriş yapmalısın (oturum yok).", "err");
+          return;
+        }
+        await sendEmailVerification(auth.currentUser);
+        setMsg(su_msg, "✅ Doğrulama maili tekrar gönderme isteği yapıldı.", "ok");
+      } catch (e) {
+        setMsg(su_msg, "❌ " + prettyErr(e), "err");
+      }
+    };
+
+    btnLogin.onclick = async () => {
+      setMsg(li_msg, "⏳ Giriş yapılıyor...", "warn");
+
+      const email = $("li_email").value.trim();
+      const pass = $("li_pass").value;
+
+      if (!email || !pass) {
+        setMsg(li_msg, "❌ E-posta ve şifre zorunlu.", "err");
+        return;
+      }
+
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+
+        // emailVerified cache'li kalabilir; yenile
+        await reload(cred.user);
+
+        if (!cred.user.emailVerified) {
+          setMsg(
+            li_msg,
+            "⚠️ Giriş başarılı ama e-posta doğrulanmamış.\n" +
+            "➡️ Doğrulama mailini bulup tıkla, sonra tekrar 'Doğrulama Maili Gönder' veya sayfayı yenile.",
+            "warn"
+          );
+          btnSendVerify.disabled = false;
+        } else {
+          setMsg(li_msg, "✅ Giriş başarılı. (E-posta doğrulanmış)", "ok");
+        }
+
+        await upsertUserProfile(cred.user, { provider: "password" });
+
+      } catch (e) {
+        setMsg(li_msg, "❌ " + prettyErr(e), "err");
+      }
+    };
+
+    btnReset.onclick = async () => {
+      const email = $("li_email").value.trim();
+      if (!email) {
+        setMsg(li_msg, "❌ Şifre sıfırlama için e-posta yazmalısın.", "err");
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        setMsg(li_msg, "✅ Şifre sıfırlama maili gönderme isteği yapıldı.", "ok");
+      } catch (e) {
+        setMsg(li_msg, "❌ " + prettyErr(e), "err");
+      }
+    };
+
+    btnGoogle.onclick = async () => {
+      setMsg(li_msg, "⏳ Google ile giriş yapılıyor...", "warn");
+      try {
+        const cred = await signInWithPopup(auth, googleProvider);
+
+        // Google ile girişte biz username + birthdate almadık.
+        // Demo için: eğer profilde yoksa kullanıcıdan sonra eklettirebilirsin.
+        const profile = await upsertUserProfile(cred.user, { provider: "google.com" });
+
+        setMsg(
+          li_msg,
+          "✅ Google ile giriş başarılı.\n" +
+          (profile?.username ? "• Kullanıcı adı: " + profile.username : "• Not: Google girişinde kullanıcı adı/doğum tarihi istemedik (istersen ek ekran yaparız)."),
+          "ok"
+        );
+      } catch (e) {
+        setMsg(li_msg, "❌ " + prettyErr(e), "err");
+      }
+    };
+
+    btnLogout.onclick = async () => {
+      try {
+        await signOut(auth);
+        setMsg(li_msg, "✅ Çıkış yapıldı.", "ok");
+        setMsg(su_msg, "—", "warn");
+      } catch (e) {
+        setMsg(li_msg, "❌ " + prettyErr(e), "err");
+      }
+    };
+
+    // --- Auth state ---
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        statusPill.textContent = "Durum: Çıkış yapılmış";
+        btnLogout.disabled = true;
+        btnSendVerify.disabled = true;
+        setMsg(me_msg, "Oturum yok.", "warn");
+        return;
+      }
+
+      btnLogout.disabled = false;
+      statusPill.textContent = "Durum: Giriş yapıldı";
+
+      try {
+        await reload(user);
+        const verified = !!user.emailVerified;
+
+        // DB profilini çekelim
+        const userRef = ref(db, `users/${user.uid}`);
+        const snap = await get(userRef);
+        const prof = snap.exists() ? snap.val() : null;
+
+        const lines = [
+          `UID: ${user.uid}`,
+          `Email: ${user.email || "-"}`,
+          `Email Verified: ${verified}`,
+          `DisplayName: ${user.displayName || "-"}`,
+          `Provider: ${(user.providerData?.[0]?.providerId) || "-"}`,
+          `DB Username: ${prof?.username || "-"}`,
+          `DB Birthdate: ${prof?.birthdate || "-"}`,
+          `DB CreatedAt: ${prof?.createdAt ? new Date(prof.createdAt).toLocaleString() : "-"}`
+        ];
+
+        setMsg(me_msg, lines.join("\n"), "ok");
+
+        // Email/password kullanıyorsa doğrulama butonunu aç
+        const providerId = (user.providerData?.[0]?.providerId) || "";
+        if (providerId === "password" && !verified) btnSendVerify.disabled = false;
+
+      } catch (e) {
+        setMsg(me_msg, "❌ Profil okunamadı: " + prettyErr(e), "err");
       }
     });
 
-    await recaptchaVerifier.render();
-
-    let confirmationResult = null;
-
-    sendBtn.onclick = async () => {
-      try {
-        const phone = document.getElementById("phone").value.trim();
-        if (!phone.startsWith("+")) {
-          result.innerText = "❌ Telefonu +90... formatında yazmalısın (E.164). Örn: +905xxxxxxxxx";
-          return;
-        }
-
-        result.innerText = "⏳ SMS gönderiliyor...";
-        confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
-
-        result.innerText = "✅ SMS gönderildi. Kodu girip doğrula.";
-        verifyBtn.disabled = false;
-      } catch (e) {
-        console.log(e);
-        result.innerText = `❌ ${e.code || ""} - ${e.message || e}`;
-        // reCAPTCHA yeniden deneme için
-        try { recaptchaVerifier.clear(); } catch {}
-        location.reload();
-      }
-    };
-
-    verifyBtn.onclick = async () => {
-      try {
-        const code = document.getElementById("code").value.trim();
-        if (!confirmationResult) {
-          result.innerText = "❌ Önce SMS kodu göndermelisin.";
-          return;
-        }
-
-        result.innerText = "⏳ Doğrulanıyor...";
-        const cred = await confirmationResult.confirm(code);
-        result.innerText = `✅ Giriş başarılı! UID: ${cred.user.uid}`;
-      } catch (e) {
-        console.log(e);
-        result.innerText = `❌ ${e.code || ""} - ${e.message || e}`;
-      }
-    };
+    // İlk mesajlar
+    setMsg(su_msg, "Üye olmak için bilgileri doldur.", "warn");
+    setMsg(li_msg, "Giriş yapmak için e-posta/şifre yaz veya Google ile giriş yap.", "warn");
+    setMsg(me_msg, "Oturum bilgisi burada görünecek.", "warn");
   </script>
 </body>
 </html>
