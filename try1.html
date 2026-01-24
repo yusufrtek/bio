@@ -1,60 +1,114 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Firebase Mail Doğrulama</title>
+  <meta charset="UTF-8" />
+  <title>Firebase Telefon (SMS) Doğrulama</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 520px; margin: 40px auto; }
+    input, button { width: 100%; padding: 10px; margin: 8px 0; }
+    #recaptcha-container { margin: 12px 0; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .small { font-size: 12px; opacity: .8; }
+  </style>
 </head>
 <body>
 
-<h2>Kayıt Ol</h2>
+  <h2>Telefon Doğrulama (SMS)</h2>
 
-<input id="email" type="email" placeholder="E-posta"><br><br>
-<input id="password" type="password" placeholder="Şifre"><br><br>
+  <label>Telefon (E.164 formatında)</label>
+  <input id="phone" placeholder="+905xxxxxxxxx" />
 
-<button onclick="register()">Kayıt Ol</button>
+  <div id="recaptcha-container"></div>
 
-<p id="result"></p>
+  <button id="sendBtn">SMS Kodunu Gönder</button>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { 
-    getAuth,
-    createUserWithEmailAndPassword,
-    sendEmailVerification
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  <label>SMS Kodu</label>
+  <input id="code" placeholder="123456" />
 
-  // 🔴 SENİN CONFIG
-  const firebaseConfig = {
-    apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
-    authDomain: "maps-52b00.firebaseapp.com",
-    projectId: "maps-52b00",
-    appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9"
-  };
+  <button id="verifyBtn" disabled>Kodu Doğrula</button>
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  <p id="result"></p>
+  <p class="small">
+    Not: Telefon doğrulama için Firebase Console → Authentication → Sign-in method → Phone ENABLED olmalı.
+  </p>
 
-  window.register = async () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getAuth,
+      RecaptchaVerifier,
+      signInWithPhoneNumber
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    // ✅ SENİN CONFIG (AYNISI)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+      authDomain: "maps-52b00.firebaseapp.com",
+      databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "maps-52b00",
+      storageBucket: "maps-52b00.firebasestorage.app",
+      messagingSenderId: "485125559932",
+      appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
+      measurementId: "G-YHHXDYCCG7"
+    };
 
-      await sendEmailVerification(userCredential.user);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-      document.getElementById("result").innerText =
-        "✅ Kayıt başarılı. Mailine doğrulama kodu/linki gönderildi.";
-    } catch (error) {
-      document.getElementById("result").innerText =
-        "❌ Hata: " + error.message;
-    }
-  };
-</script>
+    const result = document.getElementById("result");
+    const sendBtn = document.getElementById("sendBtn");
+    const verifyBtn = document.getElementById("verifyBtn");
 
+    // reCAPTCHA (visible)
+    const recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+      size: "normal",
+      callback: () => {
+        // captcha solved
+      }
+    });
+
+    await recaptchaVerifier.render();
+
+    let confirmationResult = null;
+
+    sendBtn.onclick = async () => {
+      try {
+        const phone = document.getElementById("phone").value.trim();
+        if (!phone.startsWith("+")) {
+          result.innerText = "❌ Telefonu +90... formatında yazmalısın (E.164). Örn: +905xxxxxxxxx";
+          return;
+        }
+
+        result.innerText = "⏳ SMS gönderiliyor...";
+        confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
+
+        result.innerText = "✅ SMS gönderildi. Kodu girip doğrula.";
+        verifyBtn.disabled = false;
+      } catch (e) {
+        console.log(e);
+        result.innerText = `❌ ${e.code || ""} - ${e.message || e}`;
+        // reCAPTCHA yeniden deneme için
+        try { recaptchaVerifier.clear(); } catch {}
+        location.reload();
+      }
+    };
+
+    verifyBtn.onclick = async () => {
+      try {
+        const code = document.getElementById("code").value.trim();
+        if (!confirmationResult) {
+          result.innerText = "❌ Önce SMS kodu göndermelisin.";
+          return;
+        }
+
+        result.innerText = "⏳ Doğrulanıyor...";
+        const cred = await confirmationResult.confirm(code);
+        result.innerText = `✅ Giriş başarılı! UID: ${cred.user.uid}`;
+      } catch (e) {
+        console.log(e);
+        result.innerText = `❌ ${e.code || ""} - ${e.message || e}`;
+      }
+    };
+  </script>
 </body>
 </html>
