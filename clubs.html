@@ -6,6 +6,7 @@
   <title>LENG - Kulupler</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -27,8 +28,6 @@
       --c-verified: #1da1f2;
       --c-border: #e5e7eb;
       --c-muted: #6b7280;
-      --nav-height: 70px;
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     body {
@@ -88,7 +87,7 @@
       display: none;
       min-height: 100vh;
       min-height: 100dvh;
-      padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
+      padding-bottom: 20px;
     }
 
     .app-container.active {
@@ -117,14 +116,29 @@
       padding: 0 16px;
     }
 
-    .header-logo {
-      font-size: 1.5rem;
-      font-weight: 700;
+    /* Back to Home Button */
+    .back-home-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
       background: linear-gradient(135deg, var(--c-action), #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .back-home-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .back-home-btn i {
+      font-size: 1rem;
     }
 
     .header-user {
@@ -154,52 +168,13 @@
       font-size: 0.9rem;
     }
 
-    /* Bottom Navigation */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: calc(var(--nav-height) + var(--safe-bottom));
-      background: var(--c-glass);
-      border-top: 1px solid var(--c-border);
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-start;
-      padding-top: 10px;
-      padding-bottom: var(--safe-bottom);
-      z-index: 100;
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 12px;
-      color: var(--c-muted);
-      text-decoration: none;
-      font-size: 0.7rem;
-      transition: color 0.2s;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .nav-item i {
-      font-size: 1.3rem;
-    }
-
-    .nav-item.active {
-      color: var(--c-action);
-    }
-
     /* Pages */
     .page {
       display: none;
       padding: 80px 16px 20px;
       max-width: 600px;
       margin: 0 auto;
-      min-height: calc(100vh - var(--nav-height));
+      min-height: 100vh;
     }
 
     .page.active {
@@ -549,6 +524,11 @@
     .channel-icon.chat {
       background: #dbeafe;
       color: #3b82f6;
+    }
+
+    .channel-icon.events {
+      background: #dcfce7;
+      color: #22c55e;
     }
 
     .channel-info {
@@ -1122,11 +1102,114 @@
       cursor: pointer;
     }
 
-    /* User Badges Display */
-    .user-badges-container {
+    /* Add Event Section */
+    .add-event-section {
+      background: var(--c-glass);
+      border-radius: 16px;
+      border: 1px solid var(--c-border);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .add-event-section h4 {
+      font-weight: 600;
+      margin-bottom: 16px;
       display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .add-event-btn {
+      width: 100%;
+      padding: 14px;
+      border: 2px dashed var(--c-border);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--c-action);
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .add-event-btn:hover {
+      border-color: var(--c-action);
+    }
+
+    /* Participants Modal */
+    .participants-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 350;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .participants-modal.active {
+      display: flex;
+    }
+
+    .participants-content {
+      background: var(--c-glass);
+      border-radius: 24px;
+      padding: 24px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .participant-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .participant-item:last-child {
+      border-bottom: none;
+    }
+
+    .participant-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .participant-info {
+      flex: 1;
+    }
+
+    .participant-name {
+      font-weight: 500;
+    }
+
+    .participant-username {
+      font-size: 0.8rem;
+      color: var(--c-muted);
+    }
+
+    .download-pdf-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--c-action);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
     }
 
     /* Empty State */
@@ -1188,8 +1271,6 @@
     /* Responsive */
     @media (max-width: 480px) {
       .page { padding: 80px 12px 20px; }
-      .nav-item { padding: 8px 10px; font-size: 0.65rem; }
-      .nav-item i { font-size: 1.2rem; }
     }
   </style>
 </head>
@@ -1207,7 +1288,10 @@
     <!-- Header -->
     <header class="header">
       <div class="header-inner">
-        <span class="header-logo" onclick="goToHome()">LENG</span>
+        <button class="back-home-btn" onclick="goToHome()">
+          <i class="fas fa-arrow-left"></i>
+          <span>Ana Sayfa</span>
+        </button>
         <div class="header-user" onclick="goToProfile()">
           <img class="header-avatar" id="headerAvatar" src="https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff" alt="Avatar">
           <span class="header-name" id="headerName">Kullanici</span>
@@ -1241,34 +1325,6 @@
         </div>
       </div>
     </main>
-
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-      <div class="nav-item" onclick="goToHome()">
-        <i class="fas fa-home"></i>
-        <span>Ana Sayfa</span>
-      </div>
-      <div class="nav-item" onclick="goToSearch()">
-        <i class="fas fa-search"></i>
-        <span>Ara</span>
-      </div>
-      <div class="nav-item active">
-        <i class="fas fa-users"></i>
-        <span>Kulupler</span>
-      </div>
-      <div class="nav-item" onclick="goToFriends()">
-        <i class="fas fa-user-friends"></i>
-        <span>Arkadaslar</span>
-      </div>
-      <div class="nav-item" onclick="goToChat()">
-        <i class="fas fa-comments"></i>
-        <span>Mesajlar</span>
-      </div>
-      <div class="nav-item" onclick="goToProfile()">
-        <i class="fas fa-user"></i>
-        <span>Profil</span>
-      </div>
-    </nav>
   </div>
 
   <!-- Club Detail Page -->
@@ -1294,6 +1350,15 @@
           </div>
         </div>
         <button class="club-action-btn" id="clubActionBtn">Katil</button>
+      </div>
+
+      <!-- Add Event Section (Only for owners/admins) -->
+      <div class="add-event-section" id="addEventSection" style="display:none;">
+        <h4><i class="fas fa-calendar-plus"></i> Etkinlik Olustur</h4>
+        <button class="add-event-btn" onclick="showAddEventModal()">
+          <i class="fas fa-plus"></i>
+          Yeni Etkinlik Ekle
+        </button>
       </div>
 
       <div class="club-channels" id="clubChannels">
@@ -1420,6 +1485,56 @@
     </div>
   </div>
 
+  <!-- Add Event Modal -->
+  <div class="modal-overlay" id="addEventModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Etkinlik Olustur</h3>
+        <button class="modal-close" onclick="closeAddEventModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="form-group">
+        <label>Etkinlik Adi</label>
+        <input type="text" class="form-input" id="newEventName" placeholder="Etkinlik adi">
+      </div>
+      <div class="form-group">
+        <label>Aciklama</label>
+        <textarea class="form-input form-textarea" id="newEventDesc" placeholder="Etkinlik aciklamasi"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Gorsel URL</label>
+        <input type="text" class="form-input" id="newEventImage" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label>Tarih ve Saat</label>
+        <input type="datetime-local" class="form-input" id="newEventDate">
+      </div>
+      <div class="form-group">
+        <label>Konum</label>
+        <input type="text" class="form-input" id="newEventLocation" placeholder="Etkinlik konumu">
+      </div>
+      <button class="submit-btn" onclick="createClubEvent()">Etkinlik Olustur</button>
+    </div>
+  </div>
+
+  <!-- Participants Modal -->
+  <div class="participants-modal" id="participantsModal">
+    <div class="participants-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Katilimcilar</h3>
+        <button class="modal-close" onclick="closeParticipantsModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div id="participantsList"></div>
+      <button class="download-pdf-btn" onclick="downloadParticipantsPDF()">
+        <i class="fas fa-download"></i>
+        PDF Olarak Indir
+      </button>
+    </div>
+  </div>
+
   <!-- Club Settings Page -->
   <div class="club-settings-page" id="clubSettingsPage">
     <div class="club-detail-header">
@@ -1543,6 +1658,8 @@
     let selectedColor = '#3b82f6';
     let editSelectedColor = '#3b82f6';
     let attachmentData = null;
+    let currentEventParticipants = [];
+    let currentEventName = '';
 
     // Auth State
     onAuthStateChanged(auth, async (user) => {
@@ -1564,10 +1681,10 @@
           loadTheme();
           checkCreatePermission();
         } else {
-          window.location.href = 'index.html';
+          window.location.href = 'login.html';
         }
       } else {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
       }
     });
 
@@ -1598,9 +1715,6 @@
 
     // Navigation
     window.goToHome = () => { window.location.href = 'index.html'; };
-    window.goToSearch = () => { window.location.href = 'index.html#search'; };
-    window.goToFriends = () => { window.location.href = 'index.html#friends'; };
-    window.goToChat = () => { window.location.href = 'index.html#chat'; };
     window.goToProfile = () => { window.location.href = 'index.html#profile'; };
 
     // Club Tabs
@@ -1757,6 +1871,10 @@
       // Settings button
       const settingsBtn = document.getElementById('clubSettingsBtn');
       settingsBtn.style.display = (isOwner || isAdmin) ? 'flex' : 'none';
+
+      // Add Event Section
+      const addEventSection = document.getElementById('addEventSection');
+      addEventSection.style.display = (isOwner || isAdmin) ? 'block' : 'none';
 
       // Load members
       loadClubMembers(clubId, memberSnap.exists() ? memberSnap.val() : {}, club.ownerId);
@@ -2070,6 +2188,7 @@
       reader.onload = (event) => {
         // Create square image
         const img = new Image();
+        img.crossOrigin = "anonymous";
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const size = Math.min(img.width, img.height);
@@ -2097,6 +2216,7 @@
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
+        img.crossOrigin = "anonymous";
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const size = Math.min(img.width, img.height);
@@ -2175,6 +2295,132 @@
         btn.disabled = false;
         btn.textContent = 'Kulup Olustur';
       }
+    };
+
+    // Add Event Modal
+    window.showAddEventModal = () => {
+      document.getElementById('addEventModal').classList.add('active');
+    };
+
+    window.closeAddEventModal = () => {
+      document.getElementById('addEventModal').classList.remove('active');
+      document.getElementById('newEventName').value = '';
+      document.getElementById('newEventDesc').value = '';
+      document.getElementById('newEventImage').value = '';
+      document.getElementById('newEventDate').value = '';
+      document.getElementById('newEventLocation').value = '';
+    };
+
+    // Create Club Event
+    window.createClubEvent = async () => {
+      const name = document.getElementById('newEventName').value.trim();
+      const description = document.getElementById('newEventDesc').value.trim();
+      const image = document.getElementById('newEventImage').value.trim();
+      const date = document.getElementById('newEventDate').value;
+      const location = document.getElementById('newEventLocation').value.trim();
+
+      if (!name) {
+        showToast('Etkinlik adi gerekli');
+        return;
+      }
+
+      try {
+        const clubSnap = await get(ref(db, `clubs/${currentClubId}`));
+        const club = clubSnap.val();
+
+        const eventData = {
+          name,
+          description,
+          image,
+          date,
+          location,
+          clubId: currentClubId,
+          clubName: club.name,
+          clubImage: club.image,
+          createdBy: currentUser.uid,
+          createdAt: Date.now()
+        };
+
+        await push(ref(db, 'events'), eventData);
+
+        showToast('Etkinlik olusturuldu');
+        closeAddEventModal();
+      } catch (error) {
+        console.error('Create event error:', error);
+        showToast('Bir hata olustu');
+      }
+    };
+
+    // Show Participants Modal
+    window.showParticipantsModal = async (eventId, eventName) => {
+      currentEventName = eventName;
+      const participantsSnap = await get(ref(db, `eventParticipants/${eventId}`));
+      
+      if (!participantsSnap.exists()) {
+        showToast('Katilimci bulunamadi');
+        return;
+      }
+
+      currentEventParticipants = [];
+      let html = '';
+
+      for (const [userId, data] of Object.entries(participantsSnap.val())) {
+        const userSnap = await get(ref(db, `users/${userId}`));
+        if (userSnap.exists()) {
+          const user = userSnap.val();
+          currentEventParticipants.push({
+            name: user.displayName,
+            username: user.username,
+            email: user.email,
+            attended: data.attended
+          });
+          
+          html += `
+            <div class="participant-item">
+              <img class="participant-avatar" src="${user.photoURL}" alt="">
+              <div class="participant-info">
+                <div class="participant-name">${user.displayName}</div>
+                <div class="participant-username">@${user.username}</div>
+              </div>
+              <span style="font-size:0.8rem;color:${data.attended ? 'var(--c-success)' : 'var(--c-muted)'};">
+                ${data.attended ? 'Katildi' : 'Bekliyor'}
+              </span>
+            </div>
+          `;
+        }
+      }
+
+      document.getElementById('participantsList').innerHTML = html;
+      document.getElementById('participantsModal').classList.add('active');
+    };
+
+    window.closeParticipantsModal = () => {
+      document.getElementById('participantsModal').classList.remove('active');
+    };
+
+    // Download Participants PDF
+    window.downloadParticipantsPDF = () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.setFontSize(18);
+      doc.text(currentEventName + ' - Katilimci Listesi', 20, 20);
+      
+      doc.setFontSize(12);
+      let y = 40;
+      
+      currentEventParticipants.forEach((p, i) => {
+        doc.text(`${i + 1}. ${p.name} (@${p.username}) - ${p.attended ? 'Katildi' : 'Bekliyor'}`, 20, y);
+        y += 10;
+        
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+      });
+      
+      doc.save(`${currentEventName}-katilimcilar.pdf`);
+      showToast('PDF indirildi');
     };
 
     // Club Settings
@@ -2259,6 +2505,7 @@
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
+        img.crossOrigin = "anonymous";
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const size = Math.min(img.width, img.height);
@@ -2285,6 +2532,7 @@
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
+        img.crossOrigin = "anonymous";
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const size = Math.min(img.width, img.height);
