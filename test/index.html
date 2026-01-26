@@ -1,257 +1,81 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Test Shop (GitHub Pages + Render)</title>
+  <meta charset="UTF-8">
+  <title>Render API Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial, sans-serif; max-width: 860px; margin: 24px auto; padding: 0 14px; }
-    .row { display: flex; gap: 14px; flex-wrap: wrap; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; flex: 1; min-width: 240px; }
-    button { padding: 10px 12px; border: 0; border-radius: 10px; cursor: pointer; }
-    button:disabled { opacity: .6; cursor: not-allowed; }
-    input { padding: 10px 12px; border-radius: 10px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
-    .muted { color: #666; font-size: 12px; }
-    pre { background: #f6f6f6; padding: 12px; border-radius: 10px; overflow:auto; }
-    .right { text-align: right; }
-    .badge { display:inline-block; padding:4px 8px; border-radius:999px; background:#eee; font-size:12px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    button {
+      padding: 12px 16px;
+      margin-top: 10px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 12px;
+      margin-top: 15px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
-  <h2>🧪 Test Shop</h2>
-  <p class="muted">GitHub Pages (HTML) → Render (Node.js API) test sayfası</p>
 
-  <div class="card">
-    <div class="row" style="align-items:center; justify-content:space-between;">
-      <div>
-        <div><strong>API Durumu:</strong> <span id="apiStatus" class="badge">Bilinmiyor</span></div>
-        <div class="muted" id="apiUrlText"></div>
-      </div>
-      <button id="btnPing">API Test Et</button>
-    </div>
-  </div>
+  <h2>🧪 Render Backend Test</h2>
+  <p>Bu sayfa GitHub Pages üzerinden Render API’yi test eder.</p>
 
-  <h3>Ürünler</h3>
-  <div class="row" id="products"></div>
+  <button onclick="ping()">🔌 API Ping</button>
+  <button onclick="startPayment()">💳 /start-payment Test</button>
 
-  <h3>Sepet</h3>
-  <div class="card">
-    <div id="cartEmpty" class="muted">Sepet boş.</div>
-    <div id="cartList"></div>
-    <hr />
-    <div class="row" style="align-items:center;">
-      <div style="flex:2">
-        <label class="muted">Order ID (test için):</label>
-        <input id="orderId" placeholder="Örn: TEST123" />
-      </div>
-      <div class="right" style="flex:1">
-        <div class="muted">Toplam</div>
-        <div style="font-size:20px;"><strong id="total">0 ₺</strong></div>
-      </div>
-    </div>
-    <div style="margin-top:12px;" class="row">
-      <button id="btnClear">Sepeti Temizle</button>
-      <button id="btnPay" style="flex:1;">Ödemeyi Başlat</button>
-    </div>
-    <p class="muted" style="margin-top:10px;">
-      Not: Şu an backend’in <code>/start-payment</code> endpoint’i sahte link döndürüyor.
-      Gerçek ödeme entegrasyonunu sonra ekleyeceğiz.
-    </p>
-  </div>
-
-  <h3>Log</h3>
-  <pre id="log"></pre>
+  <pre id="log">Log burada görünecek…</pre>
 
 <script>
-  // ✅ BURAYA KENDİ RENDER URL'İNİ YAZ
-  const API_BASE = "https://bio-1-mq9x.onrender.com/";
+  // ✅ SENİN RENDER URL'İN
+  const API_BASE = "https://bio-1-mq9x.onrender.com";
 
-  const PRODUCTS = [
-    { id: "urun1", name: "Test Ürün 1", price: 49 },
-    { id: "urun2", name: "Test Ürün 2", price: 79 },
-    { id: "urun3", name: "Test Ürün 3", price: 129 },
-  ];
+  const logEl = document.getElementById("log");
 
-  const el = (id) => document.getElementById(id);
-  const logBox = el("log");
-
-  function log(...args) {
-    const line = args.map(a => typeof a === "string" ? a : JSON.stringify(a, null, 2)).join(" ");
-    logBox.textContent = (line + "\n") + logBox.textContent;
+  function log(msg) {
+    logEl.textContent = msg;
   }
 
-  // --- Cart (localStorage) ---
-  const CART_KEY = "test_cart_v1";
-
-  function getCart() {
-    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
-    catch { return []; }
-  }
-
-  function setCart(items) {
-    localStorage.setItem(CART_KEY, JSON.stringify(items));
-    renderCart();
-  }
-
-  function addToCart(productId) {
-    const cart = getCart();
-    const found = cart.find(x => x.productId === productId);
-    if (found) found.qty += 1;
-    else cart.push({ productId, qty: 1 });
-    setCart(cart);
-  }
-
-  function decCart(productId) {
-    const cart = getCart();
-    const found = cart.find(x => x.productId === productId);
-    if (!found) return;
-    found.qty -= 1;
-    const next = cart.filter(x => x.qty > 0);
-    setCart(next);
-  }
-
-  function clearCart() { setCart([]); }
-
-  function cartTotal() {
-    const cart = getCart();
-    let sum = 0;
-    for (const item of cart) {
-      const p = PRODUCTS.find(p => p.id === item.productId);
-      if (p) sum += p.price * item.qty;
-    }
-    return sum;
-  }
-
-  // --- UI render ---
-  function renderProducts() {
-    const wrap = el("products");
-    wrap.innerHTML = "";
-    for (const p of PRODUCTS) {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-          <div>
-            <div><strong>${p.name}</strong></div>
-            <div class="muted">${p.price} ₺</div>
-          </div>
-          <button data-add="${p.id}">Sepete Ekle</button>
-        </div>
-      `;
-      wrap.appendChild(div);
-    }
-    wrap.querySelectorAll("button[data-add]").forEach(btn => {
-      btn.addEventListener("click", () => addToCart(btn.dataset.add));
-    });
-  }
-
-  function renderCart() {
-    const cart = getCart();
-    el("total").textContent = cartTotal() + " ₺";
-
-    el("cartEmpty").style.display = cart.length ? "none" : "block";
-    const list = el("cartList");
-    list.innerHTML = "";
-
-    for (const item of cart) {
-      const p = PRODUCTS.find(p => p.id === item.productId);
-      if (!p) continue;
-
-      const row = document.createElement("div");
-      row.style.display = "flex";
-      row.style.justifyContent = "space-between";
-      row.style.alignItems = "center";
-      row.style.gap = "10px";
-      row.style.padding = "8px 0";
-      row.innerHTML = `
-        <div>
-          <div><strong>${p.name}</strong></div>
-          <div class="muted">${p.price} ₺ × ${item.qty}</div>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <button data-dec="${p.id}">-</button>
-          <span><strong>${item.qty}</strong></span>
-          <button data-add="${p.id}">+</button>
-        </div>
-      `;
-      list.appendChild(row);
-    }
-
-    list.querySelectorAll("button[data-add]").forEach(btn => {
-      btn.addEventListener("click", () => addToCart(btn.dataset.add));
-    });
-    list.querySelectorAll("button[data-dec]").forEach(btn => {
-      btn.addEventListener("click", () => decCart(btn.dataset.dec));
-    });
-  }
-
-  // --- API calls ---
-  async function pingApi() {
-    el("apiStatus").textContent = "Kontrol ediliyor...";
+  async function ping() {
     try {
-      const r = await fetch(`${API_BASE}/`, { method: "GET" });
-      const data = await r.json();
-      el("apiStatus").textContent = "Çalışıyor ✅";
-      log("PING OK:", data);
-    } catch (e) {
-      el("apiStatus").textContent = "Hata ❌";
-      log("PING ERROR:", String(e));
-      alert("API'ye bağlanamadı. Render URL doğru mu? (https olmalı)");
+      const res = await fetch(API_BASE + "/");
+      const text = await res.text();
+      log("PING RAW RESPONSE:\n\n" + text);
+    } catch (err) {
+      log("PING ERROR:\n\n" + err);
     }
   }
 
   async function startPayment() {
-    const cart = getCart();
-    if (!cart.length) return alert("Sepet boş.");
-
-    const orderId = el("orderId").value.trim() || ("TEST_" + Date.now());
-
-    const btn = el("btnPay");
-    btn.disabled = true;
-    btn.textContent = "Gönderiliyor...";
-
     try {
-      const r = await fetch(`${API_BASE}/start-payment`, {
+      const res = await fetch(API_BASE + "/start-payment", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          orderId: "TEST123"
+        })
       });
 
-      const data = await r.json();
-      log("START PAYMENT:", { orderId, response: data });
-
-      if (!r.ok) {
-        alert(data?.error || "Hata oluştu");
-        return;
-      }
-
-      if (!data.paymentUrl) {
-        alert("paymentUrl gelmedi. Backend yanıtını kontrol et.");
-        return;
-      }
-
-      // Test: önce göster
-      if (confirm("Ödeme sayfasına yönlendirilsin mi?\n\n" + data.paymentUrl)) {
-        window.location.href = data.paymentUrl;
-      }
-    } catch (e) {
-      log("START PAYMENT ERROR:", String(e));
-      alert("İstek atılamadı. CORS/URL kontrol et.");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Ödemeyi Başlat";
+      const text = await res.text();
+      log("/start-payment RAW RESPONSE:\n\n" + text);
+    } catch (err) {
+      log("START PAYMENT ERROR:\n\n" + err);
     }
   }
-
-  // --- init ---
-  el("apiUrlText").textContent = API_BASE;
-  el("btnPing").addEventListener("click", pingApi);
-  el("btnPay").addEventListener("click", startPayment);
-  el("btnClear").addEventListener("click", clearCart);
-
-  renderProducts();
-  renderCart();
-  pingApi();
 </script>
+
 </body>
 </html>
