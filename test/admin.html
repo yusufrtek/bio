@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel (Test)</title>
+  <style>
+    body{ font-family:system-ui,Arial; max-width:1100px; margin:30px auto; padding:0 16px; background:#fafafa; }
+    .card{ background:#fff; border:1px solid #e6e6e6; border-radius:14px; padding:14px; margin:12px 0; }
+    input{ width:100%; padding:10px 12px; border:1px solid #d8d8d8; border-radius:12px; box-sizing:border-box; }
+    button{ padding:10px 12px; border:0; border-radius:12px; background:#111; color:#fff; cursor:pointer; font-weight:700; }
+    button.secondary{ background:#fff; color:#111; border:1px solid #e6e6e6; }
+    table{ width:100%; border-collapse:collapse; }
+    th,td{ text-align:left; padding:10px; border-bottom:1px solid #eee; vertical-align:top; font-size:13px; }
+    th{ font-size:12px; color:#666; }
+    .row{ display:flex; gap:10px; align-items:center; }
+    .row > *{ flex:1; }
+    .muted{ color:#666; font-size:12px; }
+    .tag{ display:inline-block; padding:4px 10px; border-radius:999px; background:#eee; font-size:12px; }
+    .ok{ background:#dff7e6; }
+    .warn{ background:#fff2cc; }
+    .bad{ background:#ffe0e0; }
+    pre{ margin:0; white-space:pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>🛠️ Admin Panel (Test)</h2>
+  <p class="muted">Bu sayfa Render backend’den siparişleri çeker ve durumlarını gösterir.</p>
+
+  <div class="card">
+    <div class="row" style="align-items:flex-end;">
+      <div>
+        <div class="muted">Render API Base</div>
+        <input id="apiBase" value="https://bio-1-mq9x.onrender.com" />
+        <div class="muted">Sonda “/” olmasın.</div>
+      </div>
+      <div style="max-width:220px;">
+        <button id="btnLoad">Siparişleri Yükle</button>
+      </div>
+      <div style="max-width:220px;">
+        <button class="secondary" id="btnAuto">Auto Refresh: Kapalı</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <input id="search" placeholder="OrderId / email / status ara..." />
+      <button class="secondary" id="btnClear">Temizle</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div><strong>Son Siparişler</strong> <span class="muted" id="count"></span></div>
+      <div class="muted" style="text-align:right;" id="last"></div>
+    </div>
+    <div style="overflow:auto; margin-top:10px;">
+      <table>
+        <thead>
+          <tr>
+            <th>OrderId</th>
+            <th>Durum</th>
+            <th>Müşteri</th>
+            <th>Ürünler</th>
+            <th>Zaman</th>
+            <th>Test</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="6" class="muted">Henüz yüklenmedi.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const tbody = $("tbody");
+    let cache = [];
+    let timer = null;
+    let auto = false;
+
+    function base(){
+      return $("apiBase").value.trim().replace(/\/$/, "");
+    }
+
+    function fmtTime(ts){
+      if (!ts) return "-";
+      try{
+        return new Date(ts).toLocaleString("tr-TR");
+      }catch{ return String(ts); }
+    }
+
+    function statusTag(s){
+      const st = (s || "").toUpperCase();
+      let cls = "tag";
+      if (st === "PAID") cls += " ok";
+      else if (st === "FAILED") cls += " bad";
+      else if (st === "PAYMENT_STARTED") cls += " warn";
+      return `<span class="${cls}">${st || "-"}</span>`;
+    }
+
+    function itemsText(items){
+      if (!Array.isArray(items) || !items.length) return "-";
+      return items.map(i => `${i.productId} × ${i.qty}`).join(", ");
+    }
+
+    function applyFilter(){
+      const q = $("search").value.trim().toLowerCase();
+      const list = !q ? cache : cache.filter(o => {
+        const s = JSON.stringify(o).toLowerCase();
+        return s.includes(q);
+      });
+      render(list);
+    }
+
+    function render(list){
+      $("count").textContent = `(${list.length})`;
+
+      if (!list.length){
+        tbody.innerHTML = `<tr><td colspan="6" class="muted">Kayıt yok.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(o => {
+        const cust = o.customer || {};
+        const email = cust.email || "-";
+        const name = cust.name || "-";
+        const createdAt = fmtTime(o.createdAt);
+        const id = o.id;
+
+        return `
+          <tr>
+            <td><pre>${id}</pre></td>
+            <td>${statusTag(o.status)}</td>
+            <td>
+              <div><strong>${name}</strong></div>
+              <div class="muted">${email}</div>
+            </td>
+            <td>${itemsText(o.items)}</td>
+            <td>
+              <div class="muted">created</div>
+              <div>${createdAt}</div>
+              <div class="muted">updated</div>
+              <div>${fmtTime(o.updatedAt)}</div>
+            </td>
+            <td>
+              <button class="secondary" onclick="setStatus('${id}','PAID')">PAID</button>
+              <div style="height:8px"></div>
+              <button class="secondary" onclick="setStatus('${id}','FAILED')">FAILED</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      $("last").textContent = "Son güncelleme: " + new Date().toLocaleTimeString("tr-TR");
+    }
+
+    async function loadOrders(){
+      try{
+        const r = await fetch(base() + "/admin/orders");
+        const data = await r.json();
+        cache = (data.orders || []);
+        applyFilter();
+      }catch(e){
+        tbody.innerHTML = `<tr><td colspan="6" class="muted">Hata: ${String(e)}</td></tr>`;
+      }
+    }
+
+    async function setStatus(orderId, status){
+      if (!confirm(orderId + " durumunu " + status + " yapayım mı?")) return;
+      try{
+        const r = await fetch(base() + "/admin/orders/" + orderId + "/status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status })
+        });
+        const data = await r.json();
+        alert(JSON.stringify(data));
+        loadOrders();
+      }catch(e){
+        alert(String(e));
+      }
+    }
+
+    // expose for onclick
+    window.setStatus = setStatus;
+
+    $("btnLoad").addEventListener("click", loadOrders);
+    $("search").addEventListener("input", applyFilter);
+    $("btnClear").addEventListener("click", () => { $("search").value=""; applyFilter(); });
+
+    $("btnAuto").addEventListener("click", () => {
+      auto = !auto;
+      $("btnAuto").textContent = "Auto Refresh: " + (auto ? "Açık" : "Kapalı");
+      if (timer) clearInterval(timer);
+      if (auto) timer = setInterval(loadOrders, 5000);
+    });
+
+    loadOrders();
+  </script>
+</body>
+</html>
