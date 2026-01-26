@@ -1,151 +1,343 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Render + Firebase Test</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini Shop Test (Render + Firebase)</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
-    button { padding: 12px 14px; width: 100%; margin: 10px 0; font-size: 16px; cursor: pointer; }
-    input, textarea { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-    .row { display: flex; gap: 10px; }
-    .row > * { flex: 1; }
-    pre { background: #f4f4f4; padding: 12px; border-radius: 8px; white-space: pre-wrap; overflow:auto; }
-    .muted { color: #666; font-size: 12px; }
-    code { background:#eee; padding:2px 6px; border-radius:6px; }
+    :root{ --b:#111; --g:#666; --bd:#e6e6e6; --bg:#fafafa; --card:#fff; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,Segoe UI,Arial; background:var(--bg); color:var(--b); }
+    .wrap{ max-width:980px; margin:0 auto; padding:18px; }
+    header{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    h1{ font-size:18px; margin:0; }
+    .pill{ font-size:12px; padding:6px 10px; border:1px solid var(--bd); border-radius:999px; background:#fff; }
+    .grid{ display:grid; grid-template-columns: 1.3fr .7fr; gap:14px; margin-top:14px; }
+    @media (max-width: 860px){ .grid{ grid-template-columns:1fr; } }
+    .card{ background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:14px; }
+    .muted{ color:var(--g); font-size:12px; }
+    .row{ display:flex; gap:10px; align-items:center; }
+    .row > *{ flex:1; }
+    input{ width:100%; padding:10px 12px; border:1px solid #d8d8d8; border-radius:12px; outline:none; }
+    input:focus{ border-color:#bdbdbd; }
+    button{
+      border:0; border-radius:12px; padding:10px 12px; cursor:pointer;
+      background:#111; color:#fff; font-weight:600;
+    }
+    button.secondary{ background:#fff; color:#111; border:1px solid var(--bd); }
+    button:disabled{ opacity:.6; cursor:not-allowed; }
+    .products{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
+    @media (max-width: 860px){ .products{ grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px){ .products{ grid-template-columns: 1fr; } }
+    .p{
+      border:1px solid var(--bd); border-radius:14px; padding:12px; background:#fff;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .p strong{ font-size:14px; }
+    .p .price{ font-weight:700; }
+    .cartItem{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px dashed #e8e8e8; gap:10px; }
+    .cartItem:first-child{ border-top:0; }
+    .qty{ display:flex; gap:8px; align-items:center; }
+    .qty button{ padding:8px 10px; border-radius:10px; }
+    .qty span{ min-width:22px; text-align:center; font-weight:700; }
+    pre{ background:#0b0b0b; color:#d7ffd7; padding:12px; border-radius:14px; overflow:auto; font-size:12px; }
+    .total{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:10px; border-top:1px solid var(--bd); }
+    .ok{ color:#0a7b2a; }
+    .bad{ color:#b00020; }
   </style>
 </head>
 <body>
-  <h2>🧪 Render + Firebase Realtime DB Test</h2>
-  <p class="muted">
-    Bu sayfa GitHub Pages (HTML) üzerinden Render API’yi test eder:
-    <code>/</code>, <code>/create-order</code>, <code>/start-payment</code>.
-  </p>
+  <div class="wrap">
+    <header>
+      <h1>🧪 Mini Shop Test</h1>
+      <div class="pill">API: <span id="apiStatus">Kontrol ediliyor…</span></div>
+    </header>
 
-  <div>
-    <label class="muted">API Base (Render URL)</label>
-    <input id="apiBase" value="https://bio-1-mq9x.onrender.com" />
-    <p class="muted">Not: Sonda <code>/</code> olmasın.</p>
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card">
+        <div class="row" style="align-items:flex-end;">
+          <div>
+            <div class="muted">Render API Base</div>
+            <input id="apiBase" value="https://bio-1-mq9x.onrender.com" />
+            <div class="muted">Sonda “/” olmasın.</div>
+          </div>
+          <div style="max-width:180px;">
+            <button class="secondary" id="btnPing">Ping</button>
+          </div>
+        </div>
+
+        <h3 style="margin:14px 0 8px;">Ürünler</h3>
+        <div class="products" id="products"></div>
+
+        <p class="muted" style="margin-top:10px;">
+          Not: Ürünler şu an front-end’de sabit. Gerçekte fiyat/ürün listesini backend’den aldıracağız.
+        </p>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <h3 style="margin:0 0 8px;">Sepet</h3>
+        <div id="cart"></div>
+
+        <div class="total">
+          <div class="muted">Toplam</div>
+          <div style="font-size:18px; font-weight:800;" id="total">0 ₺</div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="muted">Müşteri</div>
+          <div class="row" style="margin-top:8px;">
+            <input id="name" placeholder="Ad Soyad" value="Yusuf" />
+            <input id="email" placeholder="E-posta" value="test@mail.com" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="muted">Order ID (otomatik dolar)</div>
+          <input id="orderId" placeholder="Önce sipariş oluştur" />
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <button class="secondary" id="btnClear">Sepeti Temizle</button>
+          <button id="btnCreate">Sipariş Oluştur</button>
+        </div>
+
+        <button style="margin-top:10px;" id="btnPay">Ödemeyi Başlat</button>
+
+        <p class="muted" style="margin-top:10px;">
+          Şimdilik ödeme linki <code>example.com</code> döner. Gerçek sağlayıcıyı sonra bağlarız.
+        </p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="row" style="align-items:center;">
+        <div>
+          <strong>Log</strong>
+          <div class="muted">Ham cevapları burada görürsün.</div>
+        </div>
+        <div style="max-width:180px;">
+          <button class="secondary" id="btnLogClear">Log Temizle</button>
+        </div>
+      </div>
+      <pre id="log">Hazır.</pre>
+    </div>
   </div>
-
-  <button onclick="ping()">🔌 API Ping (GET /)</button>
-
-  <h3>1) Sipariş Oluştur (POST /create-order)</h3>
-  <div class="row">
-    <div>
-      <label class="muted">İsim</label>
-      <input id="name" value="Yusuf" />
-    </div>
-    <div>
-      <label class="muted">E-posta</label>
-      <input id="email" value="test@mail.com" />
-    </div>
-  </div>
-
-  <div class="row" style="margin-top:10px;">
-    <div>
-      <label class="muted">Ürün ID</label>
-      <input id="pid" value="urun1" />
-    </div>
-    <div>
-      <label class="muted">Adet</label>
-      <input id="qty" type="number" value="2" min="1" />
-    </div>
-  </div>
-
-  <button onclick="createOrder()">🧾 Sipariş Oluştur</button>
-
-  <h3>2) Ödeme Başlat (POST /start-payment)</h3>
-  <label class="muted">Order ID</label>
-  <input id="orderId" placeholder="Sipariş oluşturunca otomatik dolacak" />
-
-  <button onclick="startPayment()">💳 Ödeme Başlat</button>
-
-  <pre id="log">Log burada görünecek…</pre>
 
 <script>
-  const logEl = document.getElementById("log");
+  // ====== Ayarlar ======
+  const CART_KEY = "mini_shop_cart_v1";
+  const PRODUCTS = [
+    { id:"urun1", name:"Test Ürün 1", price:49 },
+    { id:"urun2", name:"Test Ürün 2", price:79 },
+    { id:"urun3", name:"Test Ürün 3", price:129 },
+    { id:"urun4", name:"Test Ürün 4", price:199 },
+    { id:"urun5", name:"Test Ürün 5", price:29 },
+    { id:"urun6", name:"Test Ürün 6", price:99 },
+  ];
 
-  function log(title, data) {
-    const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-    logEl.textContent = `${title}\n\n${text}\n\n` + logEl.textContent;
+  const $ = (id) => document.getElementById(id);
+  const logEl = $("log");
+
+  function apiBase(){
+    return $("apiBase").value.trim().replace(/\/$/, "");
   }
 
-  function base() {
-    return document.getElementById("apiBase").value.trim().replace(/\/$/, "");
+  function log(title, data){
+    const t = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    logEl.textContent = `${title}\n${t}\n\n` + logEl.textContent;
   }
 
-  async function ping() {
-    try {
-      const res = await fetch(base() + "/");
-      const raw = await res.text();
-      log("PING RAW RESPONSE:", raw);
-    } catch (err) {
-      log("PING ERROR:", String(err));
+  // ====== Sepet ======
+  function getCart(){
+    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+    catch { return []; }
+  }
+  function setCart(cart){
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    renderCart();
+  }
+  function add(pid){
+    const c = getCart();
+    const f = c.find(x => x.productId === pid);
+    if (f) f.qty += 1;
+    else c.push({ productId: pid, qty: 1 });
+    setCart(c);
+  }
+  function dec(pid){
+    const c = getCart();
+    const f = c.find(x => x.productId === pid);
+    if (!f) return;
+    f.qty -= 1;
+    setCart(c.filter(x => x.qty > 0));
+  }
+  function clearCart(){ setCart([]); }
+  function total(){
+    let sum = 0;
+    for (const it of getCart()){
+      const p = PRODUCTS.find(p => p.id === it.productId);
+      if (p) sum += p.price * it.qty;
+    }
+    return sum;
+  }
+
+  // ====== UI ======
+  function renderProducts(){
+    const wrap = $("products");
+    wrap.innerHTML = "";
+    for (const p of PRODUCTS){
+      const d = document.createElement("div");
+      d.className = "p";
+      d.innerHTML = `
+        <div>
+          <strong>${p.name}</strong>
+          <div class="muted">ID: ${p.id}</div>
+        </div>
+        <div class="row" style="align-items:center;">
+          <div class="price">${p.price} ₺</div>
+          <button data-add="${p.id}">Sepete</button>
+        </div>
+      `;
+      wrap.appendChild(d);
+    }
+    wrap.querySelectorAll("button[data-add]").forEach(b=>{
+      b.addEventListener("click", ()=> add(b.dataset.add));
+    });
+  }
+
+  function renderCart(){
+    const wrap = $("cart");
+    const c = getCart();
+    $("total").textContent = total() + " ₺";
+    wrap.innerHTML = "";
+
+    if (!c.length){
+      wrap.innerHTML = `<div class="muted">Sepet boş.</div>`;
+      return;
+    }
+
+    for (const it of c){
+      const p = PRODUCTS.find(p => p.id === it.productId);
+      if (!p) continue;
+      const row = document.createElement("div");
+      row.className = "cartItem";
+      row.innerHTML = `
+        <div>
+          <div><strong>${p.name}</strong></div>
+          <div class="muted">${p.price} ₺ × ${it.qty}</div>
+        </div>
+        <div class="qty">
+          <button class="secondary" data-dec="${p.id}">-</button>
+          <span>${it.qty}</span>
+          <button data-add="${p.id}">+</button>
+        </div>
+      `;
+      wrap.appendChild(row);
+    }
+
+    wrap.querySelectorAll("button[data-add]").forEach(b=>{
+      b.addEventListener("click", ()=> add(b.dataset.add));
+    });
+    wrap.querySelectorAll("button[data-dec]").forEach(b=>{
+      b.addEventListener("click", ()=> dec(b.dataset.dec));
+    });
+  }
+
+  // ====== API ======
+  async function ping(){
+    $("apiStatus").textContent = "…";
+    try{
+      const r = await fetch(apiBase() + "/");
+      const raw = await r.text();
+      log("PING:", raw);
+      // Basit durum
+      $("apiStatus").textContent = r.ok ? "Çalışıyor ✅" : "Hata ❌";
+      $("apiStatus").className = r.ok ? "ok" : "bad";
+    }catch(e){
+      $("apiStatus").textContent = "Hata ❌";
+      $("apiStatus").className = "bad";
+      log("PING ERROR:", String(e));
       alert("Ping hata. Render URL doğru mu?");
     }
   }
 
-  async function createOrder() {
-    try {
-      const payload = {
-        items: [
-          { productId: document.getElementById("pid").value.trim(), qty: Number(document.getElementById("qty").value) }
-        ],
-        customer: {
-          name: document.getElementById("name").value.trim(),
-          email: document.getElementById("email").value.trim()
-        }
-      };
+  async function createOrder(){
+    const items = getCart();
+    if (!items.length) return alert("Sepet boş.");
 
-      const res = await fetch(base() + "/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+    const customer = {
+      name: $("name").value.trim(),
+      email: $("email").value.trim()
+    };
+
+    $("btnCreate").disabled = true;
+    $("btnCreate").textContent = "Gönderiliyor…";
+
+    try{
+      const r = await fetch(apiBase() + "/create-order", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ items, customer })
       });
+      const raw = await r.text();
+      log("/create-order:", raw);
 
-      const raw = await res.text();
-      log("/create-order RAW RESPONSE:", raw);
+      if (!r.ok) return alert("create-order hata: " + raw);
 
-      // orderId otomatik doldur
-      try {
-        const data = JSON.parse(raw);
-        if (data.orderId) document.getElementById("orderId").value = data.orderId;
-      } catch (_) {}
-    } catch (err) {
-      log("CREATE ORDER ERROR:", String(err));
-      alert("create-order hata. Backend redeploy oldu mu?");
+      const data = JSON.parse(raw);
+      $("orderId").value = data.orderId || "";
+      alert("Sipariş oluşturuldu ✅\nOrderId: " + (data.orderId || ""));
+    }catch(e){
+      log("CREATE ORDER ERROR:", String(e));
+      alert("create-order istek hatası.");
+    }finally{
+      $("btnCreate").disabled = false;
+      $("btnCreate").textContent = "Sipariş Oluştur";
     }
   }
 
-  async function startPayment() {
-    const orderId = document.getElementById("orderId").value.trim();
+  async function startPayment(){
+    const orderId = $("orderId").value.trim();
     if (!orderId) return alert("Önce sipariş oluştur (orderId boş).");
 
-    try {
-      const res = await fetch(base() + "/start-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+    $("btnPay").disabled = true;
+    $("btnPay").textContent = "Başlatılıyor…";
+
+    try{
+      const r = await fetch(apiBase() + "/start-payment", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({ orderId })
       });
+      const raw = await r.text();
+      log("/start-payment:", raw);
 
-      const raw = await res.text();
-      log("/start-payment RAW RESPONSE:", raw);
+      if (!r.ok) return alert("start-payment hata: " + raw);
 
-      // İstersen yönlendirme:
-      try {
-        const data = JSON.parse(raw);
-        if (data.paymentUrl && confirm("Ödeme linkine gitsin mi?\n\n" + data.paymentUrl)) {
-          window.location.href = data.paymentUrl;
-        }
-      } catch (_) {}
-    } catch (err) {
-      log("START PAYMENT ERROR:", String(err));
-      alert("start-payment hata. URL/CORS kontrol et.");
+      const data = JSON.parse(raw);
+      if (data.paymentUrl && confirm("Ödeme linkine gitsin mi?\n\n" + data.paymentUrl)){
+        window.location.href = data.paymentUrl;
+      }
+    }catch(e){
+      log("START PAYMENT ERROR:", String(e));
+      alert("start-payment istek hatası.");
+    }finally{
+      $("btnPay").disabled = false;
+      $("btnPay").textContent = "Ödemeyi Başlat";
     }
   }
 
-  // İlk açılışta ping atalım
+  // ====== Events ======
+  $("btnPing").addEventListener("click", ping);
+  $("btnClear").addEventListener("click", clearCart);
+  $("btnCreate").addEventListener("click", createOrder);
+  $("btnPay").addEventListener("click", startPayment);
+  $("btnLogClear").addEventListener("click", ()=> logEl.textContent = "Temizlendi.");
+
+  // init
+  renderProducts();
+  renderCart();
   ping();
 </script>
 </body>
