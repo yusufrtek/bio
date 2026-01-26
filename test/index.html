@@ -1,81 +1,152 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Render API Test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Render + Firebase Test</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 20px;
-    }
-    button {
-      padding: 12px 16px;
-      margin-top: 10px;
-      width: 100%;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    pre {
-      background: #f4f4f4;
-      padding: 12px;
-      margin-top: 15px;
-      border-radius: 6px;
-      white-space: pre-wrap;
-    }
+    body { font-family: Arial, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+    button { padding: 12px 14px; width: 100%; margin: 10px 0; font-size: 16px; cursor: pointer; }
+    input, textarea { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; }
+    pre { background: #f4f4f4; padding: 12px; border-radius: 8px; white-space: pre-wrap; overflow:auto; }
+    .muted { color: #666; font-size: 12px; }
+    code { background:#eee; padding:2px 6px; border-radius:6px; }
   </style>
 </head>
 <body>
+  <h2>🧪 Render + Firebase Realtime DB Test</h2>
+  <p class="muted">
+    Bu sayfa GitHub Pages (HTML) üzerinden Render API’yi test eder:
+    <code>/</code>, <code>/create-order</code>, <code>/start-payment</code>.
+  </p>
 
-  <h2>🧪 Render Backend Test</h2>
-  <p>Bu sayfa GitHub Pages üzerinden Render API’yi test eder.</p>
+  <div>
+    <label class="muted">API Base (Render URL)</label>
+    <input id="apiBase" value="https://bio-1-mq9x.onrender.com" />
+    <p class="muted">Not: Sonda <code>/</code> olmasın.</p>
+  </div>
 
-  <button onclick="ping()">🔌 API Ping</button>
-  <button onclick="startPayment()">💳 /start-payment Test</button>
+  <button onclick="ping()">🔌 API Ping (GET /)</button>
+
+  <h3>1) Sipariş Oluştur (POST /create-order)</h3>
+  <div class="row">
+    <div>
+      <label class="muted">İsim</label>
+      <input id="name" value="Yusuf" />
+    </div>
+    <div>
+      <label class="muted">E-posta</label>
+      <input id="email" value="test@mail.com" />
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:10px;">
+    <div>
+      <label class="muted">Ürün ID</label>
+      <input id="pid" value="urun1" />
+    </div>
+    <div>
+      <label class="muted">Adet</label>
+      <input id="qty" type="number" value="2" min="1" />
+    </div>
+  </div>
+
+  <button onclick="createOrder()">🧾 Sipariş Oluştur</button>
+
+  <h3>2) Ödeme Başlat (POST /start-payment)</h3>
+  <label class="muted">Order ID</label>
+  <input id="orderId" placeholder="Sipariş oluşturunca otomatik dolacak" />
+
+  <button onclick="startPayment()">💳 Ödeme Başlat</button>
 
   <pre id="log">Log burada görünecek…</pre>
 
 <script>
-  // ✅ SENİN RENDER URL'İN
-  const API_BASE = "https://bio-1-mq9x.onrender.com";
-
   const logEl = document.getElementById("log");
 
-  function log(msg) {
-    logEl.textContent = msg;
+  function log(title, data) {
+    const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    logEl.textContent = `${title}\n\n${text}\n\n` + logEl.textContent;
+  }
+
+  function base() {
+    return document.getElementById("apiBase").value.trim().replace(/\/$/, "");
   }
 
   async function ping() {
     try {
-      const res = await fetch(API_BASE + "/");
-      const text = await res.text();
-      log("PING RAW RESPONSE:\n\n" + text);
+      const res = await fetch(base() + "/");
+      const raw = await res.text();
+      log("PING RAW RESPONSE:", raw);
     } catch (err) {
-      log("PING ERROR:\n\n" + err);
+      log("PING ERROR:", String(err));
+      alert("Ping hata. Render URL doğru mu?");
+    }
+  }
+
+  async function createOrder() {
+    try {
+      const payload = {
+        items: [
+          { productId: document.getElementById("pid").value.trim(), qty: Number(document.getElementById("qty").value) }
+        ],
+        customer: {
+          name: document.getElementById("name").value.trim(),
+          email: document.getElementById("email").value.trim()
+        }
+      };
+
+      const res = await fetch(base() + "/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const raw = await res.text();
+      log("/create-order RAW RESPONSE:", raw);
+
+      // orderId otomatik doldur
+      try {
+        const data = JSON.parse(raw);
+        if (data.orderId) document.getElementById("orderId").value = data.orderId;
+      } catch (_) {}
+    } catch (err) {
+      log("CREATE ORDER ERROR:", String(err));
+      alert("create-order hata. Backend redeploy oldu mu?");
     }
   }
 
   async function startPayment() {
+    const orderId = document.getElementById("orderId").value.trim();
+    if (!orderId) return alert("Önce sipariş oluştur (orderId boş).");
+
     try {
-      const res = await fetch(API_BASE + "/start-payment", {
+      const res = await fetch(base() + "/start-payment", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          orderId: "TEST123"
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId })
       });
 
-      const text = await res.text();
-      log("/start-payment RAW RESPONSE:\n\n" + text);
+      const raw = await res.text();
+      log("/start-payment RAW RESPONSE:", raw);
+
+      // İstersen yönlendirme:
+      try {
+        const data = JSON.parse(raw);
+        if (data.paymentUrl && confirm("Ödeme linkine gitsin mi?\n\n" + data.paymentUrl)) {
+          window.location.href = data.paymentUrl;
+        }
+      } catch (_) {}
     } catch (err) {
-      log("START PAYMENT ERROR:\n\n" + err);
+      log("START PAYMENT ERROR:", String(err));
+      alert("start-payment hata. URL/CORS kontrol et.");
     }
   }
-</script>
 
+  // İlk açılışta ping atalım
+  ping();
+</script>
 </body>
 </html>
