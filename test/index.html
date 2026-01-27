@@ -1,344 +1,786 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mini Shop Test (Render + Firebase)</title>
-  <style>
-    :root{ --b:#111; --g:#666; --bd:#e6e6e6; --bg:#fafafa; --card:#fff; }
-    *{ box-sizing:border-box; }
-    body{ margin:0; font-family:system-ui,Segoe UI,Arial; background:var(--bg); color:var(--b); }
-    .wrap{ max-width:980px; margin:0 auto; padding:18px; }
-    header{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
-    h1{ font-size:18px; margin:0; }
-    .pill{ font-size:12px; padding:6px 10px; border:1px solid var(--bd); border-radius:999px; background:#fff; }
-    .grid{ display:grid; grid-template-columns: 1.3fr .7fr; gap:14px; margin-top:14px; }
-    @media (max-width: 860px){ .grid{ grid-template-columns:1fr; } }
-    .card{ background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:14px; }
-    .muted{ color:var(--g); font-size:12px; }
-    .row{ display:flex; gap:10px; align-items:center; }
-    .row > *{ flex:1; }
-    input{ width:100%; padding:10px 12px; border:1px solid #d8d8d8; border-radius:12px; outline:none; }
-    input:focus{ border-color:#bdbdbd; }
-    button{
-      border:0; border-radius:12px; padding:10px 12px; cursor:pointer;
-      background:#111; color:#fff; font-weight:600;
-    }
-    button.secondary{ background:#fff; color:#111; border:1px solid var(--bd); }
-    button:disabled{ opacity:.6; cursor:not-allowed; }
-    .products{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
-    @media (max-width: 860px){ .products{ grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 520px){ .products{ grid-template-columns: 1fr; } }
-    .p{
-      border:1px solid var(--bd); border-radius:14px; padding:12px; background:#fff;
-      display:flex; flex-direction:column; gap:10px;
-    }
-    .p strong{ font-size:14px; }
-    .p .price{ font-weight:700; }
-    .cartItem{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px dashed #e8e8e8; gap:10px; }
-    .cartItem:first-child{ border-top:0; }
-    .qty{ display:flex; gap:8px; align-items:center; }
-    .qty button{ padding:8px 10px; border-radius:10px; }
-    .qty span{ min-width:22px; text-align:center; font-weight:700; }
-    pre{ background:#0b0b0b; color:#d7ffd7; padding:12px; border-radius:14px; overflow:auto; font-size:12px; }
-    .total{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:10px; border-top:1px solid var(--bd); }
-    .ok{ color:#0a7b2a; }
-    .bad{ color:#b00020; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FETİH SAAT | Premium Saat Koleksiyonu</title>
+    <meta name="description" content="Zarafet ve prestijin buluştuğu premium saat koleksiyonu. Zamana değer katıyoruz.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --background: #FAF9F7;
+            --foreground: #1A1A1A;
+            --card: #FFFFFF;
+            --muted: #F3F1EE;
+            --muted-foreground: #6B6B6B;
+            --border: #E8E5E0;
+            --radius: 16px;
+            --sides: 16px;
+            --accent: #8B7355;
+            --accent-light: #A89078;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            font-family: 'Bebas Neue', 'Oswald', sans-serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--sides);
+        }
+        .header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--foreground);
+            text-decoration: none;
+        }
+        .cart-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+        }
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #d32f2f;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .hero {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            color: #fff;
+            padding: 4rem 0;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.125rem;
+            opacity: 0.95;
+        }
+        .section-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .product-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        .product-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        }
+        .product-info {
+            padding: 1.5rem;
+        }
+        .product-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        .add-to-cart-btn {
+            width: 100%;
+            background: var(--foreground);
+            color: var(--background);
+            border: none;
+            padding: 0.875rem;
+            border-radius: 8px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .add-to-cart-btn:hover {
+            background: var(--accent);
+        }
+        .cart-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background: var(--card);
+            box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        .cart-panel.active {
+            transform: translateX(0);
+        }
+        .cart-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cart-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5rem;
+        }
+        .close-cart-btn {
+            background: var(--muted);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.25rem;
+        }
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        }
+        .cart-item-info {
+            flex: 1;
+        }
+        .cart-item-name {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .cart-item-price {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border);
+            background: var(--muted);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .qty-display {
+            font-weight: 600;
+            min-width: 24px;
+            text-align: center;
+        }
+        .remove-btn {
+            margin-left: auto;
+            background: #d32f2f;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+        .cart-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .coupon-section {
+            margin-bottom: 1rem;
+        }
+        .coupon-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .coupon-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .apply-coupon-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+        }
+        .coupon-message {
+            font-size: 0.875rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+        }
+        .coupon-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .coupon-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .cart-summary {
+            margin-bottom: 1rem;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        .summary-row.discount {
+            color: #28a745;
+            font-weight: 600;
+        }
+        .summary-row.total {
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding-top: 0.75rem;
+            border-top: 2px solid var(--border);
+        }
+        .customer-form {
+            margin-bottom: 1rem;
+        }
+        .customer-form input {
+            width: 100%;
+            padding: 0.875rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .checkout-btn {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+        }
+        .checkout-btn:disabled {
+            background: var(--muted-foreground);
+            cursor: not-allowed;
+        }
+        .payment-btn {
+            width: 100%;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+        }
+        .payment-btn.active {
+            display: block;
+        }
+        .cart-empty {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--muted-foreground);
+        }
+        .footer {
+            background: var(--foreground);
+            color: var(--background);
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .footer-section h3 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+        .footer-links {
+            list-style: none;
+        }
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        .footer-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: #fff;
+        }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.875rem;
+            color: rgba(255,255,255,0.6);
+        }
+        .status-message {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .status-message.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+            .cart-panel {
+                max-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>🧪 Mini Shop Test</h1>
-      <div class="pill">API: <span id="apiStatus">Kontrol ediliyor…</span></div>
+    <header class="header">
+        <div class="container header-content">
+            <a href="/" class="logo">FETİH SAAT</a>
+            <button class="cart-btn" onclick="toggleCart()">
+                SEPETİM
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+        </div>
     </header>
 
-    <div class="grid">
-      <!-- LEFT -->
-      <div class="card">
-        <div class="row" style="align-items:flex-end;">
-          <div>
-            <div class="muted">Render API Base</div>
-            <input id="apiBase" value="https://bio-1-mq9x.onrender.com" />
-            <div class="muted">Sonda “/” olmasın.</div>
-          </div>
-          <div style="max-width:180px;">
-            <button class="secondary" id="btnPing">Ping</button>
-          </div>
+    <div class="hero">
+        <div class="container">
+            <h1>Premium Saat Koleksiyonu</h1>
+            <p>Zarafet ve prestijin buluştuğu noktada, zamana değer katıyoruz.</p>
         </div>
-
-        <h3 style="margin:14px 0 8px;">Ürünler</h3>
-        <div class="products" id="products"></div>
-
-        <p class="muted" style="margin-top:10px;">
-          Not: Ürünler şu an front-end’de sabit. Gerçekte fiyat/ürün listesini backend’den aldıracağız.
-        </p>
-      </div>
-
-      <!-- RIGHT -->
-      <div class="card">
-        <h3 style="margin:0 0 8px;">Sepet</h3>
-        <div id="cart"></div>
-
-        <div class="total">
-          <div class="muted">Toplam</div>
-          <div style="font-size:18px; font-weight:800;" id="total">0 ₺</div>
-        </div>
-
-        <div style="margin-top:12px;">
-          <div class="muted">Müşteri</div>
-          <div class="row" style="margin-top:8px;">
-            <input id="name" placeholder="Ad Soyad" value="Yusuf" />
-            <input id="email" placeholder="E-posta" value="test@mail.com" />
-          </div>
-        </div>
-
-        <div style="margin-top:12px;">
-          <div class="muted">Order ID (otomatik dolar)</div>
-          <input id="orderId" placeholder="Önce sipariş oluştur" />
-        </div>
-
-        <div class="row" style="margin-top:12px;">
-          <button class="secondary" id="btnClear">Sepeti Temizle</button>
-          <button id="btnCreate">Sipariş Oluştur</button>
-        </div>
-
-        <button style="margin-top:10px;" id="btnPay">Ödemeyi Başlat</button>
-
-        <p class="muted" style="margin-top:10px;">
-          Şimdilik ödeme linki <code>example.com</code> döner. Gerçek sağlayıcıyı sonra bağlarız.
-        </p>
-      </div>
     </div>
 
-    <div class="card" style="margin-top:14px;">
-      <div class="row" style="align-items:center;">
-        <div>
-          <strong>Log</strong>
-          <div class="muted">Ham cevapları burada görürsün.</div>
+    <main class="container">
+        <h2 class="section-title">Ürünlerimiz</h2>
+        <div id="statusMessage"></div>
+        <div id="productsGrid" class="products-grid"></div>
+    </main>
+
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h2 class="cart-title">Sepetim</h2>
+            <button class="close-cart-btn" onclick="toggleCart()">×</button>
         </div>
-        <div style="max-width:180px;">
-          <button class="secondary" id="btnLogClear">Log Temizle</button>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-footer">
+            <div class="coupon-section">
+                <div class="coupon-input">
+                    <input type="text" id="couponCode" placeholder="İndirim kuponu">
+                    <button class="apply-coupon-btn" onclick="applyCoupon()">Uygula</button>
+                </div>
+                <div id="couponMessage"></div>
+            </div>
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Ara Toplam:</span>
+                    <span id="subtotal">0,00 ₺</span>
+                </div>
+                <div class="summary-row discount" id="discountRow" style="display: none;">
+                    <span>İndirim:</span>
+                    <span id="discount">0,00 ₺</span>
+                </div>
+                <div class="summary-row total">
+                    <span>TOPLAM:</span>
+                    <span id="total">0,00 ₺</span>
+                </div>
+            </div>
+            <div class="customer-form">
+                <input type="text" id="customerName" placeholder="Ad Soyad" required>
+                <input type="email" id="customerEmail" placeholder="E-posta" required>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn" onclick="createOrder()">SİPARİŞİ OLUŞTUR</button>
+            <button class="payment-btn" id="paymentBtn" onclick="startPayment()">ÖDEMEYE GİT</button>
         </div>
-      </div>
-      <pre id="log">Hazır.</pre>
     </div>
-  </div>
 
-<script>
-  // ====== Ayarlar ======
-  const CART_KEY = "mini_shop_cart_v1";
-  const PRODUCTS = [
-    { id:"urun1", name:"Test Ürün 1", price:49 },
-    { id:"urun2", name:"Test Ürün 2", price:79 },
-    { id:"urun3", name:"Test Ürün 3", price:129 },
-    { id:"urun4", name:"Test Ürün 4", price:199 },
-    { id:"urun5", name:"Test Ürün 5", price:29 },
-    { id:"urun6", name:"Test Ürün 6", price:99 },
-  ];
-
-  const $ = (id) => document.getElementById(id);
-  const logEl = $("log");
-
-  function apiBase(){
-    return $("apiBase").value.trim().replace(/\/$/, "");
-  }
-
-  function log(title, data){
-    const t = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-    logEl.textContent = `${title}\n${t}\n\n` + logEl.textContent;
-  }
-
-  // ====== Sepet ======
-  function getCart(){
-    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
-    catch { return []; }
-  }
-  function setCart(cart){
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    renderCart();
-  }
-  function add(pid){
-    const c = getCart();
-    const f = c.find(x => x.productId === pid);
-    if (f) f.qty += 1;
-    else c.push({ productId: pid, qty: 1 });
-    setCart(c);
-  }
-  function dec(pid){
-    const c = getCart();
-    const f = c.find(x => x.productId === pid);
-    if (!f) return;
-    f.qty -= 1;
-    setCart(c.filter(x => x.qty > 0));
-  }
-  function clearCart(){ setCart([]); }
-  function total(){
-    let sum = 0;
-    for (const it of getCart()){
-      const p = PRODUCTS.find(p => p.id === it.productId);
-      if (p) sum += p.price * it.qty;
-    }
-    return sum;
-  }
-
-  // ====== UI ======
-  function renderProducts(){
-    const wrap = $("products");
-    wrap.innerHTML = "";
-    for (const p of PRODUCTS){
-      const d = document.createElement("div");
-      d.className = "p";
-      d.innerHTML = `
-        <div>
-          <strong>${p.name}</strong>
-          <div class="muted">ID: ${p.id}</div>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FETİH SAAT</h3>
+                    <p>Premium saat koleksiyonu ile zamanınıza değer katıyoruz. Kalite ve zarafetin adresi.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Kurumsal</h3>
+                    <ul class="footer-links">
+                        <li><a href="kvkk.html">KVKK</a></li>
+                        <li><a href="iade.html">İade ve Değişim</a></li>
+                        <li><a href="mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>İletişim</h3>
+                    <ul class="footer-links">
+                        <li><a href="iletisim.html">İletişim Formu</a></li>
+                        <li>Email: info@fetihsaat.com</li>
+                        <li>Tel: +90 (212) 555 0 555</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 FETİH SAAT. Tüm hakları saklıdır.</p>
+            </div>
         </div>
-        <div class="row" style="align-items:center;">
-          <div class="price">${p.price} ₺</div>
-          <button data-add="${p.id}">Sepete</button>
-        </div>
-      `;
-      wrap.appendChild(d);
-    }
-    wrap.querySelectorAll("button[data-add]").forEach(b=>{
-      b.addEventListener("click", ()=> add(b.dataset.add));
-    });
-  }
+    </footer>
 
-  function renderCart(){
-    const wrap = $("cart");
-    const c = getCart();
-    $("total").textContent = total() + " ₺";
-    wrap.innerHTML = "";
+    <script>
+        const API_URL = 'https://bio-1-mq9x.onrender.com';
+        let cart = [];
+        let products = [];
+        let currentOrderId = null;
+        let appliedCoupon = null;
 
-    if (!c.length){
-      wrap.innerHTML = `<div class="muted">Sepet boş.</div>`;
-      return;
-    }
+        async function loadProducts() {
+            showStatus('Ürünler yükleniyor...', 'loading');
+            try {
+                const response = await fetch(`${API_URL}/`);
+                const data = await response.json();
+                
+                // Firebase'den ürünler backend üzerinden gelecek, şimdilik örnek ürünler
+                products = [
+                    { id: 'product1', name: 'Klasik Saat', priceTRY: 2500, imageUrl: '', description: 'Zariflik ve şıklık' },
+                    { id: 'product2', name: 'Spor Saat', priceTRY: 3200, imageUrl: '', description: 'Dayanıklılık ve stil' },
+                    { id: 'product3', name: 'Dijital Saat', priceTRY: 1800, imageUrl: '', description: 'Modern teknoloji' },
+                    { id: 'product4', name: 'Lüks Saat', priceTRY: 8500, imageUrl: '', description: 'Premium kalite' },
+                    { id: 'product5', name: 'Akıllı Saat', priceTRY: 4200, imageUrl: '', description: 'Teknoloji ve şıklık' },
+                    { id: 'product6', name: 'Vintage Saat', priceTRY: 5600, imageUrl: '', description: 'Klasik tasarım' }
+                ];
+                renderProducts();
+                showStatus('', '');
+            } catch (error) {
+                showStatus('Ürünler yüklenirken hata oluştu: ' + error.message, 'error');
+            }
+        }
 
-    for (const it of c){
-      const p = PRODUCTS.find(p => p.id === it.productId);
-      if (!p) continue;
-      const row = document.createElement("div");
-      row.className = "cartItem";
-      row.innerHTML = `
-        <div>
-          <div><strong>${p.name}</strong></div>
-          <div class="muted">${p.price} ₺ × ${it.qty}</div>
-        </div>
-        <div class="qty">
-          <button class="secondary" data-dec="${p.id}">-</button>
-          <span>${it.qty}</span>
-          <button data-add="${p.id}">+</button>
-        </div>
-      `;
-      wrap.appendChild(row);
-    }
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card">
+                    <img src="${product.imageUrl || 'https://via.placeholder.com/280x280/8B7355/FFFFFF?text=Saat'}" 
+                         alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-price">${formatPrice(product.priceTRY)} ₺</p>
+                        <button class="add-to-cart-btn" onclick="addToCart('${product.id}')">
+                            SEPETE EKLE
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-    wrap.querySelectorAll("button[data-add]").forEach(b=>{
-      b.addEventListener("click", ()=> add(b.dataset.add));
-    });
-    wrap.querySelectorAll("button[data-dec]").forEach(b=>{
-      b.addEventListener("click", ()=> dec(b.dataset.dec));
-    });
-  }
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
 
-  // ====== API ======
-  async function ping(){
-    $("apiStatus").textContent = "…";
-    try{
-      const r = await fetch(apiBase() + "/");
-      const raw = await r.text();
-      log("PING:", raw);
-      // Basit durum
-      $("apiStatus").textContent = r.ok ? "Çalışıyor ✅" : "Hata ❌";
-      $("apiStatus").className = r.ok ? "ok" : "bad";
-    }catch(e){
-      $("apiStatus").textContent = "Hata ❌";
-      $("apiStatus").className = "bad";
-      log("PING ERROR:", String(e));
-      alert("Ping hata. Render URL doğru mu?");
-    }
-  }
+            const existingItem = cart.find(item => item.productId === productId);
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                cart.push({ productId, qty: 1, product });
+            }
+            updateCart();
+        }
 
-  async function createOrder(){
-    const items = getCart();
-    if (!items.length) return alert("Sepet boş.");
+        function updateCart() {
+            const cartItems = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            cartCount.textContent = totalItems;
 
-    const customer = {
-      name: $("name").value.trim(),
-      email: $("email").value.trim()
-    };
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="cart-empty">Sepetiniz boş</div>';
+                document.getElementById('checkoutBtn').style.display = 'none';
+                return;
+            }
 
-    $("btnCreate").disabled = true;
-    $("btnCreate").textContent = "Gönderiliyor…";
+            document.getElementById('checkoutBtn').style.display = 'block';
+            cartItems.innerHTML = cart.map((item, index) => `
+                <div class="cart-item">
+                    <img src="${item.product.imageUrl || 'https://via.placeholder.com/80x80/8B7355/FFFFFF?text=Saat'}" 
+                         alt="${item.product.name}" class="cart-item-image">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.product.name}</div>
+                        <div class="cart-item-price">${formatPrice(item.product.priceTRY)} ₺</div>
+                        <div class="cart-item-controls">
+                            <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                            <span class="qty-display">${item.qty}</span>
+                            <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                            <button class="remove-btn" onclick="removeFromCart(${index})">Kaldır</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
 
-    try{
-      const r = await fetch(apiBase() + "/create-order", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ items, customer })
-      });
-      const raw = await r.text();
-      log("/create-order:", raw);
+            updateSummary();
+        }
 
-      if (!r.ok) return alert("create-order hata: " + raw);
+        function changeQty(index, delta) {
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCart();
+        }
 
-      const data = JSON.parse(raw);
-      $("orderId").value = data.orderId || "";
-      alert("Sipariş oluşturuldu ✅\nOrderId: " + (data.orderId || ""));
-    }catch(e){
-      log("CREATE ORDER ERROR:", String(e));
-      alert("create-order istek hatası.");
-    }finally{
-      $("btnCreate").disabled = false;
-      $("btnCreate").textContent = "Sipariş Oluştur";
-    }
-  }
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
 
-  async function startPayment(){
-    const orderId = $("orderId").value.trim();
-    if (!orderId) return alert("Önce sipariş oluştur (orderId boş).");
+        function updateSummary() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.product.priceTRY * item.qty), 0);
+            let discount = 0;
+            
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percent') {
+                    discount = subtotal * (appliedCoupon.value / 100);
+                } else if (appliedCoupon.type === 'fixed') {
+                    discount = appliedCoupon.value;
+                }
+            }
 
-    $("btnPay").disabled = true;
-    $("btnPay").textContent = "Başlatılıyor…";
+            const total = subtotal - discount;
 
-    try{
-      const r = await fetch(apiBase() + "/start-payment", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ orderId })
-      });
-      const raw = await r.text();
-      log("/start-payment:", raw);
+            document.getElementById('subtotal').textContent = formatPrice(subtotal) + ' ₺';
+            document.getElementById('total').textContent = formatPrice(total) + ' ₺';
+            
+            if (discount > 0) {
+                document.getElementById('discountRow').style.display = 'flex';
+                document.getElementById('discount').textContent = '-' + formatPrice(discount) + ' ₺';
+            } else {
+                document.getElementById('discountRow').style.display = 'none';
+            }
+        }
 
-      if (!r.ok) return alert("start-payment hata: " + raw);
+        async function applyCoupon() {
+            const code = document.getElementById('couponCode').value.trim();
+            if (!code) return;
 
-      const data = JSON.parse(raw);
-      if (data.paymentUrl && confirm("Ödeme linkine gitsin mi?\n\n" + data.paymentUrl)){
-        window.location.href = data.paymentUrl;
-      }
-    }catch(e){
-      log("START PAYMENT ERROR:", String(e));
-      alert("start-payment istek hatası.");
-    }finally{
-      $("btnPay").disabled = false;
-      $("btnPay").textContent = "Ödemeyi Başlat";
-    }
-  }
+            // Backend'den kupon kontrolü yapılacak
+            showCouponMessage('Kupon kontrol ediliyor...', 'loading');
+            
+            // Örnek kupon: INDIRIM10 = %10, YENI50 = 50TL
+            setTimeout(() => {
+                if (code === 'INDIRIM10') {
+                    appliedCoupon = { type: 'percent', value: 10 };
+                    showCouponMessage('✓ Kupon uygulandı: %10 indirim', 'success');
+                    updateSummary();
+                } else if (code === 'YENI50') {
+                    appliedCoupon = { type: 'fixed', value: 50 };
+                    showCouponMessage('✓ Kupon uygulandı: 50 ₺ indirim', 'success');
+                    updateSummary();
+                } else {
+                    showCouponMessage('✗ Geçersiz kupon kodu', 'error');
+                }
+            }, 500);
+        }
 
-  // ====== Events ======
-  $("btnPing").addEventListener("click", ping);
-  $("btnClear").addEventListener("click", clearCart);
-  $("btnCreate").addEventListener("click", createOrder);
-  $("btnPay").addEventListener("click", startPayment);
-  $("btnLogClear").addEventListener("click", ()=> logEl.textContent = "Temizlendi.");
+        async function createOrder() {
+            const name = document.getElementById('customerName').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
 
-  // init
-  renderProducts();
-  renderCart();
-  ping();
-</script>
+            if (!name || !email) {
+                alert('Lütfen ad ve e-posta bilgilerinizi giriniz.');
+                return;
+            }
+
+            if (cart.length === 0) {
+                alert('Sepetiniz boş.');
+                return;
+            }
+
+            showStatus('Sipariş oluşturuluyor...', 'loading');
+
+            try {
+                const response = await fetch(`${API_URL}/create-order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: cart.map(item => ({ productId: item.productId, qty: item.qty })),
+                        customer: { name, email },
+                        couponCode: appliedCoupon ? document.getElementById('couponCode').value : null
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.orderId) {
+                    currentOrderId = data.orderId;
+                    showStatus(`✓ Sipariş oluşturuldu! Sipariş No: ${data.orderId}`, 'success');
+                    document.getElementById('checkoutBtn').style.display = 'none';
+                    document.getElementById('paymentBtn').classList.add('active');
+                } else {
+                    throw new Error(data.error || 'Sipariş oluşturulamadı');
+                }
+            } catch (error) {
+                showStatus('Hata: ' + error.message, 'error');
+            }
+        }
+
+        async function startPayment() {
+            if (!currentOrderId) return;
+
+            showStatus('Ödeme sayfasına yönlendiriliyorsunuz...', 'loading');
+
+            try {
+                const response = await fetch(`${API_URL}/start-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId: currentOrderId })
+                });
+
+                const data = await response.json();
+                
+                if (data.paymentUrl) {
+                    window.location.href = data.paymentUrl;
+                } else {
+                    throw new Error('Ödeme URL\'si alınamadı');
+                }
+            } catch (error) {
+                showStatus('Hata: ' + error.message, 'error');
+            }
+        }
+
+        function toggleCart() {
+            document.getElementById('cartPanel').classList.toggle('active');
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(price);
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            if (!message) {
+                statusEl.innerHTML = '';
+                return;
+            }
+            statusEl.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+        }
+
+        function showCouponMessage(message, type) {
+            const messageEl = document.getElementById('couponMessage');
+            if (!message) {
+                messageEl.innerHTML = '';
+                return;
+            }
+            messageEl.innerHTML = `<div class="coupon-message ${type}">${message}</div>`;
+        }
+
+        // Sayfa yüklendiğinde ürünleri getir
+        loadProducts();
+    </script>
 </body>
 </html>
