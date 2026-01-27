@@ -8,213 +8,110 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #f5f5f5;
+            --card: #ffffff;
+            --text: #1a1a1a;
+            --muted: #6b6b6b;
+            --border: #e0e0e0;
+            --accent: #8B7355;
+            --accent-dark: #6d5a44;
+            --success: #28a745;
+            --error: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
         }
         body {
             font-family: 'Inter', sans-serif;
-            background: #f5f5f5;
-            color: #1a1a1a;
+            background: var(--bg);
+            color: var(--text);
             line-height: 1.6;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
         }
         h1, h2, h3 {
             font-family: 'Oswald', sans-serif;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            color: #8B7355;
-        }
-        .login-section {
-            max-width: 400px;
-            margin: 4rem auto;
-            background: #fff;
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .login-section h2 {
-            margin-bottom: 1.5rem;
+        .login-box {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-box h1 {
+            font-size: 1.75rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .login-box p {
+            color: var(--muted);
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
         }
         .admin-panel {
             display: none;
+            min-height: 100vh;
         }
         .admin-panel.active {
             display: block;
         }
-        .section {
-            background: #fff;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .section h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: #8B7355;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 0.875rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 0.95rem;
-        }
-        button {
-            background: #8B7355;
-            color: #fff;
-            border: none;
-            padding: 0.875rem 1.75rem;
-            border-radius: 8px;
-            font-family: 'Oswald', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-transform: uppercase;
-        }
-        button:hover {
-            background: #6d5a44;
-        }
-        button.danger {
-            background: #d32f2f;
-        }
-        button.danger:hover {
-            background: #a32525;
-        }
-        button.success {
-            background: #28a745;
-        }
-        button.success:hover {
-            background: #218838;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        .card {
-            background: #f9f9f9;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-        .card h3 {
-            font-size: 1.125rem;
-            margin-bottom: 0.75rem;
-        }
-        .card p {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-        .card .price {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #8B7355;
-            margin: 0.5rem 0;
-        }
-        .card .actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        .card .actions button {
-            flex: 1;
-            padding: 0.5rem;
-            font-size: 0.85rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        th {
-            background: #f5f5f5;
-            font-family: 'Oswald', sans-serif;
-            text-transform: uppercase;
-            font-size: 0.875rem;
-            letter-spacing: 0.05em;
-        }
-        .status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .status.pending { background: #fff3cd; color: #856404; }
-        .status.payment_started { background: #cfe2ff; color: #084298; }
-        .status.paid { background: #d1e7dd; color: #0f5132; }
-        .status.failed { background: #f8d7da; color: #842029; }
-        .message {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .message.info {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
         .top-bar {
-            background: #fff;
+            background: var(--card);
             padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .top-bar h1 {
-            margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
         }
         .tabs {
             display: flex;
             gap: 0.5rem;
             margin-bottom: 2rem;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .tab {
-            padding: 0.875rem 1.5rem;
+            padding: 1rem 1.5rem;
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
             background: transparent;
-            color: #666;
             border: none;
-            border-bottom: 3px solid transparent;
+            color: var(--muted);
             cursor: pointer;
+            border-bottom: 3px solid transparent;
             transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .tab:hover {
+            color: var(--text);
         }
         .tab.active {
-            color: #8B7355;
-            border-bottom-color: #8B7355;
+            color: var(--accent);
+            border-bottom-color: var(--accent);
         }
         .tab-content {
             display: none;
@@ -222,432 +119,804 @@
         .tab-content.active {
             display: block;
         }
+        .section {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .section h2 {
+            font-size: 1.125rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.875rem;
+            margin-bottom: 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+        }
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        button {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--accent-dark);
+        }
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1.5px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        .btn-danger {
+            background: var(--error);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .card {
+            background: var(--bg);
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        .card p {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+        .card .price {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 0.5rem 0;
+        }
+        .card .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .card .actions button {
+            flex: 1;
+        }
+        .card-id {
+            font-size: 0.7rem;
+            color: var(--muted);
+            font-family: monospace;
+            background: var(--card);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--bg);
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+        }
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status.pending { background: #fff3cd; color: #856404; }
+        .status.payment_started { background: #cce5ff; color: #004085; }
+        .status.paid { background: #d4edda; color: #155724; }
+        .status.failed { background: #f8d7da; color: #721c24; }
+        .status.shipped { background: #d1ecf1; color: #0c5460; }
+        .message {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .message.success { background: #d4edda; color: #155724; }
+        .message.error { background: #f8d7da; color: #721c24; }
+        .message.info { background: #e3f2fd; color: #1565c0; }
+        .message.warning { background: #fff3cd; color: #856404; }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted);
+        }
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            stroke: var(--border);
+            margin-bottom: 1rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .stat-card .value {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .top-bar {
+                padding: 1rem;
+            }
+            .top-bar h1 {
+                font-size: 1rem;
+            }
+            th, td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="login-section" id="loginSection">
-        <h2>Admin Girişi</h2>
+
+<!-- Login Section -->
+<div class="login-container" id="loginSection">
+    <div class="login-box">
+        <h1>Admin Panel</h1>
+        <p>FETİH SAAT yonetim paneline giris yapin</p>
         <div id="loginMessage"></div>
-        <input type="password" id="adminKey" placeholder="Admin Şifresi">
-        <button onclick="login()">GİRİŞ YAP</button>
+        <div>
+            <label>Admin Sifresi</label>
+            <input type="password" id="adminKey" placeholder="Sifrenizi girin">
+        </div>
+        <button class="btn-primary" style="width: 100%;" onclick="login()">GİRİS YAP</button>
+    </div>
+</div>
+
+<!-- Admin Panel -->
+<div class="admin-panel" id="adminPanel">
+    <div class="top-bar">
+        <h1>FETİH SAAT - Admin Panel</h1>
+        <button class="btn-secondary btn-sm" onclick="logout()">CIKIS</button>
     </div>
 
-    <div class="admin-panel" id="adminPanel">
-        <div class="top-bar">
-            <h1>FETİH SAAT - Admin Panel</h1>
-            <button onclick="logout()">ÇIKIŞ</button>
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="value" id="totalProducts">0</div>
+                <div class="label">Toplam Urun</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="totalOrders">0</div>
+                <div class="label">Toplam Siparis</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="paidOrders">0</div>
+                <div class="label">Odenen Siparis</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="totalRevenue">0 TL</div>
+                <div class="label">Toplam Gelir</div>
+            </div>
         </div>
 
-        <div class="container">
+        <!-- Connection Test -->
+        <div class="section">
+            <h2>Backend Baglanti Testi</h2>
+            <div id="connectionMessage"></div>
+            <div class="form-row">
+                <div>
+                    <label>API URL</label>
+                    <input type="text" id="apiUrl" value="https://bio-1-mq9x.onrender.com" placeholder="Render API URL">
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button class="btn-primary" onclick="testConnection()">BAGLANTIYI TEST ET</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('products')">Urunler</button>
+            <button class="tab" onclick="switchTab('coupons')">Kuponlar</button>
+            <button class="tab" onclick="switchTab('orders')">Siparisler</button>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="productsTab" class="tab-content active">
             <div class="section">
-                <h2>Backend Bağlantı Testi</h2>
-                <div id="urlMessage"></div>
-                <input type="text" id="apiUrl" value="https://bio-1-mq9x.onrender.com" placeholder="Render API URL">
-                <button onclick="testConnection()">BAĞLANTIYI TEST ET</button>
+                <h2>Yeni Urun Ekle</h2>
+                <div id="productMessage"></div>
+                <div class="form-row">
+                    <div>
+                        <label>Urun Adi *</label>
+                        <input type="text" id="productName" placeholder="Fetih Imperial Gold">
+                    </div>
+                    <div>
+                        <label>Fiyat (TL) *</label>
+                        <input type="number" id="productPrice" placeholder="4500">
+                    </div>
+                </div>
+                <div>
+                    <label>Gorsel URL</label>
+                    <input type="text" id="productImage" placeholder="https://example.com/image.png">
+                </div>
+                <div>
+                    <label>Aciklama</label>
+                    <textarea id="productDesc" rows="3" placeholder="Urun aciklamasi..."></textarea>
+                </div>
+                <button class="btn-primary" onclick="addProduct()">URUN EKLE</button>
             </div>
 
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('products')">ÜRÜNLER</button>
-                <button class="tab" onclick="switchTab('coupons')">KUPONLAR</button>
-                <button class="tab" onclick="switchTab('orders')">SİPARİŞLER</button>
+            <div class="section">
+                <h2>Urun Listesi</h2>
+                <div id="productsList" class="grid"></div>
+            </div>
+        </div>
+
+        <!-- Coupons Tab -->
+        <div id="couponsTab" class="tab-content">
+            <div class="section">
+                <h2>Yeni Kupon Ekle</h2>
+                <div id="couponMessage"></div>
+                <div class="form-row">
+                    <div>
+                        <label>Kupon Kodu *</label>
+                        <input type="text" id="couponCode" placeholder="INDIRIM10">
+                    </div>
+                    <div>
+                        <label>Indirim Tipi *</label>
+                        <select id="couponType">
+                            <option value="percent">Yuzde Indirim (%)</option>
+                            <option value="fixed">Sabit Tutar (TL)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label>Deger *</label>
+                    <input type="number" id="couponValue" placeholder="10">
+                </div>
+                <button class="btn-primary" onclick="addCoupon()">KUPON EKLE</button>
             </div>
 
-            <div id="productsTab" class="tab-content active">
-                <div class="section">
-                    <h2>Yeni Ürün Ekle</h2>
-                    <div id="productMessage"></div>
-                    <input type="text" id="productName" placeholder="Ürün Adı">
-                    <input type="number" id="productPrice" placeholder="Fiyat (TL)">
-                    <input type="text" id="productImage" placeholder="Görsel URL">
-                    <textarea id="productDesc" placeholder="Açıklama" rows="3"></textarea>
-                    <button onclick="addProduct()">ÜRÜN EKLE</button>
-                </div>
-
-                <div class="section">
-                    <h2>Ürün Listesi</h2>
-                    <div id="productsList" class="grid"></div>
-                </div>
+            <div class="section">
+                <h2>Kupon Listesi</h2>
+                <div id="couponsList" class="grid"></div>
             </div>
+        </div>
 
-            <div id="couponsTab" class="tab-content">
-                <div class="section">
-                    <h2>Yeni Kupon Ekle</h2>
-                    <div id="couponMessage"></div>
-                    <input type="text" id="couponCode" placeholder="Kupon Kodu (örn: INDIRIM10)">
-                    <select id="couponType">
-                        <option value="percent">Yüzde İndirim</option>
-                        <option value="fixed">Sabit Tutar İndirim</option>
-                    </select>
-                    <input type="number" id="couponValue" placeholder="Değer (% veya TL)">
-                    <button onclick="addCoupon()">KUPON EKLE</button>
+        <!-- Orders Tab -->
+        <div id="ordersTab" class="tab-content">
+            <div class="section">
+                <h2>Siparis Listesi</h2>
+                <div style="margin-bottom: 1rem;">
+                    <button class="btn-secondary btn-sm" onclick="loadOrders()">YENILE</button>
                 </div>
-
-                <div class="section">
-                    <h2>Kupon Listesi</h2>
-                    <div id="couponsList" class="grid"></div>
-                </div>
-            </div>
-
-            <div id="ordersTab" class="tab-content">
-                <div class="section">
-                    <h2>Sipariş Listesi</h2>
-                    <button onclick="loadOrders()">YENİLE</button>
-                    <div id="ordersTable"></div>
-                </div>
+                <div class="table-responsive" id="ordersTable"></div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        let API_URL = 'https://bio-1-mq9x.onrender.com';
-        let ADMIN_KEY = '';
+<script>
+let API_URL = 'https://bio-1-mq9x.onrender.com';
+let ADMIN_KEY = '';
 
-        function login() {
-            const key = document.getElementById('adminKey').value;
-            if (!key) {
-                showMessage('loginMessage', 'Lütfen şifre giriniz', 'error');
-                return;
-            }
-            ADMIN_KEY = key;
-            localStorage.setItem('ADMIN_KEY', key);
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('adminPanel').classList.add('active');
+function login() {
+    const key = document.getElementById('adminKey').value;
+    if (!key) {
+        showMessage('loginMessage', 'Lutfen sifre girin', 'error');
+        return;
+    }
+    ADMIN_KEY = key;
+    localStorage.setItem('FETIH_ADMIN_KEY', key);
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminPanel').classList.add('active');
+    loadAllData();
+}
+
+function logout() {
+    localStorage.removeItem('FETIH_ADMIN_KEY');
+    ADMIN_KEY = '';
+    document.getElementById('loginSection').style.display = 'flex';
+    document.getElementById('adminPanel').classList.remove('active');
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(tab + 'Tab').classList.add('active');
+
+    if (tab === 'products') loadProducts();
+    if (tab === 'coupons') loadCoupons();
+    if (tab === 'orders') loadOrders();
+}
+
+async function testConnection() {
+    API_URL = document.getElementById('apiUrl').value;
+    showMessage('connectionMessage', 'Baglanti test ediliyor...', 'info');
+    
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        showMessage('connectionMessage', 'Baglanti basarili! API durumu: ' + data.status, 'success');
+    } catch (error) {
+        showMessage('connectionMessage', 'Baglanti hatasi: ' + error.message, 'error');
+    }
+}
+
+async function loadAllData() {
+    await Promise.all([loadProducts(), loadCoupons(), loadOrders(), loadStats()]);
+}
+
+async function loadStats() {
+    try {
+        const [productsRes, ordersRes] = await Promise.all([
+            fetch(`${API_URL}/admin/products`, { headers: { 'X-ADMIN-KEY': ADMIN_KEY } }),
+            fetch(`${API_URL}/admin/orders`, { headers: { 'X-ADMIN-KEY': ADMIN_KEY } })
+        ]);
+
+        const productsData = await productsRes.json();
+        const ordersData = await ordersRes.json();
+
+        const products = productsData.products || [];
+        const orders = ordersData.orders || [];
+
+        document.getElementById('totalProducts').textContent = products.length;
+        document.getElementById('totalOrders').textContent = orders.length;
+        
+        const paidOrders = orders.filter(o => o.status === 'PAID');
+        document.getElementById('paidOrders').textContent = paidOrders.length;
+        
+        const revenue = paidOrders.reduce((sum, o) => sum + (o.totalTRY || 0), 0);
+        document.getElementById('totalRevenue').textContent = formatPrice(revenue) + ' TL';
+    } catch (error) {
+        console.error('Stats yuklenemedi:', error);
+    }
+}
+
+async function addProduct() {
+    const product = {
+        name: document.getElementById('productName').value,
+        priceTRY: parseFloat(document.getElementById('productPrice').value),
+        imageUrl: document.getElementById('productImage').value,
+        description: document.getElementById('productDesc').value,
+        active: true
+    };
+
+    if (!product.name || !product.priceTRY) {
+        showMessage('productMessage', 'Lutfen zorunlu alanlari doldurun', 'error');
+        return;
+    }
+
+    showMessage('productMessage', 'Urun ekleniyor...', 'info');
+
+    try {
+        const response = await fetch(`${API_URL}/admin/products`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-ADMIN-KEY': ADMIN_KEY
+            },
+            body: JSON.stringify(product)
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            showMessage('productMessage', 'Urun basariyla eklendi!', 'success');
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productImage').value = '';
+            document.getElementById('productDesc').value = '';
             loadProducts();
+            loadStats();
+        } else {
+            throw new Error(data.error || 'Urun eklenemedi');
+        }
+    } catch (error) {
+        showMessage('productMessage', 'Hata: ' + error.message, 'error');
+    }
+}
+
+async function loadProducts() {
+    const list = document.getElementById('productsList');
+    list.innerHTML = '<div class="empty-state"><p>Yukeniyor...</p></div>';
+
+    try {
+        const response = await fetch(`${API_URL}/admin/products`, {
+            headers: { 'X-ADMIN-KEY': ADMIN_KEY }
+        });
+        const data = await response.json();
+        
+        if (!data.products || data.products.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="3" y1="9" x2="21" y2="9"/>
+                        <line x1="9" y1="21" x2="9" y2="9"/>
+                    </svg>
+                    <p>Henuz urun eklenmemis</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = data.products.map(p => `
+            <div class="card">
+                <h3>${p.name}</h3>
+                <p class="price">${formatPrice(p.priceTRY)} TL</p>
+                <p>${p.description || 'Aciklama yok'}</p>
+                <p>Durum: <span class="status ${p.active ? 'paid' : 'failed'}">${p.active ? 'Aktif' : 'Pasif'}</span></p>
+                <span class="card-id">ID: ${p.id}</span>
+                <div class="actions">
+                    <button class="btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Sil</button>
+                    <button class="btn-secondary btn-sm" onclick="toggleProduct('${p.id}', ${!p.active})">
+                        ${p.active ? 'Pasif Yap' : 'Aktif Yap'}
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        list.innerHTML = `<div class="empty-state"><p>Hata: ${error.message}</p></div>`;
+    }
+}
+
+async function deleteProduct(id) {
+    if (!confirm('Bu urunu silmek istediginizden emin misiniz?')) return;
+
+    try {
+        const response = await fetch(`${API_URL}/admin/products/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-ADMIN-KEY': ADMIN_KEY }
+        });
+
+        if (response.ok) {
+            loadProducts();
+            loadStats();
+        } else {
+            throw new Error('Urun silinemedi');
+        }
+    } catch (error) {
+        alert('Hata: ' + error.message);
+    }
+}
+
+async function toggleProduct(id, active) {
+    try {
+        const response = await fetch(`${API_URL}/admin/products/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-ADMIN-KEY': ADMIN_KEY
+            },
+            body: JSON.stringify({ active })
+        });
+
+        if (response.ok) {
+            loadProducts();
+        } else {
+            throw new Error('Durum guncellenemedi');
+        }
+    } catch (error) {
+        alert('Hata: ' + error.message);
+    }
+}
+
+async function addCoupon() {
+    const coupon = {
+        code: document.getElementById('couponCode').value.toUpperCase(),
+        type: document.getElementById('couponType').value,
+        value: parseFloat(document.getElementById('couponValue').value),
+        active: true
+    };
+
+    if (!coupon.code || !coupon.value) {
+        showMessage('couponMessage', 'Lutfen zorunlu alanlari doldurun', 'error');
+        return;
+    }
+
+    showMessage('couponMessage', 'Kupon ekleniyor...', 'info');
+
+    try {
+        const response = await fetch(`${API_URL}/admin/coupons`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-ADMIN-KEY': ADMIN_KEY
+            },
+            body: JSON.stringify(coupon)
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            showMessage('couponMessage', 'Kupon basariyla eklendi!', 'success');
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
             loadCoupons();
+        } else {
+            throw new Error(data.error || 'Kupon eklenemedi');
+        }
+    } catch (error) {
+        showMessage('couponMessage', 'Hata: ' + error.message, 'error');
+    }
+}
+
+async function loadCoupons() {
+    const list = document.getElementById('couponsList');
+    list.innerHTML = '<div class="empty-state"><p>Yukeniyor...</p></div>';
+
+    try {
+        const response = await fetch(`${API_URL}/admin/coupons`, {
+            headers: { 'X-ADMIN-KEY': ADMIN_KEY }
+        });
+        const data = await response.json();
+        
+        if (!data.coupons || data.coupons.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                        <line x1="7" y1="7" x2="7.01" y2="7"/>
+                    </svg>
+                    <p>Henuz kupon eklenmemis</p>
+                </div>
+            `;
+            return;
         }
 
-        function logout() {
-            localStorage.removeItem('ADMIN_KEY');
-            ADMIN_KEY = '';
-            document.getElementById('loginSection').style.display = 'block';
-            document.getElementById('adminPanel').classList.remove('active');
+        list.innerHTML = data.coupons.map(c => `
+            <div class="card">
+                <h3>${c.code}</h3>
+                <p class="price">${c.type === 'percent' ? '%' + c.value : c.value + ' TL'}</p>
+                <p>${c.type === 'percent' ? 'Yuzde Indirim' : 'Sabit Tutar Indirim'}</p>
+                <div class="actions">
+                    <button class="btn-danger btn-sm" onclick="deleteCoupon('${c.code}')">Sil</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        list.innerHTML = `<div class="empty-state"><p>Hata: ${error.message}</p></div>`;
+    }
+}
+
+async function deleteCoupon(code) {
+    if (!confirm('Bu kuponu silmek istediginizden emin misiniz?')) return;
+
+    try {
+        const response = await fetch(`${API_URL}/admin/coupons/${code}`, {
+            method: 'DELETE',
+            headers: { 'X-ADMIN-KEY': ADMIN_KEY }
+        });
+
+        if (response.ok) {
+            loadCoupons();
+        } else {
+            throw new Error('Kupon silinemedi');
+        }
+    } catch (error) {
+        alert('Hata: ' + error.message);
+    }
+}
+
+async function loadOrders() {
+    const table = document.getElementById('ordersTable');
+    table.innerHTML = '<div class="empty-state"><p>Yukeniyor...</p></div>';
+
+    try {
+        const response = await fetch(`${API_URL}/admin/orders`, {
+            headers: { 'X-ADMIN-KEY': ADMIN_KEY }
+        });
+        const data = await response.json();
+        
+        if (!data.orders || data.orders.length === 0) {
+            table.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                    <p>Henuz siparis yok</p>
+                </div>
+            `;
+            return;
         }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tab + 'Tab').classList.add('active');
+        table.innerHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Siparis No</th>
+                        <th>Musteri</th>
+                        <th>Toplam</th>
+                        <th>Durum</th>
+                        <th>Tarih</th>
+                        <th>Islem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.orders.map(o => `
+                        <tr>
+                            <td><code style="font-size: 0.75rem;">${o.id}</code></td>
+                            <td>
+                                <strong>${o.customer?.name || 'N/A'}</strong><br>
+                                <small style="color: var(--muted);">${o.customer?.email || ''}</small>
+                            </td>
+                            <td><strong>${formatPrice(o.totalTRY || 0)} TL</strong></td>
+                            <td><span class="status ${o.status?.toLowerCase()}">${o.status}</span></td>
+                            <td>${new Date(o.createdAt).toLocaleDateString('tr-TR')}</td>
+                            <td>
+                                <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding: 0.5rem; font-size: 0.8rem; margin: 0;">
+                                    <option value="">Durum Degistir</option>
+                                    <option value="PENDING">PENDING</option>
+                                    <option value="PAYMENT_STARTED">PAYMENT_STARTED</option>
+                                    <option value="PAID">PAID</option>
+                                    <option value="SHIPPED">SHIPPED</option>
+                                    <option value="FAILED">FAILED</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (error) {
+        table.innerHTML = `<div class="empty-state"><p>Hata: ${error.message}</p></div>`;
+    }
+}
 
-            if (tab === 'products') loadProducts();
-            if (tab === 'coupons') loadCoupons();
-            if (tab === 'orders') loadOrders();
+async function updateOrderStatus(orderId, status) {
+    if (!status) return;
+
+    try {
+        const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-ADMIN-KEY': ADMIN_KEY
+            },
+            body: JSON.stringify({ status })
+        });
+
+        if (response.ok) {
+            loadOrders();
+            loadStats();
+        } else {
+            throw new Error('Durum guncellenemedi');
         }
+    } catch (error) {
+        alert('Hata: ' + error.message);
+    }
+}
 
-        async function testConnection() {
-            API_URL = document.getElementById('apiUrl').value;
-            showMessage('urlMessage', 'Bağlantı test ediliyor...', 'info');
-            
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                showMessage('urlMessage', '✓ Bağlantı başarılı! ' + JSON.stringify(data), 'success');
-            } catch (error) {
-                showMessage('urlMessage', '✗ Bağlantı hatası: ' + error.message, 'error');
-            }
-        }
+function showMessage(elementId, message, type) {
+    const el = document.getElementById(elementId);
+    if (!message) {
+        el.innerHTML = '';
+        return;
+    }
+    el.innerHTML = `<div class="message ${type}">${message}</div>`;
+}
 
-        async function addProduct() {
-            const product = {
-                name: document.getElementById('productName').value,
-                priceTRY: parseFloat(document.getElementById('productPrice').value),
-                imageUrl: document.getElementById('productImage').value,
-                description: document.getElementById('productDesc').value,
-                active: true
-            };
+function formatPrice(price) {
+    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0 }).format(price);
+}
 
-            if (!product.name || !product.priceTRY) {
-                showMessage('productMessage', 'Lütfen tüm alanları doldurun', 'error');
-                return;
-            }
+// Sayfa yuklendiginde
+window.onload = function() {
+    const savedKey = localStorage.getItem('FETIH_ADMIN_KEY');
+    if (savedKey) {
+        document.getElementById('adminKey').value = savedKey;
+    }
+};
+</script>
 
-            showMessage('productMessage', 'Ürün ekleniyor...', 'info');
-
-            try {
-                const response = await fetch(`${API_URL}/admin/products`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-ADMIN-KEY': ADMIN_KEY
-                    },
-                    body: JSON.stringify(product)
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showMessage('productMessage', '✓ Ürün başarıyla eklendi', 'success');
-                    document.getElementById('productName').value = '';
-                    document.getElementById('productPrice').value = '';
-                    document.getElementById('productImage').value = '';
-                    document.getElementById('productDesc').value = '';
-                    loadProducts();
-                } else {
-                    throw new Error(data.error || 'Ürün eklenemedi');
-                }
-            } catch (error) {
-                showMessage('productMessage', '✗ Hata: ' + error.message, 'error');
-            }
-        }
-
-        async function loadProducts() {
-            try {
-                const response = await fetch(`${API_URL}/admin/products`, {
-                    headers: { 'X-ADMIN-KEY': ADMIN_KEY }
-                });
-                const data = await response.json();
-                
-                const list = document.getElementById('productsList');
-                if (!data.products || data.products.length === 0) {
-                    list.innerHTML = '<p>Henüz ürün eklenmemiş</p>';
-                    return;
-                }
-
-                list.innerHTML = data.products.map(p => `
-                    <div class="card">
-                        <h3>${p.name}</h3>
-                        <p class="price">${formatPrice(p.priceTRY)} ₺</p>
-                        <p>${p.description || ''}</p>
-                        <p style="font-size:0.8rem;color:#999;">ID: ${p.id}</p>
-                        <div class="actions">
-                            <button class="danger" onclick="deleteProduct('${p.id}')">SİL</button>
-                            <button onclick="toggleProductStatus('${p.id}', ${!p.active})">
-                                ${p.active ? 'PASİF YAP' : 'AKTİF YAP'}
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Ürünler yüklenemedi:', error);
-            }
-        }
-
-        async function deleteProduct(id) {
-            if (!confirm('Bu ürünü silmek istediğinizden emin misiniz?')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/admin/products/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'X-ADMIN-KEY': ADMIN_KEY }
-                });
-
-                if (response.ok) {
-                    alert('Ürün silindi');
-                    loadProducts();
-                } else {
-                    throw new Error('Ürün silinemedi');
-                }
-            } catch (error) {
-                alert('Hata: ' + error.message);
-            }
-        }
-
-        async function toggleProductStatus(id, active) {
-            try {
-                const response = await fetch(`${API_URL}/admin/products/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-ADMIN-KEY': ADMIN_KEY
-                    },
-                    body: JSON.stringify({ active })
-                });
-
-                if (response.ok) {
-                    loadProducts();
-                } else {
-                    throw new Error('Durum güncellenemedi');
-                }
-            } catch (error) {
-                alert('Hata: ' + error.message);
-            }
-        }
-
-        async function addCoupon() {
-            const coupon = {
-                code: document.getElementById('couponCode').value.toUpperCase(),
-                type: document.getElementById('couponType').value,
-                value: parseFloat(document.getElementById('couponValue').value),
-                active: true
-            };
-
-            if (!coupon.code || !coupon.value) {
-                showMessage('couponMessage', 'Lütfen tüm alanları doldurun', 'error');
-                return;
-            }
-
-            showMessage('couponMessage', 'Kupon ekleniyor...', 'info');
-
-            try {
-                const response = await fetch(`${API_URL}/admin/coupons`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-ADMIN-KEY': ADMIN_KEY
-                    },
-                    body: JSON.stringify(coupon)
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showMessage('couponMessage', '✓ Kupon başarıyla eklendi', 'success');
-                    document.getElementById('couponCode').value = '';
-                    document.getElementById('couponValue').value = '';
-                    loadCoupons();
-                } else {
-                    throw new Error(data.error || 'Kupon eklenemedi');
-                }
-            } catch (error) {
-                showMessage('couponMessage', '✗ Hata: ' + error.message, 'error');
-            }
-        }
-
-        async function loadCoupons() {
-            try {
-                const response = await fetch(`${API_URL}/admin/coupons`, {
-                    headers: { 'X-ADMIN-KEY': ADMIN_KEY }
-                });
-                const data = await response.json();
-                
-                const list = document.getElementById('couponsList');
-                if (!data.coupons || data.coupons.length === 0) {
-                    list.innerHTML = '<p>Henüz kupon eklenmemiş</p>';
-                    return;
-                }
-
-                list.innerHTML = data.coupons.map(c => `
-                    <div class="card">
-                        <h3>${c.code}</h3>
-                        <p class="price">${c.type === 'percent' ? '%' + c.value : c.value + ' ₺'}</p>
-                        <p>${c.type === 'percent' ? 'Yüzde İndirim' : 'Sabit Tutar İndirim'}</p>
-                        <div class="actions">
-                            <button class="danger" onclick="deleteCoupon('${c.code}')">SİL</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Kuponlar yüklenemedi:', error);
-            }
-        }
-
-        async function deleteCoupon(code) {
-            if (!confirm('Bu kuponu silmek istediğinizden emin misiniz?')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/admin/coupons/${code}`, {
-                    method: 'DELETE',
-                    headers: { 'X-ADMIN-KEY': ADMIN_KEY }
-                });
-
-                if (response.ok) {
-                    alert('Kupon silindi');
-                    loadCoupons();
-                } else {
-                    throw new Error('Kupon silinemedi');
-                }
-            } catch (error) {
-                alert('Hata: ' + error.message);
-            }
-        }
-
-        async function loadOrders() {
-            try {
-                const response = await fetch(`${API_URL}/admin/orders`, {
-                    headers: { 'X-ADMIN-KEY': ADMIN_KEY }
-                });
-                const data = await response.json();
-                
-                const table = document.getElementById('ordersTable');
-                if (!data.orders || data.orders.length === 0) {
-                    table.innerHTML = '<p>Henüz sipariş yok</p>';
-                    return;
-                }
-
-                table.innerHTML = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Sipariş No</th>
-                                <th>Müşteri</th>
-                                <th>Toplam</th>
-                                <th>Durum</th>
-                                <th>Tarih</th>
-                                <th>İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.orders.map(o => `
-                                <tr>
-                                    <td>${o.id}</td>
-                                    <td>${o.customer?.name || 'N/A'}<br><small>${o.customer?.email || ''}</small></td>
-                                    <td>${formatPrice(o.totalTRY || 0)} ₺</td>
-                                    <td><span class="status ${o.status}">${o.status}</span></td>
-                                    <td>${new Date(o.createdAt).toLocaleDateString('tr-TR')}</td>
-                                    <td>
-                                        <select onchange="updateOrderStatus('${o.id}', this.value)">
-                                            <option value="">Durum Değiştir</option>
-                                            <option value="PENDING">PENDING</option>
-                                            <option value="PAYMENT_STARTED">PAYMENT_STARTED</option>
-                                            <option value="PAID">PAID</option>
-                                            <option value="FAILED">FAILED</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-            } catch (error) {
-                console.error('Siparişler yüklenemedi:', error);
-            }
-        }
-
-        async function updateOrderStatus(orderId, status) {
-            if (!status) return;
-
-            try {
-                const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-ADMIN-KEY': ADMIN_KEY
-                    },
-                    body: JSON.stringify({ status })
-                });
-
-                if (response.ok) {
-                    alert('Sipariş durumu güncellendi');
-                    loadOrders();
-                } else {
-                    throw new Error('Durum güncellenemedi');
-                }
-            } catch (error) {
-                alert('Hata: ' + error.message);
-            }
-        }
-
-        function showMessage(elementId, message, type) {
-            const el = document.getElementById(elementId);
-            if (!message) {
-                el.innerHTML = '';
-                return;
-            }
-            el.innerHTML = `<div class="message ${type}">${message}</div>`;
-        }
-
-        function formatPrice(price) {
-            return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(price);
-        }
-
-        // Sayfa yüklendiğinde giriş kontrolü
-        window.onload = function() {
-            const savedKey = localStorage.getItem('ADMIN_KEY');
-            if (savedKey) {
-                document.getElementById('adminKey').value = savedKey;
-            }
-        };
-    </script>
 </body>
 </html>
