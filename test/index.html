@@ -1141,22 +1141,25 @@
             left: 0;
             right: 0;
             padding: 16px var(--sides);
+            padding-bottom: calc(16px + env(safe-area-inset-bottom));
             background: var(--card);
             border-top: 1px solid var(--border);
-            display: none;
+            display: flex;
             gap: 12px;
             z-index: 99;
+            box-sizing: border-box;
         }
 
         .detail-add-btn {
             flex: 1;
+            min-width: 0;
             height: 52px;
             background: var(--accent);
             color: #fff;
             border: none;
             border-radius: 14px;
             font-family: 'Oswald', sans-serif;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             letter-spacing: 0.05em;
             cursor: pointer;
@@ -1165,13 +1168,22 @@
             justify-content: center;
             gap: 8px;
             transition: background 0.2s;
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
         }
-        .detail-add-btn:hover {
+        .detail-add-btn:active {
             background: var(--accent-light);
+            transform: scale(0.98);
+        }
+        .detail-add-btn svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
         }
 
         .detail-whatsapp-btn {
             width: 52px;
+            min-width: 52px;
             height: 52px;
             background: var(--whatsapp);
             border: none;
@@ -1180,6 +1192,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .detail-whatsapp-btn:active {
+            transform: scale(0.95);
         }
         .detail-whatsapp-btn svg {
             width: 24px;
