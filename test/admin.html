@@ -338,6 +338,32 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
+        .customer-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .customer-info p {
+            margin: 0.25rem 0;
+        }
+        .customer-info strong {
+            color: var(--text);
+        }
+        .order-items {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: #fff;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            padding: 0.25rem 0;
+        }
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -439,9 +465,20 @@
                         <input type="number" id="productPrice" placeholder="4500">
                     </div>
                 </div>
-                <div>
-                    <label>Gorsel URL</label>
-                    <input type="text" id="productImage" placeholder="https://example.com/image.png">
+                <div class="form-row">
+                    <div>
+                        <label>Gorsel URL</label>
+                        <input type="text" id="productImage" placeholder="https://example.com/image.png">
+                    </div>
+                    <div>
+                        <label>Kategori</label>
+                        <select id="productCategory">
+                            <option value="CAT-LUX">Luks Koleksiyon</option>
+                            <option value="CAT-SPO">Spor Saatler</option>
+                            <option value="CAT-CLA">Klasik Saatler</option>
+                            <option value="CAT-SMT">Otomatik Saatler</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label>Aciklama</label>
@@ -504,17 +541,40 @@
 let API_URL = 'https://bio-1-mq9x.onrender.com';
 let ADMIN_KEY = '';
 
-function login() {
+async function login() {
     const key = document.getElementById('adminKey').value;
     if (!key) {
         showMessage('loginMessage', 'Lutfen sifre girin', 'error');
         return;
     }
-    ADMIN_KEY = key;
-    localStorage.setItem('FETIH_ADMIN_KEY', key);
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('adminPanel').classList.add('active');
-    loadAllData();
+
+    showMessage('loginMessage', 'Dogrulaniyor...', 'info');
+
+    // Admin sifresini dogrula
+    try {
+        const response = await fetch(`${API_URL}/admin/products`, {
+            headers: { 'X-ADMIN-KEY': key }
+        });
+
+        if (response.status === 403) {
+            showMessage('loginMessage', 'Yanlis sifre! Lutfen dogru sifreyi girin.', 'error');
+            return;
+        }
+
+        if (!response.ok) {
+            showMessage('loginMessage', 'Baglanti hatasi. Lutfen tekrar deneyin.', 'error');
+            return;
+        }
+
+        // Basarili
+        ADMIN_KEY = key;
+        localStorage.setItem('FETIH_ADMIN_KEY', key);
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('adminPanel').classList.add('active');
+        loadAllData();
+    } catch (error) {
+        showMessage('loginMessage', 'Baglanti hatasi: ' + error.message, 'error');
+    }
 }
 
 function logout() {
@@ -585,6 +645,7 @@ async function addProduct() {
         priceTRY: parseFloat(document.getElementById('productPrice').value),
         imageUrl: document.getElementById('productImage').value,
         description: document.getElementById('productDesc').value,
+        category: document.getElementById('productCategory').value,
         active: true
     };
 
@@ -625,7 +686,7 @@ async function addProduct() {
 
 async function loadProducts() {
     const list = document.getElementById('productsList');
-    list.innerHTML = '<div class="empty-state"><p>Yukeniyor...</p></div>';
+    list.innerHTML = '<div class="empty-state"><p>Yukleniyor...</p></div>';
 
     try {
         const response = await fetch(`${API_URL}/admin/products`, {
@@ -647,11 +708,19 @@ async function loadProducts() {
             return;
         }
 
+        const categories = {
+            'CAT-LUX': 'Luks',
+            'CAT-SPO': 'Spor',
+            'CAT-CLA': 'Klasik',
+            'CAT-SMT': 'Otomatik'
+        };
+
         list.innerHTML = data.products.map(p => `
             <div class="card">
                 <h3>${p.name}</h3>
                 <p class="price">${formatPrice(p.priceTRY)} TL</p>
                 <p>${p.description || 'Aciklama yok'}</p>
+                <p>Kategori: ${categories[p.category] || p.category || 'Belirtilmemis'}</p>
                 <p>Durum: <span class="status ${p.active ? 'paid' : 'failed'}">${p.active ? 'Aktif' : 'Pasif'}</span></p>
                 <span class="card-id">ID: ${p.id}</span>
                 <div class="actions">
@@ -750,7 +819,7 @@ async function addCoupon() {
 
 async function loadCoupons() {
     const list = document.getElementById('couponsList');
-    list.innerHTML = '<div class="empty-state"><p>Yukeniyor...</p></div>';
+    list.innerHTML = '<div class="empty-state"><p>Yukleniyor...</p></div>';
 
     try {
         const response = await fetch(`${API_URL}/admin/coupons`, {
@@ -807,7 +876,7 @@ async function deleteCoupon(code) {
 
 async function loadOrders() {
     const table = document.getElementById('ordersTable');
-    table.innerHTML = '<div class="empty-state"><p>Yukeniyor...</p></div>';
+    table.innerHTML = '<div class="empty-state"><p>Yukleniyor...</p></div>';
 
     try {
         const response = await fetch(`${API_URL}/admin/orders`, {
@@ -834,7 +903,8 @@ async function loadOrders() {
                 <thead>
                     <tr>
                         <th>Siparis No</th>
-                        <th>Musteri</th>
+                        <th>Musteri Bilgileri</th>
+                        <th>Urunler</th>
                         <th>Toplam</th>
                         <th>Durum</th>
                         <th>Tarih</th>
@@ -846,8 +916,22 @@ async function loadOrders() {
                         <tr>
                             <td><code style="font-size: 0.75rem;">${o.id}</code></td>
                             <td>
-                                <strong>${o.customer?.name || 'N/A'}</strong><br>
-                                <small style="color: var(--muted);">${o.customer?.email || ''}</small>
+                                <div class="customer-info">
+                                    <p><strong>Ad:</strong> ${o.customer?.name || 'N/A'}</p>
+                                    <p><strong>E-posta:</strong> ${o.customer?.email || 'N/A'}</p>
+                                    <p><strong>Telefon:</strong> ${o.customer?.phone || 'N/A'}</p>
+                                    <p><strong>Adres:</strong> ${o.customer?.address || 'N/A'}</p>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="order-items">
+                                    ${(o.items || []).map(item => `
+                                        <div class="order-item">
+                                            <span>${item.name || item.productId} x${item.qty}</span>
+                                            <span>${formatPrice(item.price * item.qty)} TL</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
                             </td>
                             <td><strong>${formatPrice(o.totalTRY || 0)} TL</strong></td>
                             <td><span class="status ${o.status?.toLowerCase()}">${o.status}</span></td>
