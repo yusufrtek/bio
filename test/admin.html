@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | FETİH SAAT</title>
+    <title>Admin Panel | FETiH SAAT</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --bg: #f5f5f5;
+            --bg: #FAF9F7;
             --card: #ffffff;
             --text: #1a1a1a;
             --muted: #6b6b6b;
-            --border: #e0e0e0;
+            --border: #E8E5E0;
             --accent: #8B7355;
             --accent-dark: #6d5a44;
             --success: #28a745;
@@ -510,20 +510,20 @@
 <div class="login-container" id="loginSection">
     <div class="login-box">
         <h1>Admin Panel</h1>
-        <p>FETİH SAAT yonetim paneline giris yapin</p>
+        <p>FETiH SAAT yonetim paneline giris yapin</p>
         <div id="loginMessage"></div>
         <div>
             <label>Admin Sifresi</label>
             <input type="password" id="adminKey" placeholder="Sifrenizi girin" onkeypress="if(event.key==='Enter') login()">
         </div>
-        <button class="btn-primary" style="width: 100%;" onclick="login()">GİRİS YAP</button>
+        <button class="btn-primary" style="width: 100%;" onclick="login()">GIRIS YAP</button>
     </div>
 </div>
 
 <!-- Admin Panel -->
 <div class="admin-panel" id="adminPanel">
     <div class="top-bar">
-        <h1>FETİH SAAT - Admin Panel</h1>
+        <h1>FETiH SAAT - Admin Panel</h1>
         <button class="btn-secondary btn-sm" onclick="logout()">CIKIS</button>
     </div>
 
@@ -622,15 +622,21 @@
                         <input type="text" id="categoryId" placeholder="CAT-LUX">
                     </div>
                 </div>
-                <div>
-                    <label>Gorsel URL</label>
-                    <input type="text" id="categoryImage" placeholder="https://example.com/category.png">
+                <div class="form-row">
+                    <div>
+                        <label>Gorsel URL</label>
+                        <input type="text" id="categoryImage" placeholder="https://example.com/category.png">
+                    </div>
+                    <div>
+                        <label>Siralama</label>
+                        <input type="number" id="categoryOrder" placeholder="1" value="0">
+                    </div>
                 </div>
                 <div>
                     <label>Aciklama</label>
                     <textarea id="categoryDesc" rows="2" placeholder="Kategori aciklamasi..."></textarea>
                 </div>
-                <button class="btn-primary" onclick="addCategory()">KATEGORİ EKLE</button>
+                <button class="btn-primary" onclick="addCategory()">KATEGORI EKLE</button>
             </div>
 
             <div class="section">
@@ -701,12 +707,30 @@
                     </div>
                     <div>
                         <label>Hesap Sahibi</label>
-                        <input type="text" id="settingEftName" placeholder="FETİH SAAT">
+                        <input type="text" id="settingEftName" placeholder="FETiH SAAT">
                     </div>
                 </div>
                 <div>
                     <label>IBAN</label>
                     <input type="text" id="settingEftIban" placeholder="TR00 0000 0000 0000 0000 0000 00">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Iletisim Bilgileri</h2>
+                <div class="form-row">
+                    <div>
+                        <label>Telefon</label>
+                        <input type="text" id="settingPhone" placeholder="+90 552 645 95 40">
+                    </div>
+                    <div>
+                        <label>E-posta</label>
+                        <input type="email" id="settingEmail" placeholder="info@fetihsaat.com">
+                    </div>
+                </div>
+                <div>
+                    <label>WhatsApp Numarasi (ulke kodu ile)</label>
+                    <input type="text" id="settingWhatsapp" placeholder="905526459540">
                 </div>
                 <button class="btn-primary" onclick="saveSettings()">AYARLARI KAYDET</button>
             </div>
@@ -729,6 +753,7 @@ let API_URL = 'https://bio-1-mq9x.onrender.com';
 let ADMIN_KEY = '';
 let categories = [];
 
+// ==================== LOGIN ====================
 async function login() {
     const key = document.getElementById('adminKey').value;
     if (!key) {
@@ -791,7 +816,7 @@ async function testConnection() {
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
-        showMessage('connectionMessage', 'Baglanti basarili! API durumu: ' + data.status, 'success');
+        showMessage('connectionMessage', 'Baglanti basarili! API durumu: ' + data.status + ' - Firebase: ' + (data.firebase || 'unknown'), 'success');
     } catch (error) {
         showMessage('connectionMessage', 'Baglanti hatasi: ' + error.message, 'error');
     }
@@ -835,7 +860,11 @@ async function loadStats() {
 
 function updateCategorySelect() {
     const select = document.getElementById('productCategory');
-    select.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    if (categories.length === 0) {
+        select.innerHTML = '<option value="">Kategori yok - Önce kategori ekleyin</option>';
+    } else {
+        select.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
 }
 
 // ==================== CATEGORIES ====================
@@ -847,6 +876,12 @@ async function loadCategories() {
         const response = await fetch(`${API_URL}/admin/categories`, {
             headers: { 'X-ADMIN-KEY': ADMIN_KEY }
         });
+        
+        if (response.status === 403) {
+            list.innerHTML = '<div class="empty-state"><p>Yetkisiz erisim - Lutfen tekrar giris yapin</p></div>';
+            return;
+        }
+        
         const data = await response.json();
         categories = data.categories || [];
         
@@ -864,6 +899,7 @@ async function loadCategories() {
                 ${c.image ? `<img class="card-image" src="${c.image}" alt="${c.name}">` : ''}
                 <h3>${c.name}</h3>
                 <p>${c.description || 'Aciklama yok'}</p>
+                <p>Siralama: ${c.order || 0}</p>
                 <span class="card-id">ID: ${c.id}</span>
                 <div class="actions">
                     <button class="btn-danger btn-sm" onclick="deleteCategory('${c.id}')">Sil</button>
@@ -882,7 +918,8 @@ async function addCategory() {
         id: document.getElementById('categoryId').value.trim(),
         name: document.getElementById('categoryName').value.trim(),
         image: document.getElementById('categoryImage').value.trim(),
-        description: document.getElementById('categoryDesc').value.trim()
+        description: document.getElementById('categoryDesc').value.trim(),
+        order: parseInt(document.getElementById('categoryOrder').value) || 0
     };
 
     if (!category.id || !category.name) {
@@ -902,14 +939,20 @@ async function addCategory() {
             body: JSON.stringify(category)
         });
 
+        if (response.status === 403) {
+            showMessage('categoryMessage', 'Yetkisiz erisim - Admin anahtari hatali', 'error');
+            return;
+        }
+
         const data = await response.json();
         
-        if (response.ok) {
+        if (response.ok && data.success) {
             showMessage('categoryMessage', 'Kategori basariyla eklendi!', 'success');
             document.getElementById('categoryId').value = '';
             document.getElementById('categoryName').value = '';
             document.getElementById('categoryImage').value = '';
             document.getElementById('categoryDesc').value = '';
+            document.getElementById('categoryOrder').value = '0';
             loadCategories();
             loadStats();
         } else {
@@ -960,6 +1003,11 @@ async function addProduct() {
         return;
     }
 
+    if (!product.categoryId) {
+        showMessage('productMessage', 'Lutfen bir kategori secin. Önce kategori eklemeniz gerekiyor.', 'error');
+        return;
+    }
+
     showMessage('productMessage', 'Urun ekleniyor...', 'info');
 
     try {
@@ -972,9 +1020,14 @@ async function addProduct() {
             body: JSON.stringify(product)
         });
 
+        if (response.status === 403) {
+            showMessage('productMessage', 'Yetkisiz erisim - Admin anahtari hatali', 'error');
+            return;
+        }
+
         const data = await response.json();
         
-        if (response.ok) {
+        if (response.ok && data.success) {
             showMessage('productMessage', 'Urun basariyla eklendi!', 'success');
             document.getElementById('productName').value = '';
             document.getElementById('productPrice').value = '';
@@ -999,6 +1052,12 @@ async function loadProducts() {
         const response = await fetch(`${API_URL}/admin/products`, {
             headers: { 'X-ADMIN-KEY': ADMIN_KEY }
         });
+        
+        if (response.status === 403) {
+            list.innerHTML = '<div class="empty-state"><p>Yetkisiz erisim - Lutfen tekrar giris yapin</p></div>';
+            return;
+        }
+        
         const data = await response.json();
         
         if (!data.products || data.products.length === 0) {
@@ -1019,13 +1078,13 @@ async function loadProducts() {
                     <h3>${p.name}</h3>
                     <p class="price">${formatPrice(p.priceTRY)} TL</p>
                     <p>Kategori: ${category?.name || 'Belirsiz'}</p>
-                    <p>Durum: <span class="status ${p.active ? 'paid' : 'failed'}">${p.active ? 'Aktif' : 'Pasif'}</span></p>
+                    <p>Durum: <span class="status ${p.active ? 'paid' : 'failed'}">${p.active !== false ? 'Aktif' : 'Pasif'}</span></p>
                     ${p.images?.length > 1 ? `<p>${p.images.length} gorsel</p>` : ''}
                     <span class="card-id">ID: ${p.id}</span>
                     <div class="actions">
                         <button class="btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Sil</button>
-                        <button class="btn-secondary btn-sm" onclick="toggleProduct('${p.id}', ${!p.active})">
-                            ${p.active ? 'Pasif' : 'Aktif'}
+                        <button class="btn-secondary btn-sm" onclick="toggleProduct('${p.id}', ${!(p.active !== false)})">
+                            ${p.active !== false ? 'Pasif' : 'Aktif'}
                         </button>
                     </div>
                 </div>
@@ -1103,9 +1162,14 @@ async function addCoupon() {
             body: JSON.stringify(coupon)
         });
 
+        if (response.status === 403) {
+            showMessage('couponMessage', 'Yetkisiz erisim - Admin anahtari hatali', 'error');
+            return;
+        }
+
         const data = await response.json();
         
-        if (response.ok) {
+        if (response.ok && data.success) {
             showMessage('couponMessage', 'Kupon basariyla eklendi!', 'success');
             document.getElementById('couponCode').value = '';
             document.getElementById('couponValue').value = '';
@@ -1126,6 +1190,12 @@ async function loadCoupons() {
         const response = await fetch(`${API_URL}/admin/coupons`, {
             headers: { 'X-ADMIN-KEY': ADMIN_KEY }
         });
+        
+        if (response.status === 403) {
+            list.innerHTML = '<div class="empty-state"><p>Yetkisiz erisim</p></div>';
+            return;
+        }
+        
         const data = await response.json();
         
         if (!data.coupons || data.coupons.length === 0) {
@@ -1180,6 +1250,12 @@ async function loadOrders() {
         const response = await fetch(`${API_URL}/admin/orders`, {
             headers: { 'X-ADMIN-KEY': ADMIN_KEY }
         });
+        
+        if (response.status === 403) {
+            list.innerHTML = '<div class="empty-state"><p>Yetkisiz erisim</p></div>';
+            return;
+        }
+        
         const data = await response.json();
         
         if (!data.orders || data.orders.length === 0) {
@@ -1202,12 +1278,15 @@ async function loadOrders() {
                 second: '2-digit'
             });
 
+            const subtotal = o.subtotalTRY || ((o.totalTRY || 0) - (o.shippingTRY || 0) + (o.discountTRY || 0));
+
             return `
                 <div class="order-card">
                     <div class="order-header">
                         <div>
                             <span class="order-id">${o.id}</span>
-                            <span class="status ${o.status?.toLowerCase()}">${o.status}</span>
+                            <span class="status ${o.status?.toLowerCase().replace('_', '')}">${o.status}</span>
+                            ${o.paymentMethod ? `<span class="status info">${o.paymentMethod}</span>` : ''}
                         </div>
                         <div class="order-date">${formattedDate}</div>
                     </div>
@@ -1229,7 +1308,7 @@ async function loadOrders() {
                             ${(o.items || []).map(item => `
                                 <div class="order-item">
                                     <span>${item.name || item.productId} x ${item.qty}</span>
-                                    <span>${formatPrice(item.price * item.qty)} TL</span>
+                                    <span>${formatPrice(item.price)} TL x ${item.qty} = ${formatPrice(item.lineTotal || item.price * item.qty)} TL</span>
                                 </div>
                             `).join('')}
                         </div>
@@ -1237,7 +1316,7 @@ async function loadOrders() {
                         <div class="order-summary">
                             <div class="order-summary-row">
                                 <span>Ara Toplam</span>
-                                <span>${formatPrice((o.totalTRY || 0) - (o.shippingTRY || 0) + (o.discountTRY || 0))} TL</span>
+                                <span>${formatPrice(subtotal)} TL</span>
                             </div>
                             ${o.discountTRY > 0 ? `
                                 <div class="order-summary-row" style="color: var(--success);">
@@ -1258,12 +1337,12 @@ async function loadOrders() {
                         <div class="order-footer">
                             <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border);">
                                 <option value="">Durum Degistir</option>
-                                <option value="PENDING">PENDING</option>
-                                <option value="EFT_PENDING">EFT BEKLIYOR</option>
-                                <option value="PAYMENT_STARTED">ODEME BASLADI</option>
-                                <option value="PAID">ODENDI</option>
-                                <option value="SHIPPED">KARGOYA VERILDI</option>
-                                <option value="FAILED">IPTAL</option>
+                                <option value="PENDING" ${o.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                                <option value="EFT_PENDING" ${o.status === 'EFT_PENDING' ? 'selected' : ''}>EFT BEKLIYOR</option>
+                                <option value="PAYMENT_STARTED" ${o.status === 'PAYMENT_STARTED' ? 'selected' : ''}>ODEME BASLADI</option>
+                                <option value="PAID" ${o.status === 'PAID' ? 'selected' : ''}>ODENDI</option>
+                                <option value="SHIPPED" ${o.status === 'SHIPPED' ? 'selected' : ''}>KARGOYA VERILDI</option>
+                                <option value="FAILED" ${o.status === 'FAILED' ? 'selected' : ''}>IPTAL</option>
                             </select>
                         </div>
                     </div>
@@ -1305,6 +1384,12 @@ async function loadSettings() {
         const response = await fetch(`${API_URL}/admin/settings`, {
             headers: { 'X-ADMIN-KEY': ADMIN_KEY }
         });
+        
+        if (response.status === 403) {
+            showMessage('settingsMessage', 'Yetkisiz erisim', 'error');
+            return;
+        }
+        
         const data = await response.json();
         
         if (data.settings) {
@@ -1312,6 +1397,9 @@ async function loadSettings() {
             document.getElementById('settingEftBank').value = data.settings.eftBank || '';
             document.getElementById('settingEftName').value = data.settings.eftName || '';
             document.getElementById('settingEftIban').value = data.settings.eftIban || '';
+            document.getElementById('settingPhone').value = data.settings.phone || '';
+            document.getElementById('settingEmail').value = data.settings.email || '';
+            document.getElementById('settingWhatsapp').value = data.settings.whatsapp || '';
         }
     } catch (error) {
         console.error('Ayarlar yuklenemedi:', error);
@@ -1323,7 +1411,10 @@ async function saveSettings() {
         shippingCost: parseFloat(document.getElementById('settingShipping').value) || 50,
         eftBank: document.getElementById('settingEftBank').value.trim(),
         eftName: document.getElementById('settingEftName').value.trim(),
-        eftIban: document.getElementById('settingEftIban').value.trim()
+        eftIban: document.getElementById('settingEftIban').value.trim(),
+        phone: document.getElementById('settingPhone').value.trim(),
+        email: document.getElementById('settingEmail').value.trim(),
+        whatsapp: document.getElementById('settingWhatsapp').value.trim()
     };
 
     showMessage('settingsMessage', 'Kaydediliyor...', 'info');
@@ -1337,6 +1428,11 @@ async function saveSettings() {
             },
             body: JSON.stringify(settings)
         });
+
+        if (response.status === 403) {
+            showMessage('settingsMessage', 'Yetkisiz erisim - Admin anahtari hatali', 'error');
+            return;
+        }
 
         if (response.ok) {
             showMessage('settingsMessage', 'Ayarlar basariyla kaydedildi!', 'success');
@@ -1359,7 +1455,7 @@ function showMessage(elementId, message, type) {
 }
 
 function formatPrice(price) {
-    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0 }).format(price);
+    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0 }).format(price || 0);
 }
 
 // Preview images
@@ -1373,11 +1469,13 @@ document.getElementById('productImages')?.addEventListener('input', function() {
     `).join('');
 });
 
-// Auto login
+// Auto login check
 window.onload = function() {
     const savedKey = localStorage.getItem('FETIH_ADMIN_KEY');
     if (savedKey) {
         document.getElementById('adminKey').value = savedKey;
+        // Otomatik giris dene
+        login();
     }
 };
 </script>
