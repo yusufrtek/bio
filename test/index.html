@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FETİH SAAT | Premium Saat Koleksiyonu</title>
     <meta property="og:title" content="FETİH SAAT">
-    <meta property="og:description" content="SAAT için en güvenilir adres">
+    <meta property="og:description" content="SAAT icin en guvenilir adres">
     <meta property="og:image" content="https://theleng.site/fetih/link.png">
     <meta property="og:url" content="https://theleng.site/fetih">
     <meta property="og:type" content="website">
-    <meta name="description" content="Zarafet ve prestijin buluştuğu premium saat koleksiyonu. Zamana değer katıyoruz.">
+    <meta name="description" content="Zarafet ve prestijin bulustuğu premium saat koleksiyonu. Zamana deger katiyoruz.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -999,9 +999,9 @@
         }
 
         .share-btn.whatsapp { background: #25D366; border-color: #25D366; }
-        .share-btn.whatsapp svg { stroke: #fff; }
+        .share-btn.whatsapp svg { stroke: #fff; fill: #fff; }
         .share-btn.twitter { background: #1DA1F2; border-color: #1DA1F2; }
-        .share-btn.twitter svg { stroke: #fff; }
+        .share-btn.twitter svg { stroke: #fff; fill: #fff; }
 
         /* Related Products */
         .related-products {
@@ -1444,6 +1444,35 @@
             margin-bottom: 0;
         }
 
+        .checkout-agreements {
+            margin-top: 24px;
+        }
+
+        .agreement-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .agreement-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            accent-color: var(--accent);
+        }
+
+        .agreement-item label {
+            font-size: 0.85rem;
+            color: var(--muted-foreground);
+            line-height: 1.4;
+        }
+
+        .agreement-item label a {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
         .checkout-footer {
             position: fixed;
             bottom: 0;
@@ -1724,6 +1753,38 @@
             text-decoration: none;
         }
 
+        .payment-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--sides);
+            background: var(--card);
+            border-top: 1px solid var(--border);
+        }
+
+        .payment-confirm-btn {
+            width: 100%;
+            height: 56px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .payment-confirm-btn:hover {
+            background: var(--accent-light);
+        }
+        .payment-confirm-btn:disabled {
+            background: var(--muted-foreground);
+            cursor: not-allowed;
+        }
+
         /* WHATSAPP BUTTON */
         .whatsapp-fab {
             position: fixed;
@@ -1878,7 +1939,7 @@
 <body>
     <!-- HEADER -->
     <header class="header">
-        <span class="logo" onclick="goHome()">FETİH SAAT</span>
+        <span class="logo" onclick="goHome()">FETiH SAAT</span>
         <div class="header-actions">
             <button class="header-btn" onclick="openSearch()" aria-label="Arama">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1914,14 +1975,13 @@
     <!-- MOBILE MENU -->
     <nav class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-header">
-            <span class="mobile-menu-logo">FETİH SAAT</span>
+            <span class="mobile-menu-logo">FETiH SAAT</span>
         </div>
         <div class="mobile-menu-content">
             <span class="mobile-menu-category">Koleksiyonlar</span>
             <ul class="mobile-menu-nav" id="mobileMenuNav">
                 <li><span class="mobile-menu-link" onclick="goHome(); closeMenu();">Ana Sayfa</span></li>
                 <li><span class="mobile-menu-link" onclick="showAllProducts(); closeMenu();">Tum Urunler</span></li>
-                <!-- Kategoriler buraya dinamik olarak eklenecek -->
             </ul>
         </div>
     </nav>
@@ -1979,7 +2039,7 @@
 
         <!-- FOOTER -->
         <footer class="footer">
-            <div class="footer-logo">FETİH SAAT</div>
+            <div class="footer-logo">FETiH SAAT</div>
             <p class="footer-desc">Zarafet ve prestijin bulustuğu premium saat koleksiyonu. Zamana deger katiyoruz.</p>
             <div class="footer-links">
                 <a href="kvkk.html" class="footer-link">KVKK</a>
@@ -1987,7 +2047,7 @@
                 <a href="iade.html" class="footer-link">Iade Kosullari</a>
                 <a href="iletisim.html" class="footer-link">Iletisim</a>
             </div>
-            <p class="footer-copyright">2025 FETİH SAAT. Tum haklari saklidir.</p>
+            <p class="footer-copyright">2025 FETiH SAAT. Tum haklari saklidir.</p>
         </footer>
     </main>
 
@@ -2016,6 +2076,13 @@
                 </svg>
             </button>
             <div class="detail-header-actions">
+                <button class="header-btn" onclick="shareProduct()" aria-label="Paylas">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                        <polyline points="16,6 12,2 8,6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                    </svg>
+                </button>
                 <button class="header-btn" onclick="openCart()">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
@@ -2056,7 +2123,7 @@
                     <span id="cartTotal">0 TL</span>
                 </div>
             </div>
-            <button class="cart-checkout-btn" onclick="openCheckout()">SATIN AL</button>
+            <button class="cart-checkout-btn" onclick="openCheckout()">SIPARISE DEVAM ET</button>
         </div>
     </div>
 
@@ -2145,9 +2212,20 @@
                     </div>
                 </div>
             </div>
+
+            <div class="checkout-agreements">
+                <div class="agreement-item">
+                    <input type="checkbox" id="agreementKvkk">
+                    <label for="agreementKvkk"><a href="kvkk.html" target="_blank">KVKK Aydinlatma Metni</a>'ni okudum ve kabul ediyorum.</label>
+                </div>
+                <div class="agreement-item">
+                    <input type="checkbox" id="agreementSales">
+                    <label for="agreementSales"><a href="mesafeli-satis.html" target="_blank">Mesafeli Satis Sozlesmesi</a>'ni okudum ve kabul ediyorum.</label>
+                </div>
+            </div>
         </div>
         <div class="checkout-footer">
-            <button class="checkout-submit-btn" id="checkoutSubmitBtn" onclick="submitOrder()">SİPARİSİ TAMAMLA</button>
+            <button class="checkout-submit-btn" id="checkoutSubmitBtn" onclick="submitOrder()">SIPARISI TAMAMLA</button>
         </div>
     </div>
 
@@ -2195,7 +2273,7 @@
                             <span class="eft-label">IBAN</span>
                             <span class="eft-value">
                                 <span id="eftIban">-</span>
-                                <button class="copy-btn" onclick="copyIban()">Kopyala</button>
+                                <button class="copy-btn" onclick="copyIban(event)">Kopyala</button>
                             </span>
                         </div>
                         <div class="eft-row">
@@ -2216,7 +2294,7 @@
                         </div>
                         <div class="payment-method-info">
                             <div class="payment-method-title">KREDI KARTI</div>
-                            <div class="payment-method-desc">Guvenli kart ile odeme</div>
+                            <div class="payment-method-desc">Guvenli kart ile odeme (PayTR)</div>
                         </div>
                     </div>
                 </div>
@@ -2266,10 +2344,13 @@
                 </div>
             </div>
         </div>
+        <div class="payment-footer">
+            <button class="payment-confirm-btn" id="paymentConfirmBtn" onclick="confirmPayment()">ODEMEYI ONAYLA</button>
+        </div>
     </div>
 
     <!-- WHATSAPP FAB -->
-    <a href="https://wa.me/905526459540?text=Merhaba,%20FETİH%20SAAT%20hakkinda%20bilgi%20almak%20istiyorum." target="_blank" class="whatsapp-fab" aria-label="WhatsApp">
+    <a href="https://wa.me/905526459540?text=Merhaba,%20FETiH%20SAAT%20hakkinda%20bilgi%20almak%20istiyorum." target="_blank" class="whatsapp-fab" aria-label="WhatsApp">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
@@ -2289,22 +2370,43 @@
         let settings = {
             shippingCost: 50,
             eftBank: 'Ziraat Bankasi',
-            eftName: 'FETİH SAAT',
+            eftName: 'FETiH SAAT',
             eftIban: 'TR00 0000 0000 0000 0000 0000 00'
         };
         let currentProduct = null;
         let appliedCoupon = null;
+        let currentOrderId = null;
+        let currentOrderTotal = 0;
+        let selectedPaymentMethod = null;
 
         // ==================== INIT ====================
         document.addEventListener('DOMContentLoaded', () => {
             loadTheme();
             loadCart();
             loadData();
+            handleHashChange();
         });
+
+        // Hash change listener for URL routing
+        window.addEventListener('hashchange', handleHashChange);
+
+        function handleHashChange() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#product=')) {
+                const productId = hash.replace('#product=', '');
+                if (productId && products.length > 0) {
+                    openDetail(productId);
+                }
+            } else if (hash.startsWith('#category=')) {
+                const categoryId = hash.replace('#category=', '');
+                if (categoryId && categories.length > 0) {
+                    openCategory(categoryId);
+                }
+            }
+        }
 
         async function loadData() {
             try {
-                // Urunleri yukle
                 const productsRes = await fetch(`${API_URL}/products`);
                 const productsData = await productsRes.json();
                 if (productsData.products && productsData.products.length > 0) {
@@ -2318,7 +2420,6 @@
             }
 
             try {
-                // Kategorileri yukle
                 const categoriesRes = await fetch(`${API_URL}/categories`);
                 const categoriesData = await categoriesRes.json();
                 if (categoriesData.categories && categoriesData.categories.length > 0) {
@@ -2331,7 +2432,6 @@
             }
 
             try {
-                // Ayarlari yukle
                 const settingsRes = await fetch(`${API_URL}/settings`);
                 const settingsData = await settingsRes.json();
                 if (settingsData.settings) {
@@ -2342,6 +2442,7 @@
             }
 
             renderAll();
+            handleHashChange();
         }
 
         function loadDefaultProducts() {
@@ -2349,9 +2450,7 @@
                 { id: 'p1', name: 'Fetih Imperial Gold', priceTRY: 4500, categoryId: 'CAT-LUX', images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600'], description: 'Altin kaplama luks saat koleksiyonu' },
                 { id: 'p2', name: 'Fetih Sport Pro', priceTRY: 2800, categoryId: 'CAT-SPO', images: ['https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600'], description: 'Spor ve dayaniklilik icin tasarlandi' },
                 { id: 'p3', name: 'Fetih Classic Silver', priceTRY: 3200, categoryId: 'CAT-CLA', images: ['https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=600'], description: 'Klasik ve zarif tasarim' },
-                { id: 'p4', name: 'Fetih Automatic', priceTRY: 5500, categoryId: 'CAT-SMT', images: ['https://images.unsplash.com/photo-1539874754764-5a96559165b0?w=600'], description: 'Otomatik mekanizma ile ustalık' },
-                { id: 'p5', name: 'Fetih Diamond Edition', priceTRY: 8500, categoryId: 'CAT-LUX', images: ['https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=600'], description: 'Pirlanta detaylarla suslenmis ozel seri' },
-                { id: 'p6', name: 'Fetih Diver 300m', priceTRY: 4200, categoryId: 'CAT-SPO', images: ['https://images.unsplash.com/photo-1548171915-e79a380a2a4b?w=600'], description: '300m su gecirmez profesyonel dalis saati' }
+                { id: 'p4', name: 'Fetih Automatic', priceTRY: 5500, categoryId: 'CAT-SMT', images: ['https://images.unsplash.com/photo-1539874754764-5a96559165b0?w=600'], description: 'Otomatik mekanizma ile ustalik' }
             ];
         }
 
@@ -2376,8 +2475,6 @@
         function renderHeroCarousel() {
             const carousel = document.getElementById('heroCarousel');
             const dots = document.getElementById('carouselDots');
-
-            // Featured urunleri goster (ilk 3 urun)
             const featured = products.slice(0, 3);
 
             carousel.innerHTML = featured.map((p, i) => `
@@ -2401,7 +2498,6 @@
                 <div class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="scrollToSlide(${i})"></div>
             `).join('');
 
-            // Carousel scroll listener
             carousel.addEventListener('scroll', () => {
                 const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
                 document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
@@ -2468,12 +2564,14 @@
 
             document.getElementById('categoryPage').classList.add('active');
             document.body.classList.add('category-open');
+            window.location.hash = `category=${categoryId}`;
             window.scrollTo(0, 0);
         }
 
         function closeCategoryPage() {
             document.getElementById('categoryPage').classList.remove('active');
             document.body.classList.remove('category-open');
+            history.pushState('', document.title, window.location.pathname);
         }
 
         // ==================== PRODUCTS ====================
@@ -2542,28 +2640,6 @@
                     
                     <div class="detail-description-title">Urun Aciklamasi</div>
                     <p class="detail-description">${product.description || 'Premium kalite saat. Zarif tasarimi ve kaliteli malzemesiyle her an yaninizda.'}</p>
-                    
-                    <div class="detail-share">
-                        <span class="detail-share-title">Paylas:</span>
-                        <div class="share-buttons">
-                            <button class="share-btn whatsapp" onclick="shareWhatsApp()">
-                                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                </svg>
-                            </button>
-                            <button class="share-btn twitter" onclick="shareTwitter()">
-                                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                </svg>
-                            </button>
-                            <button class="share-btn" onclick="copyLink()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
 
                     <div class="detail-actions-desktop">
                         <button class="detail-add-btn" onclick="addToCart('${product.id}')">
@@ -2630,6 +2706,7 @@
 
             document.getElementById('detailPage').classList.add('active');
             document.body.classList.add('detail-open');
+            window.location.hash = `product=${productId}`;
             window.scrollTo(0, 0);
         }
 
@@ -2643,27 +2720,22 @@
             document.getElementById('detailPage').classList.remove('active');
             document.body.classList.remove('detail-open');
             currentProduct = null;
+            history.pushState('', document.title, window.location.pathname);
         }
 
-        // Share functions
-        function shareWhatsApp() {
+        // Share function
+        function shareProduct() {
             if (!currentProduct) return;
             const url = window.location.href;
-            const text = `${currentProduct.name} - ${formatPrice(currentProduct.priceTRY)} TL\n${url}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function shareTwitter() {
-            if (!currentProduct) return;
-            const url = window.location.href;
-            const text = `${currentProduct.name} - FETİH SAAT`;
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-        }
-
-        function copyLink() {
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                showToast('Link kopyalandi!');
-            });
+            const text = `${currentProduct.name} - ${formatPrice(currentProduct.priceTRY)} TL`;
+            
+            if (navigator.share) {
+                navigator.share({ title: currentProduct.name, text: text, url: url });
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Link kopyalandi!');
+                });
+            }
         }
 
         function orderWhatsApp() {
@@ -2870,6 +2942,15 @@
         }
 
         async function submitOrder() {
+            // Validate agreements
+            const kvkkChecked = document.getElementById('agreementKvkk').checked;
+            const salesChecked = document.getElementById('agreementSales').checked;
+
+            if (!kvkkChecked || !salesChecked) {
+                showToast('Lutfen sozlesmeleri onaylayin');
+                return;
+            }
+
             const firstName = document.getElementById('checkoutFirstName').value.trim();
             const lastName = document.getElementById('checkoutLastName').value.trim();
             const email = document.getElementById('checkoutEmail').value.trim();
@@ -2886,7 +2967,7 @@
 
             const btn = document.getElementById('checkoutSubmitBtn');
             btn.disabled = true;
-            btn.textContent = 'İSLENIYOR...';
+            btn.textContent = 'ISLENIYOR...';
 
             try {
                 const response = await fetch(`${API_URL}/create-order`, {
@@ -2912,14 +2993,17 @@
                 const data = await response.json();
 
                 if (data.orderId) {
+                    currentOrderId = data.orderId;
+                    currentOrderTotal = data.totalTRY;
                     openPayment(data.orderId, data.totalTRY);
                 } else {
                     throw new Error(data.error || 'Siparis olusturulamadi');
                 }
             } catch (e) {
                 showToast('Hata: ' + e.message);
+            } finally {
                 btn.disabled = false;
-                btn.textContent = 'SİPARİSİ TAMAMLA';
+                btn.textContent = 'SIPARISI TAMAMLA';
             }
         }
 
@@ -2932,15 +3016,14 @@
 
             // EFT bilgilerini ayarla
             document.getElementById('eftBank').textContent = settings.eftBank || 'Ziraat Bankasi';
-            document.getElementById('eftName').textContent = settings.eftName || 'FETİH SAAT';
+            document.getElementById('eftName').textContent = settings.eftName || 'FETiH SAAT';
             document.getElementById('eftIban').textContent = settings.eftIban || 'TR00 0000 0000 0000 0000 0000 00';
             document.getElementById('eftDescription').textContent = 'Aciklama: ' + orderId;
 
-            // Sepeti temizle
-            cart = [];
-            saveCart();
-            updateCartBadge();
-            appliedCoupon = null;
+            // Reset payment method selection
+            selectedPaymentMethod = null;
+            document.getElementById('paymentMethodEFT').classList.remove('selected');
+            document.getElementById('paymentMethodCard').classList.remove('selected');
 
             document.getElementById('paymentPage').classList.add('active');
             document.body.classList.add('payment-open');
@@ -2949,19 +3032,84 @@
         function closePayment() {
             document.getElementById('paymentPage').classList.remove('active');
             document.body.classList.remove('payment-open');
+            
+            // Clear cart after successful order
+            cart = [];
+            saveCart();
+            updateCartBadge();
+            appliedCoupon = null;
+            
+            // Clear form
+            document.getElementById('checkoutFirstName').value = '';
+            document.getElementById('checkoutLastName').value = '';
+            document.getElementById('checkoutEmail').value = '';
+            document.getElementById('checkoutPhone').value = '';
+            document.getElementById('checkoutAddress').value = '';
+            document.getElementById('checkoutCity').value = '';
+            document.getElementById('checkoutDistrict').value = '';
+            document.getElementById('checkoutPostalCode').value = '';
+            document.getElementById('checkoutCoupon').value = '';
+            document.getElementById('couponSuccess').classList.remove('show');
+            document.getElementById('agreementKvkk').checked = false;
+            document.getElementById('agreementSales').checked = false;
+            
             goHome();
         }
 
         function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
             document.getElementById('paymentMethodEFT').classList.toggle('selected', method === 'eft');
             document.getElementById('paymentMethodCard').classList.toggle('selected', method === 'card');
+        }
 
-            if (method === 'card') {
-                showToast('Kredi karti odemesi yakinda aktif olacak');
+        async function confirmPayment() {
+            if (!selectedPaymentMethod) {
+                showToast('Lutfen odeme yontemi secin');
+                return;
+            }
+
+            const btn = document.getElementById('paymentConfirmBtn');
+            btn.disabled = true;
+            btn.textContent = 'ISLENIYOR...';
+
+            try {
+                if (selectedPaymentMethod === 'eft') {
+                    // EFT secildi - siparis durumunu guncelle
+                    await fetch(`${API_URL}/order/${currentOrderId}/payment-method`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentMethod: 'EFT' })
+                    });
+                    
+                    showToast('Siparisiniz alindi! EFT ile odeme yapiniz.');
+                    setTimeout(() => closePayment(), 2000);
+                } else if (selectedPaymentMethod === 'card') {
+                    // Kredi karti secildi - PayTR'ye yonlendir
+                    const response = await fetch(`${API_URL}/start-payment`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: currentOrderId })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.paymentUrl) {
+                        // PayTR sayfasina yonlendir
+                        window.location.href = data.paymentUrl;
+                    } else {
+                        throw new Error('Odeme linki alinamadi');
+                    }
+                }
+            } catch (e) {
+                showToast('Hata: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'ODEMEYI ONAYLA';
             }
         }
 
-        function copyIban() {
+        function copyIban(event) {
+            event.stopPropagation();
             const iban = document.getElementById('eftIban').textContent;
             navigator.clipboard.writeText(iban).then(() => {
                 showToast('IBAN kopyalandi');
@@ -3077,6 +3225,7 @@
             closeSearch();
             closeCategoryPage();
             document.body.classList.remove('detail-open', 'cart-open', 'checkout-open', 'payment-open', 'category-open');
+            history.pushState('', document.title, window.location.pathname);
             window.scrollTo(0, 0);
         }
 
