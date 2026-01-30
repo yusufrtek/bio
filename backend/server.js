@@ -3,100 +3,212 @@ import cors from "cors";
 import admin from "firebase-admin";
 
 const app = express();
-app.use(cors({ origin: "*", allowedHeaders: ["Content-Type", "Authorization"] }));
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 
-// 🔴 Render ENV içine bunu koyacağız
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+/* =====================================================
+   FIREBASE INIT (CRASH-PROOF)
+===================================================== */
+let db = null;
+let firebaseInitError = null;
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://backend-6782d-default-rtdb.europe-west1.firebasedatabase.app"
-});
+function initFirebase() {
+  if (db || firebaseInitError) return;
 
-const db = admin.firestore();
+  try {
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (!raw) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON missing");
 
-/* ---------------- HELPERS ---------------- */
+    const serviceAccount = JSON.parse(raw);
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+
+    db = admin.firestore();
+    console.log("✅ Firebase initialized");
+  } catch (e) {
+    firebaseInitError = e;
+    console.error("❌ Firebase init failed:", e.message);
+  }
+}
+
+/* =====================================================
+   HELPERS
+===================================================== */
 function normalizeSlug(s) {
   return String(s || "")
     .toLowerCase()
     .trim()
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-");
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
-async function auth(req, res, next) {
+function isValidSlug(slug) {
+  return /^[a-z0-9-]{3,30}$/.test(slug);
+}
+
+async function requireAuth(req, res, next) {
+  initFirebase();
+  if (!db) {
+    return res.status(500).json({
+      error: "Server misconfigured",
+      detail: firebaseInitError?.message || "Firebase not ready"
+    });
+  }
+
   const h = req.headers.authorization || "";
   const token = h.startsWith("Bearer ") ? h.slice(7) : null;
-  if (!token) return res.status(401).json({ error: "Token yok" });
+  if (!token) return res.status(401).json({ error: "Missing token" });
 
   try {
     const decoded = await admin.auth().verifyIdToken(token);
     req.uid = decoded.uid;
     next();
   } catch {
-    res.status(401).json({ error: "Geçersiz token" });
+    return res.status(401).json({ error: "Invalid token" });
   }
 }
 
-/* ---------------- ENDPOINTS ---------------- */
+/* =====================================================
+   ROUTES (ROOT + HEALTH)
+===================================================== */
+app.get("/", (req, res) => {
+  res.json({
+    ok: true,
+    service: "theleng-api",
+    routes: ["/ping", "/claim", "/page", "/:slug"]
+  });
+});
 
-// test
-app.get("/ping", (req, res) => res.json({ ok: true }));
+app.get("/ping", (req, res) => {
+  res.json({ ok: true });
+});
 
-// 1️⃣ slug sahiplen
-app.post("/claim", auth, async (req, res) => {
-  const slug = normalizeSlug(req.body.slug);
+/* =====================================================
+   POST /claim  → slug sahiplen
+===================================================== */
+app.post("/claim", requireAuth, async (req, res) => {
+  const slug = normalizeSlug(req.body?.slug);
+  if (!isValidSlug(slug)) {
+    return res.status(400).json({ error: "Invalid slug" });
+  }
+
   const ref = db.collection("pages").doc(slug);
 
   try {
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
-      if (snap.exists) throw "TAKEN";
+      if (snap.exists) throw new Error("TAKEN");
+
       tx.set(ref, {
         slug,
         ownerUid: req.uid,
+        displayName: "",
+        bio: "",
+        photoUrl: "",
         socials: {},
         isPublic: true,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
     });
-    res.json({ ok: true, slug });
-  } catch {
-    res.status(409).json({ error: "Slug dolu" });
+
+    return res.json({ ok: true, slug });
+  } catch (e) {
+    if (e.message === "TAKEN") {
+      return res.status(409).json({ error: "Slug already taken" });
+    }
+    console.error(e);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
-// 2️⃣ sayfa güncelle
-app.put("/page", auth, async (req, res) => {
-  const slug = normalizeSlug(req.body.slug);
+/* =====================================================
+   PUT /page  → sayfa güncelle
+===================================================== */
+app.put("/page", requireAuth, async (req, res) => {
+  const slug = normalizeSlug(req.body?.slug);
+  if (!isValidSlug(slug)) {
+    return res.status(400).json({ error: "Invalid slug" });
+  }
+
   const ref = db.collection("pages").doc(slug);
   const snap = await ref.get();
 
-  if (!snap.exists) return res.status(404).json({ error: "Yok" });
-  if (snap.data().ownerUid !== req.uid)
-    return res.status(403).json({ error: "Yetkisiz" });
+  if (!snap.exists) {
+    return res.status(404).json({ error: "Page not found" });
+  }
 
-  await ref.update({
-    socials: req.body.socials,
-    isPublic: true
-  });
+  if (snap.data().ownerUid !== req.uid) {
+    return res.status(403).json({ error: "Not owner" });
+  }
 
-  res.json({ ok: true });
+  const updateData = {
+    displayName: String(req.body?.displayName || "").slice(0, 50),
+    bio: String(req.body?.bio || "").slice(0, 160),
+    photoUrl: String(req.body?.photoUrl || "").slice(0, 500),
+    socials:
+      req.body?.socials && typeof req.body.socials === "object"
+        ? req.body.socials
+        : {},
+    isPublic:
+      typeof req.body?.isPublic === "boolean"
+        ? req.body.isPublic
+        : true,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+  };
+
+  await ref.update(updateData);
+  return res.json({ ok: true, slug });
 });
 
-// 3️⃣ public sayfa
+/* =====================================================
+   GET /:slug  → public profil
+===================================================== */
 app.get("/:slug", async (req, res) => {
+  initFirebase();
+  if (!db) {
+    return res.status(500).json({
+      error: "Server misconfigured",
+      detail: firebaseInitError?.message || "Firebase not ready"
+    });
+  }
+
   const slug = normalizeSlug(req.params.slug);
+  if (!isValidSlug(slug)) {
+    return res.status(400).json({ error: "Invalid slug" });
+  }
+
   const snap = await db.collection("pages").doc(slug).get();
+  if (!snap.exists) {
+    return res.status(404).json({ error: "Not found" });
+  }
 
-  if (!snap.exists || !snap.data().isPublic)
-    return res.status(404).json({ error: "Bulunamadı" });
+  const data = snap.data();
+  if (!data.isPublic) {
+    return res.status(404).json({ error: "Not found" });
+  }
 
-  res.json(snap.data());
+  return res.json({
+    slug: data.slug,
+    displayName: data.displayName || "",
+    bio: data.bio || "",
+    photoUrl: data.photoUrl || "",
+    socials: data.socials || {}
+  });
 });
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log("Backend çalışıyor")
-);
+/* =====================================================
+   START SERVER
+===================================================== */
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("🚀 API running on port", PORT);
+});
