@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Theleng Test</title>
+</head>
+<body>
+  <h2>Slug Oluştur</h2>
+
+  <input id="email" placeholder="email" />
+  <input id="password" placeholder="şifre" />
+  <button onclick="login()">Giriş</button>
+
+  <hr />
+
+  <input id="slug" placeholder="slug (yusufertek)" />
+  <input id="instagram" placeholder="instagram url" />
+  <button onclick="createPage()">Kaydet</button>
+
+  <pre id="out"></pre>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const API = "https://RENDER-URL.onrender.com";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0VkEiBZbkU3yIRBWKHdrs-xxjavyk360",
+      authDomain: "backend-6782d.firebaseapp.com",
+      databaseURL: "https://backend-6782d-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "backend-6782d",
+      storageBucket: "backend-6782d.firebasestorage.app",
+      messagingSenderId: "306491838492",
+      appId: "1:306491838492:web:40f3c7761e67aa7f100fd9"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    async function login() {
+      await auth.signInWithEmailAndPassword(
+        email.value,
+        password.value
+      );
+      out.textContent = "Giriş OK";
+    }
+
+    async function createPage() {
+      const token = await auth.currentUser.getIdToken();
+      const slug = document.getElementById("slug").value;
+
+      await fetch(API + "/claim", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ slug })
+      });
+
+      await fetch(API + "/page", {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          slug,
+          socials: {
+            instagram: instagram.value
+          }
+        })
+      });
+
+      out.textContent = "Sayfa oluşturuldu: " + slug;
+    }
+  </script>
+</body>
+</html>
 
