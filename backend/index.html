@@ -2,29 +2,458 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Theleng Test</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Theleng – Backend/Firebase Test Panel</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#0f1730;
+      --panel2:#111c3a;
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.62);
+      --good:#2ee59d;
+      --bad:#ff5c7a;
+      --warn:#ffcc66;
+      --info:#7aa7ff;
+      --shadow: 0 12px 40px rgba(0,0,0,.35);
+      --r:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: radial-gradient(1000px 600px at 10% 0%, #1a2a6c20, transparent),
+                  radial-gradient(900px 500px at 90% 10%, #b21f1f18, transparent),
+                  radial-gradient(900px 500px at 50% 100%, #00c6ff12, transparent),
+                  var(--bg);
+      color:var(--text);
+      font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    a{color:var(--info)}
+    .wrap{
+      max-width: 1180px;
+      margin: 24px auto;
+      padding: 0 16px 40px;
+    }
+    header{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      justify-content:space-between;
+      margin-bottom: 14px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 20px;
+      letter-spacing:.2px;
+    }
+    .title p{
+      margin:6px 0 0;
+      color:var(--muted);
+      max-width: 760px;
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 10px;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      color:var(--muted);
+      white-space:nowrap;
+      user-select:none;
+    }
+    .dot{
+      width:9px;height:9px;border-radius:99px;background:var(--warn);
+      box-shadow:0 0 0 3px rgba(255,204,102,.15);
+    }
+    .dot.good{background:var(--good); box-shadow:0 0 0 3px rgba(46,229,157,.15);}
+    .dot.bad{background:var(--bad); box-shadow:0 0 0 3px rgba(255,92,122,.15);}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr;}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: 14px 14px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.12);
+    }
+    .card .hd h2{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.3px;
+      color: rgba(255,255,255,.85);
+    }
+    .card .bd{
+      padding: 14px;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 560px){ .row{grid-template-columns:1fr;} }
+
+    label{
+      display:block;
+      margin: 0 0 6px;
+      color:var(--muted);
+      font-size: 12px;
+      letter-spacing:.2px;
+    }
+    input, textarea, select{
+      width:100%;
+      padding: 10px 11px;
+      border-radius: 12px;
+      border:1px solid var(--border);
+      background: rgba(10,14,28,.55);
+      color:var(--text);
+      outline:none;
+    }
+    textarea{min-height: 86px; resize: vertical;}
+    input::placeholder, textarea::placeholder{color: rgba(255,255,255,.35)}
+    .btns{display:flex; gap:10px; flex-wrap:wrap;}
+    button{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      cursor:pointer;
+      transition: transform .06s ease, background .2s ease, opacity .2s ease;
+    }
+    button:hover{background: rgba(255,255,255,.10);}
+    button:active{transform: translateY(1px);}
+    button.primary{
+      border-color: rgba(122,167,255,.35);
+      background: rgba(122,167,255,.16);
+    }
+    button.good{
+      border-color: rgba(46,229,157,.35);
+      background: rgba(46,229,157,.16);
+    }
+    button.bad{
+      border-color: rgba(255,92,122,.35);
+      background: rgba(255,92,122,.16);
+    }
+    button:disabled{opacity:.45; cursor:not-allowed;}
+
+    .mini{
+      font-size: 12px;
+      color: var(--muted);
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .kv{
+      display:flex; gap:8px; align-items:center;
+      padding:7px 10px;
+      border:1px dashed var(--border);
+      border-radius: 12px;
+      background: rgba(0,0,0,.12);
+    }
+    .kv b{color: rgba(255,255,255,.85); font-weight:600}
+    .kv code{color: rgba(255,255,255,.82)}
+    .copy{
+      margin-left: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .statusline{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 10px 12px;
+      border:1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(0,0,0,.12);
+      margin-bottom: 12px;
+    }
+    .statusleft{
+      display:flex; align-items:center; gap:10px;
+      color: var(--muted);
+      flex-wrap:wrap;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.8);
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .badge.good{border-color: rgba(46,229,157,.3); background: rgba(46,229,157,.12);}
+    .badge.bad{border-color: rgba(255,92,122,.3); background: rgba(255,92,122,.12);}
+    .badge.warn{border-color: rgba(255,204,102,.3); background: rgba(255,204,102,.12);}
+
+    .log{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      max-height: 320px;
+      overflow:auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .json{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      overflow:auto;
+      white-space: pre;
+    }
+
+    .profile{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(0,0,0,.12);
+    }
+    .avatar{
+      width: 58px; height:58px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(255,255,255,.6);
+      flex: 0 0 auto;
+    }
+    .avatar img{width:100%; height:100%; object-fit:cover;}
+    .pinfo h3{margin:0; font-size: 15px;}
+    .pinfo p{margin:6px 0 0; color: var(--muted);}
+    .links{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .alink{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      text-decoration:none;
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+    }
+    .hint{color:var(--muted); font-size:12px; margin-top:10px}
+  </style>
 </head>
 <body>
-  <h2>Slug Oluştur</h2>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>Theleng – Firebase + Render Test Panel</h1>
+        <p>Bu sayfa sadece test içindir. Login → Token → Backend /ping → /claim → /page → GET /:slug akışını tek yerden görürsün.</p>
+      </div>
+      <div class="pill">
+        <span id="dot" class="dot"></span>
+        <span id="connText">Hazır</span>
+      </div>
+    </header>
 
-  <input id="email" placeholder="email" />
-  <input id="password" placeholder="şifre" />
-  <button onclick="login()">Giriş</button>
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card">
+        <div class="hd">
+          <h2>1) Firebase Auth</h2>
+          <div class="btns">
+            <button id="btnLogout" class="bad" onclick="logout()" disabled>Çıkış</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="statusline">
+            <div class="statusleft">
+              <span class="badge" id="authBadge">Auth: bilinmiyor</span>
+              <span class="badge" id="tokenBadge">Token: yok</span>
+            </div>
+            <button class="copy" onclick="copyToken()" id="btnCopyToken" disabled>Token Kopyala</button>
+          </div>
 
-  <hr />
+          <div class="row">
+            <div>
+              <label>Email</label>
+              <input id="email" type="email" placeholder="ornek@mail.com" />
+            </div>
+            <div>
+              <label>Şifre</label>
+              <input id="password" type="password" placeholder="••••••••" />
+            </div>
+          </div>
 
-  <input id="slug" placeholder="slug (yusufertek)" />
-  <input id="instagram" placeholder="instagram url" />
-  <button onclick="createPage()">Kaydet</button>
+          <div class="btns" style="margin-top:10px">
+            <button class="primary" onclick="register()">Kayıt Ol</button>
+            <button class="good" onclick="login()">Giriş Yap</button>
+            <button onclick="refreshToken()" id="btnRefreshToken" disabled>Token Yenile</button>
+          </div>
 
-  <pre id="out"></pre>
+          <div class="mini">
+            <div class="kv"><b>UID:</b> <code id="uid">-</code> <button class="copy" onclick="copyText('uid')">Kopyala</button></div>
+            <div class="kv"><b>Email:</b> <code id="authemail">-</code></div>
+          </div>
 
-  <!-- Firebase -->
+          <div class="hint">
+            Not: Firebase Auth’ta Email/Password enable değilse giriş/kayıt çalışmaz.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <div class="hd">
+          <h2>2) Backend Testleri (Render)</h2>
+          <div class="btns">
+            <button class="primary" onclick="ping()">/ping</button>
+            <button onclick="clearLogs()">Log Temizle</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="statusline">
+            <div class="statusleft">
+              <span class="badge" id="apiBadge">API: https://bio-rk2d.onrender.com</span>
+              <span class="badge" id="pingBadge">Ping: yapılmadı</span>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="row">
+              <div>
+                <label>Slug (3-30, a-z0-9-)</label>
+                <input id="slug" placeholder="yusufertek" />
+              </div>
+              <div>
+                <label>isPublic</label>
+                <select id="isPublic">
+                  <option value="true" selected>true</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label>Display Name</label>
+                <input id="displayName" placeholder="Yusuf Ertek" />
+              </div>
+              <div>
+                <label>Photo URL (opsiyonel)</label>
+                <input id="photoUrl" placeholder="https://..." />
+              </div>
+            </div>
+
+            <div>
+              <label>Bio</label>
+              <textarea id="bio" placeholder="Kısa açıklama..."></textarea>
+            </div>
+
+            <div class="row">
+              <div>
+                <label>Instagram URL</label>
+                <input id="ig" placeholder="https://instagram.com/..." />
+              </div>
+              <div>
+                <label>X (Twitter) URL</label>
+                <input id="x" placeholder="https://x.com/..." />
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label>TikTok URL</label>
+                <input id="tt" placeholder="https://tiktok.com/@..." />
+              </div>
+              <div>
+                <label>YouTube URL</label>
+                <input id="yt" placeholder="https://youtube.com/..." />
+              </div>
+            </div>
+
+            <div>
+              <label>Website</label>
+              <input id="web" placeholder="https://..." />
+            </div>
+
+            <div class="btns">
+              <button class="good" onclick="claim()" id="btnClaim" disabled>POST /claim</button>
+              <button class="primary" onclick="updatePage()" id="btnUpdate" disabled>PUT /page</button>
+              <button onclick="fetchPublic()">GET /:slug</button>
+              <button onclick="openPublic()">Aç (Yeni Sekme)</button>
+            </div>
+
+            <div>
+              <label>Son İstek / Yanıt (JSON)</label>
+              <div id="lastJson" class="json">{}</div>
+            </div>
+
+            <div>
+              <label>Log</label>
+              <div id="log" class="log"></div>
+            </div>
+
+            <div>
+              <label>Public Profil Önizleme</label>
+              <div id="preview" class="profile">
+                <div class="avatar" id="avatar">?</div>
+                <div class="pinfo">
+                  <h3 id="pname">-</h3>
+                  <p id="pbio">-</p>
+                  <div class="links" id="plinks"></div>
+                </div>
+              </div>
+              <div class="hint">GET /:slug başarılı olunca burası dolacak.</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
   <script>
-    const API = "https://RENDER-URL.onrender.com";
+    // ====== CONFIG ======
+    const API_BASE = "https://bio-rk2d.onrender.com";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD0VkEiBZbkU3yIRBWKHdrs-xxjavyk360",
@@ -33,50 +462,310 @@
       projectId: "backend-6782d",
       storageBucket: "backend-6782d.firebasestorage.app",
       messagingSenderId: "306491838492",
-      appId: "1:306491838492:web:40f3c7761e67aa7f100fd9"
+      appId: "1:306491838492:web:40f3c7761e67aa7f100fd9",
+      measurementId: "G-VYRM1J93HV"
     };
 
+    // ====== INIT ======
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    async function login() {
-      await auth.signInWithEmailAndPassword(
-        email.value,
-        password.value
-      );
-      out.textContent = "Giriş OK";
+    // ====== UI HELPERS ======
+    const el = (id) => document.getElementById(id);
+    const setBadge = (id, text, type=null) => {
+      const b = el(id);
+      b.textContent = text;
+      b.classList.remove("good","bad","warn");
+      if (type) b.classList.add(type);
+    };
+    const setDot = (type, text) => {
+      const d = el("dot");
+      d.classList.remove("good","bad");
+      if (type === "good") d.classList.add("good");
+      if (type === "bad") d.classList.add("bad");
+      el("connText").textContent = text;
+    };
+
+    function log(line, kind="info"){
+      const prefix = kind === "ok" ? "✅" : kind === "err" ? "❌" : kind === "warn" ? "⚠️" : "ℹ️";
+      const t = new Date().toLocaleTimeString();
+      el("log").textContent = `[${t}] ${prefix} ${line}\n` + el("log").textContent;
     }
 
-    async function createPage() {
-      const token = await auth.currentUser.getIdToken();
-      const slug = document.getElementById("slug").value;
+    function pretty(obj){
+      try { return JSON.stringify(obj, null, 2); } catch { return String(obj); }
+    }
+    function showLast(obj){
+      el("lastJson").textContent = pretty(obj || {});
+    }
+    function copyText(id){
+      const text = el(id).textContent.trim();
+      navigator.clipboard.writeText(text);
+      log("Kopyalandı: " + text, "ok");
+    }
+    async function copyToken(){
+      const u = auth.currentUser;
+      if (!u) return;
+      const token = await u.getIdToken();
+      await navigator.clipboard.writeText(token);
+      log("Token kopyalandı.", "ok");
+    }
 
-      await fetch(API + "/claim", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ slug })
+    function sanitizeUrl(u){
+      const s = String(u||"").trim();
+      if (!s) return "";
+      // http/https yoksa https ekle
+      if (!/^https?:\/\//i.test(s)) return "https://" + s;
+      return s;
+    }
+
+    function getSlug(){
+      return String(el("slug").value || "").trim().toLowerCase();
+    }
+
+    function enableAuthedButtons(enabled){
+      el("btnLogout").disabled = !enabled;
+      el("btnRefreshToken").disabled = !enabled;
+      el("btnCopyToken").disabled = !enabled;
+      el("btnClaim").disabled = !enabled;
+      el("btnUpdate").disabled = !enabled;
+    }
+
+    // ====== NETWORK HELPER ======
+    async function apiFetch(path, {method="GET", body=null, authRequired=false} = {}){
+      const start = performance.now();
+      let token = null;
+      if (authRequired){
+        const u = auth.currentUser;
+        if (!u) throw new Error("Login olmadan bu istek atılamaz.");
+        token = await u.getIdToken();
+      }
+
+      const headers = {"Content-Type":"application/json"};
+      if (token) headers["Authorization"] = "Bearer " + token;
+
+      const reqInfo = { url: API_BASE + path, method, headers: {...headers}, body: body ? body : null };
+      log(`${method} ${path} gönderiliyor...`, "info");
+      showLast({ request: reqInfo });
+
+      const res = await fetch(API_BASE + path, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : null
       });
 
-      await fetch(API + "/page", {
-        method: "PUT",
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
+      const ms = Math.round(performance.now() - start);
+      let data = null;
+      try { data = await res.json(); }
+      catch { data = { raw: await res.text().catch(()=> "") }; }
+
+      const result = { status: res.status, ok: res.ok, ms, data };
+      showLast({ request: reqInfo, response: result });
+
+      if (res.ok) log(`${method} ${path} OK (${res.status}) • ${ms}ms`, "ok");
+      else log(`${method} ${path} HATA (${res.status}) • ${ms}ms • ${data?.error || "unknown"}`, "err");
+
+      return result;
+    }
+
+    // ====== AUTH ACTIONS ======
+    async function register(){
+      try{
+        const email = el("email").value.trim();
+        const pass = el("password").value;
+        await auth.createUserWithEmailAndPassword(email, pass);
+        log("Kayıt başarılı.", "ok");
+      }catch(e){
+        log("Kayıt hatası: " + (e.message || e), "err");
+      }
+    }
+
+    async function login(){
+      try{
+        const email = el("email").value.trim();
+        const pass = el("password").value;
+        await auth.signInWithEmailAndPassword(email, pass);
+        log("Giriş başarılı.", "ok");
+      }catch(e){
+        log("Giriş hatası: " + (e.message || e), "err");
+      }
+    }
+
+    async function logout(){
+      try{
+        await auth.signOut();
+        log("Çıkış yapıldı.", "ok");
+      }catch(e){
+        log("Çıkış hatası: " + (e.message || e), "err");
+      }
+    }
+
+    async function refreshToken(){
+      try{
+        const u = auth.currentUser;
+        if(!u) return;
+        await u.getIdToken(true);
+        log("Token yenilendi.", "ok");
+        setBadge("tokenBadge", "Token: var", "good");
+      }catch(e){
+        log("Token yenileme hatası: " + (e.message || e), "err");
+      }
+    }
+
+    auth.onAuthStateChanged(async (user)=>{
+      if (user){
+        setBadge("authBadge", "Auth: giriş yapıldı", "good");
+        setBadge("tokenBadge", "Token: var", "good");
+        el("uid").textContent = user.uid;
+        el("authemail").textContent = user.email || "-";
+        enableAuthedButtons(true);
+        setDot("good", "Auth OK");
+        log("Auth state: logged in (uid=" + user.uid + ")", "ok");
+      } else {
+        setBadge("authBadge", "Auth: giriş yok", "warn");
+        setBadge("tokenBadge", "Token: yok", "warn");
+        el("uid").textContent = "-";
+        el("authemail").textContent = "-";
+        enableAuthedButtons(false);
+        setDot(null, "Giriş bekleniyor");
+        log("Auth state: logged out", "info");
+      }
+    });
+
+    // ====== BACKEND ACTIONS ======
+    async function ping(){
+      try{
+        const r = await apiFetch("/ping", {method:"GET"});
+        if (r.ok) setBadge("pingBadge", `Ping: OK • ${r.ms}ms`, "good");
+        else setBadge("pingBadge", `Ping: HATA • ${r.status}`, "bad");
+      }catch(e){
+        setBadge("pingBadge", "Ping: HATA", "bad");
+        log("Ping exception: " + (e.message || e), "err");
+      }
+    }
+
+    async function claim(){
+      try{
+        const slug = getSlug();
+        if(!slug) return log("Slug boş olamaz.", "warn");
+
+        const r = await apiFetch("/claim", {
+          method:"POST",
+          body:{ slug },
+          authRequired:true
+        });
+
+        if (r.ok){
+          log(`Slug sahiplenildi: ${slug}`, "ok");
+        }
+      }catch(e){
+        log("Claim exception: " + (e.message || e), "err");
+      }
+    }
+
+    async function updatePage(){
+      try{
+        const slug = getSlug();
+        if(!slug) return log("Slug boş olamaz.", "warn");
+
+        const socials = {
+          instagram: sanitizeUrl(el("ig").value),
+          x: sanitizeUrl(el("x").value),
+          tiktok: sanitizeUrl(el("tt").value),
+          youtube: sanitizeUrl(el("yt").value),
+          website: sanitizeUrl(el("web").value)
+        };
+
+        // boşları sil
+        Object.keys(socials).forEach(k => { if(!socials[k]) delete socials[k]; });
+
+        const body = {
           slug,
-          socials: {
-            instagram: instagram.value
-          }
-        })
-      });
+          displayName: el("displayName").value.trim(),
+          bio: el("bio").value.trim(),
+          photoUrl: sanitizeUrl(el("photoUrl").value),
+          socials,
+          isPublic: el("isPublic").value === "true"
+        };
 
-      out.textContent = "Sayfa oluşturuldu: " + slug;
+        const r = await apiFetch("/page", { method:"PUT", body, authRequired:true });
+        if (r.ok) log("Sayfa güncellendi.", "ok");
+      }catch(e){
+        log("Update exception: " + (e.message || e), "err");
+      }
     }
+
+    async function fetchPublic(){
+      try{
+        const slug = getSlug();
+        if(!slug) return log("Slug boş olamaz.", "warn");
+
+        const r = await apiFetch("/" + encodeURIComponent(slug), { method:"GET" });
+        if (!r.ok) return;
+
+        renderPreview(r.data);
+      }catch(e){
+        log("Fetch exception: " + (e.message || e), "err");
+      }
+    }
+
+    function openPublic(){
+      const slug = getSlug();
+      if(!slug) return log("Slug boş olamaz.", "warn");
+      window.open(API_BASE + "/" + encodeURIComponent(slug), "_blank");
+    }
+
+    function renderPreview(data){
+      const name = data.displayName || data.slug || "-";
+      const bio = data.bio || "(bio yok)";
+      el("pname").textContent = name;
+      el("pbio").textContent = bio;
+
+      // avatar
+      const av = el("avatar");
+      av.innerHTML = "";
+      if (data.photoUrl){
+        const img = document.createElement("img");
+        img.src = data.photoUrl;
+        img.onerror = () => { av.textContent = "?"; };
+        av.appendChild(img);
+      } else {
+        av.textContent = (name || "?").slice(0,1).toUpperCase();
+      }
+
+      // links
+      const links = el("plinks");
+      links.innerHTML = "";
+      const socials = data.socials || {};
+      const entries = Object.entries(socials);
+      if (!entries.length){
+        const span = document.createElement("span");
+        span.className = "hint";
+        span.textContent = "Social link yok.";
+        links.appendChild(span);
+        return;
+      }
+      for (const [k,v] of entries){
+        const a = document.createElement("a");
+        a.className = "alink";
+        a.href = v;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = k + " ↗";
+        links.appendChild(a);
+      }
+      log("Önizleme güncellendi.", "ok");
+    }
+
+    function clearLogs(){
+      el("log").textContent = "";
+      showLast({});
+      log("Log temizlendi.", "ok");
+    }
+
+    // initial
+    setBadge("apiBadge", "API: " + API_BASE);
+    log("Panel hazır. Önce /ping, sonra login, sonra /claim + /page dene.", "info");
   </script>
 </body>
 </html>
-
