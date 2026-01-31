@@ -54,6 +54,58 @@ function isValidSlug(slug) {
   return /^[a-z0-9-]{3,30}$/.test(slug);
 }
 
+function sanitizeTemplate(t) {
+  const x = String(t || "neo").toLowerCase().trim();
+  // sadece bilinen temalara izin ver
+  const allowed = new Set(["neo", "glass", "sunrise"]);
+  return allowed.has(x) ? x : "neo";
+}
+
+function sanitizeBlocks(blocks) {
+  if (!Array.isArray(blocks)) return [];
+  const out = [];
+  for (const b of blocks.slice(0, 50)) {
+    if (!b || typeof b !== "object") continue;
+    const type = String(b.type || "").toLowerCase().trim();
+    const id = String(b.id || "").slice(0, 80);
+
+    if (!["button", "text", "tweet", "youtube", "divider"].includes(type)) continue;
+
+    if (type === "divider") {
+      out.push({ id, type });
+      continue;
+    }
+
+    if (type === "text") {
+      out.push({
+        id,
+        type,
+        text: String(b.text || "").slice(0, 2000)
+      });
+      continue;
+    }
+
+    if (type === "button") {
+      out.push({
+        id,
+        type,
+        title: String(b.title || "").slice(0, 60),
+        url: String(b.url || "").slice(0, 500),
+        note: String(b.note || "").slice(0, 120)
+      });
+      continue;
+    }
+
+    // tweet / youtube
+    out.push({
+      id,
+      type,
+      url: String(b.url || "").slice(0, 500)
+    });
+  }
+  return out;
+}
+
 async function requireAuth(req, res, next) {
   initFirebase();
   if (!db) {
@@ -83,7 +135,8 @@ app.get("/", (req, res) => {
   res.json({
     ok: true,
     service: "theleng-api",
-    routes: ["/ping", "/claim", "/page", "/:slug"]
+    routes: ["/ping", "/claim", "/page", "/:slug"],
+    features: ["template", "blocks"]
   });
 });
 
@@ -115,12 +168,19 @@ app.post("/claim", requireAuth, async (req, res) => {
         photoUrl: "",
         socials: {},
         isPublic: true,
+
+        // yeni alanlar
+        template: "neo",
+        blocks: [],
+
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
     });
 
-    return res.json({ ok: true, slug });
+    // kanıt: gerçekten oluştu mu?
+    const check = await ref.get();
+    return res.json({ ok: true, slug, exists: check.exists });
   } catch (e) {
     if (e.message === "TAKEN") {
       return res.status(409).json({ error: "Slug already taken" });
@@ -132,6 +192,7 @@ app.post("/claim", requireAuth, async (req, res) => {
 
 /* =====================================================
    PUT /page  → sayfa güncelle
+   (claim + save tek buton için: slug mevcut olmalı)
 ===================================================== */
 app.put("/page", requireAuth, async (req, res) => {
   const slug = normalizeSlug(req.body?.slug);
@@ -152,16 +213,23 @@ app.put("/page", requireAuth, async (req, res) => {
 
   const updateData = {
     displayName: String(req.body?.displayName || "").slice(0, 50),
-    bio: String(req.body?.bio || "").slice(0, 160),
+    bio: String(req.body?.bio || "").slice(0, 2000),
     photoUrl: String(req.body?.photoUrl || "").slice(0, 500),
+
     socials:
       req.body?.socials && typeof req.body.socials === "object"
         ? req.body.socials
         : {},
+
     isPublic:
       typeof req.body?.isPublic === "boolean"
         ? req.body.isPublic
         : true,
+
+    // ✅ yeni alanlar
+    template: sanitizeTemplate(req.body?.template),
+    blocks: sanitizeBlocks(req.body?.blocks),
+
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
@@ -170,7 +238,7 @@ app.put("/page", requireAuth, async (req, res) => {
 });
 
 /* =====================================================
-   GET /:slug  → public profil
+   GET /:slug  → public profil (JSON)
 ===================================================== */
 app.get("/:slug", async (req, res) => {
   initFirebase();
@@ -201,7 +269,11 @@ app.get("/:slug", async (req, res) => {
     displayName: data.displayName || "",
     bio: data.bio || "",
     photoUrl: data.photoUrl || "",
-    socials: data.socials || {}
+    socials: data.socials || {},
+
+    // ✅ yeni alanlar
+    template: data.template || "neo",
+    blocks: Array.isArray(data.blocks) ? data.blocks : []
   });
 });
 
