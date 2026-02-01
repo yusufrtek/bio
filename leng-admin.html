@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE LENG - Admin Paneli</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #000;
+            --secondary-color: #fff;
+            --text-color: #666;
+            --background-color: #f5f5f5;
+            --card-bg: #fff;
+            --border-color: #e0e0e0;
+            --success-color: #4caf50;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+        }
+
+        /* Login Screen */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .login-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        /* Admin Dashboard */
+        .admin-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .admin-container.active {
+            display: block;
+        }
+
+        .admin-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .logout-button {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .tab:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            font-weight: 700;
+            background: #f8f9fa;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-new {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: #f5f5f5;
+            color: var(--primary-color);
+        }
+
+        .reference-item {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .reference-preview {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .reference-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: white;
+            padding: 0.5rem;
+        }
+
+        .reference-avatar {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .reference-info {
+            flex: 1;
+        }
+
+        .reference-name {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .reference-text {
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-color);
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 768px) {
+            .admin-content {
+                padding: 1rem;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                border-bottom: none;
+            }
+
+            .tab {
+                white-space: nowrap;
+            }
+
+            .table {
+                font-size: 0.85rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .reference-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1 class="login-title">THE LENG</h1>
+            <p class="login-subtitle">Admin Paneli Girişi</p>
+            
+            <div class="error-message" id="errorMessage"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">E-posta Adresi</label>
+                    <input type="email" id="email" class="form-input" required placeholder="admin@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Şifre</label>
+                    <input type="password" id="password" class="form-input" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="login-button" id="loginButton">GİRİŞ YAP</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="admin-container" id="adminContainer">
+        <header class="admin-header">
+            <div class="admin-header-content">
+                <h1 class="admin-title">THE LENG Admin Paneli</h1>
+                <button class="logout-button" id="logoutButton">Çıkış Yap</button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div class="tabs">
+                <button class="tab active" data-tab="forms">Formlar</button>
+                <button class="tab" data-tab="logos">Referans Logoları</button>
+                <button class="tab" data-tab="testimonials">Referans Yorumlar</button>
+            </div>
+
+            <!-- Forms Tab -->
+            <div class="tab-content active" id="forms-content">
+                <div class="card">
+                    <h2 class="card-title">İletişim Formları</h2>
+                    <div id="formsTable"></div>
+                </div>
+            </div>
+
+            <!-- Logos Tab -->
+            <div class="tab-content" id="logos-content">
+                <div class="card">
+                    <h2 class="card-title">
+                        Referans Logoları
+                        <button class="btn btn-primary" id="addLogoBtn">+ Logo Ekle</button>
+                    </h2>
+                    <div id="logosList"></div>
+                </div>
+            </div>
+
+            <!-- Testimonials Tab -->
+            <div class="tab-content" id="testimonials-content">
+                <div class="card">
+                    <h2 class="card-title">
+                        Referans Yorumlar
+                        <button class="btn btn-primary" id="addTestimonialBtn">+ Yorum Ekle</button>
+                    </h2>
+                    <div id="testimonialsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logo Modal -->
+    <div class="modal" id="logoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Logo Ekle</h3>
+                <button class="close-modal" onclick="closeLogoModal()">&times;</button>
+            </div>
+            <form id="logoForm">
+                <div class="form-group">
+                    <label class="form-label" for="logoName">Marka Adı</label>
+                    <input type="text" id="logoName" class="form-input" required placeholder="Örn: Apple">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="logoUrl">Logo URL</label>
+                    <input type="url" id="logoUrl" class="form-input" required placeholder="https://example.com/logo.png">
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Testimonial Modal -->
+    <div class="modal" id="testimonialModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Yorum Ekle</h3>
+                <button class="close-modal" onclick="closeTestimonialModal()">&times;</button>
+            </div>
+            <form id="testimonialForm">
+                <div class="form-group">
+                    <label class="form-label" for="testimonialName">İsim</label>
+                    <input type="text" id="testimonialName" class="form-input" required placeholder="Örn: Ahmet Yılmaz">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="testimonialTitle">Ünvan</label>
+                    <input type="text" id="testimonialTitle" class="form-input" required placeholder="Örn: CEO, ABC Şirketi">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="testimonialAvatar">Profil Fotoğrafı URL</label>
+                    <input type="url" id="testimonialAvatar" class="form-input" required placeholder="https://example.com/avatar.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="testimonialText">Yorum</label>
+                    <textarea id="testimonialText" class="form-input" rows="4" required placeholder="Müşterinin yorumu..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+            authDomain: "maps-52b00.firebaseapp.com",
+            databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "maps-52b00",
+            storageBucket: "maps-52b00.firebasestorage.app",
+            messagingSenderId: "485125559932",
+            appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
+            measurementId: "G-YHHXDYCCG7"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        const ADMIN_EMAIL = 'm.yusufertek@gmail.com';
+
+        // Auth State Observer
+        auth.onAuthStateChanged((user) => {
+            if (user && user.email === ADMIN_EMAIL) {
+                showAdminPanel();
+                loadAllData();
+            } else {
+                showLogin();
+            }
+        });
+
+        // Login Form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginButton = document.getElementById('loginButton');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            errorMessage.classList.remove('active');
+            loginButton.disabled = true;
+            loginButton.textContent = 'GİRİŞ YAPILIYOR...';
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                
+                if (userCredential.user.email !== ADMIN_EMAIL) {
+                    throw new Error('Bu hesap admin yetkisine sahip değil.');
+                }
+            } catch (error) {
+                console.error('[v0] Login error:', error);
+                errorMessage.textContent = error.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
+                errorMessage.classList.add('active');
+                loginButton.disabled = false;
+                loginButton.textContent = 'GİRİŞ YAP';
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+            } catch (error) {
+                console.error('[v0] Logout error:', error);
+            }
+        });
+
+        function showLogin() {
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('adminContainer').classList.remove('active');
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('adminContainer').classList.add('active');
+        }
+
+        // Tab Switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tabName + '-content').classList.add('active');
+            });
+        });
+
+        // Load All Data
+        function loadAllData() {
+            loadForms();
+            loadLogos();
+            loadTestimonials();
+        }
+
+        // Load Forms
+        function loadForms() {
+            database.ref('form').on('value', (snapshot) => {
+                const forms = snapshot.val();
+                const formsTable = document.getElementById('formsTable');
+                
+                if (!forms) {
+                    formsTable.innerHTML = '<div class="empty-state"><p>Henüz form gönderisi yok.</p></div>';
+                    return;
+                }
+
+                const formsArray = Object.entries(forms).map(([id, data]) => ({ id, ...data }));
+                formsArray.sort((a, b) => b.timestamp - a.timestamp);
+
+                let html = '<table class="table"><thead><tr><th>Tarih</th><th>Şirket</th><th>E-posta</th><th>Telefon</th><th>Mesaj</th><th>Durum</th><th>İşlem</th></tr></thead><tbody>';
+                
+                formsArray.forEach(form => {
+                    const date = new Date(form.dateCreated).toLocaleString('tr-TR');
+                    html += `
+                        <tr>
+                            <td>${date}</td>
+                            <td><strong>${form.companyName}</strong></td>
+                            <td>${form.email}</td>
+                            <td>${form.phone}</td>
+                            <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${form.message}</td>
+                            <td><span class="status-badge ${form.status === 'yeni' ? 'status-new' : 'status-completed'}">${form.status === 'yeni' ? 'Yeni' : 'Tamamlandı'}</span></td>
+                            <td><button class="btn btn-danger" onclick="deleteForm('${form.id}')">Sil</button></td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                formsTable.innerHTML = html;
+            });
+        }
+
+        function deleteForm(id) {
+            if (confirm('Bu formu silmek istediğinizden emin misiniz?')) {
+                database.ref('form/' + id).remove()
+                    .then(() => alert('Form başarıyla silindi'))
+                    .catch(error => alert('Hata: ' + error.message));
+            }
+        }
+
+        // Logo Management
+        document.getElementById('addLogoBtn').addEventListener('click', () => {
+            document.getElementById('logoModal').classList.add('active');
+        });
+
+        function closeLogoModal() {
+            document.getElementById('logoModal').classList.remove('active');
+            document.getElementById('logoForm').reset();
+        }
+
+        document.getElementById('logoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('logoName').value;
+            const url = document.getElementById('logoUrl').value;
+            
+            try {
+                await database.ref('references/logos').push({
+                    name: name,
+                    url: url,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                alert('Logo başarıyla eklendi!');
+                closeLogoModal();
+            } catch (error) {
+                alert('Hata: ' + error.message);
+            }
+        });
+
+        function loadLogos() {
+            database.ref('references/logos').on('value', (snapshot) => {
+                const logos = snapshot.val();
+                const logosList = document.getElementById('logosList');
+                
+                if (!logos) {
+                    logosList.innerHTML = '<div class="empty-state"><p>Henüz logo eklenmemiş.</p></div>';
+                    return;
+                }
+
+                const logosArray = Object.entries(logos).map(([id, data]) => ({ id, ...data }));
+                
+                let html = '';
+                logosArray.forEach(logo => {
+                    html += `
+                        <div class="reference-item">
+                            <div class="reference-preview">
+                                <img src="${logo.url}" alt="${logo.name}" class="reference-image">
+                                <div class="reference-info">
+                                    <div class="reference-name">${logo.name}</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteLogo('${logo.id}')">Sil</button>
+                        </div>
+                    `;
+                });
+                
+                logosList.innerHTML = html;
+            });
+        }
+
+        function deleteLogo(id) {
+            if (confirm('Bu logoyu silmek istediğinizden emin misiniz?')) {
+                database.ref('references/logos/' + id).remove()
+                    .then(() => alert('Logo başarıyla silindi'))
+                    .catch(error => alert('Hata: ' + error.message));
+            }
+        }
+
+        // Testimonial Management
+        document.getElementById('addTestimonialBtn').addEventListener('click', () => {
+            document.getElementById('testimonialModal').classList.add('active');
+        });
+
+        function closeTestimonialModal() {
+            document.getElementById('testimonialModal').classList.remove('active');
+            document.getElementById('testimonialForm').reset();
+        }
+
+        document.getElementById('testimonialForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('testimonialName').value;
+            const title = document.getElementById('testimonialTitle').value;
+            const avatar = document.getElementById('testimonialAvatar').value;
+            const text = document.getElementById('testimonialText').value;
+            
+            try {
+                await database.ref('references/testimonials').push({
+                    name: name,
+                    title: title,
+                    avatar: avatar,
+                    text: text,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                alert('Yorum başarıyla eklendi!');
+                closeTestimonialModal();
+            } catch (error) {
+                alert('Hata: ' + error.message);
+            }
+        });
+
+        function loadTestimonials() {
+            database.ref('references/testimonials').on('value', (snapshot) => {
+                const testimonials = snapshot.val();
+                const testimonialsList = document.getElementById('testimonialsList');
+                
+                if (!testimonials) {
+                    testimonialsList.innerHTML = '<div class="empty-state"><p>Henüz yorum eklenmemiş.</p></div>';
+                    return;
+                }
+
+                const testimonialsArray = Object.entries(testimonials).map(([id, data]) => ({ id, ...data }));
+                
+                let html = '';
+                testimonialsArray.forEach(testimonial => {
+                    html += `
+                        <div class="reference-item">
+                            <div class="reference-preview">
+                                <img src="${testimonial.avatar}" alt="${testimonial.name}" class="reference-avatar">
+                                <div class="reference-info">
+                                    <div class="reference-name">${testimonial.name}</div>
+                                    <div class="reference-text">${testimonial.title}</div>
+                                    <div class="reference-text" style="margin-top: 0.5rem; font-style: italic;">"${testimonial.text}"</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteTestimonial('${testimonial.id}')">Sil</button>
+                        </div>
+                    `;
+                });
+                
+                testimonialsList.innerHTML = html;
+            });
+        }
+
+        function deleteTestimonial(id) {
+            if (confirm('Bu yorumu silmek istediğinizden emin misiniz?')) {
+                database.ref('references/testimonials/' + id).remove()
+                    .then(() => alert('Yorum başarıyla silindi'))
+                    .catch(error => alert('Hata: ' + error.message));
+            }
+        }
+    </script>
+</body>
+</html>
