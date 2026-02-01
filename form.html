@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İletişim Formu - THE LENG</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #4a5568;
+            --secondary-color: #fff;
+            --accent-color: #667eea;
+            --text-color: #2d3748;
+            --light-text: #718096;
+            --background-color: #f7fafc;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: #e2e8f0;
+            --success-color: #48bb78;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-marquee-container {
+            position: absolute;
+            width: 100%;
+            opacity: 0.08;
+        }
+
+        .bg-marquee-container.logos-top {
+            top: 10%;
+            transform: rotate(-3deg);
+        }
+
+        .bg-marquee-container.testimonials-mid {
+            top: 40%;
+            transform: rotate(2deg);
+        }
+
+        .bg-marquee-container.logos-bottom {
+            top: 70%;
+            transform: rotate(-2deg);
+        }
+
+        .bg-logo-track,
+        .bg-testimonial-track {
+            display: flex;
+            gap: 3rem;
+            animation: bgScroll 40s linear infinite;
+            width: fit-content;
+        }
+
+        .bg-logo-item {
+            flex-shrink: 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .bg-logo-item img {
+            height: 100%;
+            width: auto;
+            max-width: 150px;
+            object-fit: contain;
+            filter: grayscale(100%) opacity(0.3);
+        }
+
+        .bg-testimonial-card {
+            flex-shrink: 0;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 1.5rem;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .bg-testimonial-text {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
+        .bg-testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .bg-author-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            opacity: 0.6;
+        }
+
+        .bg-author-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            opacity: 0.6;
+        }
+
+        @keyframes bgScroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Main Content */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1.5rem;
+        }
+
+        /* Header Logo */
+        .header-logo {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            letter-spacing: -0.8px;
+            text-transform: uppercase;
+            background: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 60px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .header-logo:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .logo-dots {
+            display: flex;
+            gap: 0.2rem;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-color);
+        }
+
+        /* Form Container */
+        .form-container {
+            max-width: 650px;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 3.5rem 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .form-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--accent-color) 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-icon svg {
+            width: 35px;
+            height: 35px;
+            color: white;
+        }
+
+        .form-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 0.75rem;
+            letter-spacing: -1px;
+        }
+
+        .form-subtitle {
+            font-size: 1rem;
+            color: var(--light-text);
+            line-height: 1.6;
+        }
+
+        /* Form Fields */
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.3px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 1.25rem 2rem;
+            background: linear-gradient(135deg, var(--accent-color) 0%, #764ba2 100%);
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.25);
+            margin-top: 1rem;
+        }
+
+        .form-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.35);
+        }
+
+        .form-button:active {
+            transform: translateY(0);
+        }
+
+        .form-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Success Screen */
+        .success-container {
+            display: none;
+            max-width: 650px;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 4rem 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .success-container.active {
+            display: block;
+        }
+
+        .success-animation {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .success-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--success-color) 0%, #38a169 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 15px 40px rgba(72, 187, 120, 0.3);
+        }
+
+        .success-checkmark {
+            width: 60px;
+            height: 60px;
+            color: white;
+            animation: checkmark 0.8s ease 0.3s both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0) rotate(-45deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) rotate(0deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .success-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .success-message {
+            font-size: 1.1rem;
+            color: var(--light-text);
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+
+        .success-back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(74, 85, 104, 0.2);
+        }
+
+        .success-back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 85, 104, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-logo {
+                top: 1.5rem;
+                left: 1.5rem;
+                font-size: 1.2rem;
+                padding: 0.6rem 1.2rem;
+            }
+
+            .form-container,
+            .success-container {
+                padding: 2.5rem 1.5rem;
+                border-radius: 24px;
+            }
+
+            .form-icon {
+                width: 60px;
+                height: 60px;
+            }
+
+            .form-icon svg {
+                width: 30px;
+                height: 30px;
+            }
+
+            .bg-marquee-container {
+                opacity: 0.05;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 2rem 1rem;
+            }
+
+            .form-container,
+            .success-container {
+                padding: 2rem 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="backgroundAnimation">
+        <div class="bg-marquee-container logos-top">
+            <div class="bg-logo-track" id="bgLogoTrack1"></div>
+        </div>
+        <div class="bg-marquee-container testimonials-mid">
+            <div class="bg-testimonial-track" id="bgTestimonialTrack"></div>
+        </div>
+        <div class="bg-marquee-container logos-bottom">
+            <div class="bg-logo-track" id="bgLogoTrack2"></div>
+        </div>
+    </div>
+
+    <!-- Header Logo -->
+    <a href="index.html" class="header-logo">
+        <span>THE LENG</span>
+        <div class="logo-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </a>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Contact Form -->
+        <div class="form-container" id="formContainer">
+            <div class="form-header">
+                <div class="form-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h1 class="form-title">Bizimle İletişime Geçin</h1>
+                <p class="form-subtitle">Projeleriniz için en iyi çözümleri sunmak üzere buradayız. Formu doldurun, size en kısa sürede dönelim.</p>
+            </div>
+
+            <form id="contactForm">
+                <div class="form-group">
+                    <label class="form-label" for="name">Adınız Soyadınız</label>
+                    <input type="text" id="name" class="form-input" required placeholder="Ahmet Yılmaz">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">E-posta Adresiniz</label>
+                    <input type="email" id="email" class="form-input" required placeholder="ahmet@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phone">Telefon Numaranız</label>
+                    <input type="tel" id="phone" class="form-input" required placeholder="+90 555 123 45 67">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="message">Mesajınız</label>
+                    <textarea id="message" class="form-textarea" required placeholder="Projeniz hakkında detaylı bilgi verin..."></textarea>
+                </div>
+
+                <button type="submit" class="form-button" id="submitButton">Gönder</button>
+            </form>
+        </div>
+
+        <!-- Success Screen -->
+        <div class="success-container" id="successContainer">
+            <div class="success-animation">
+                <div class="success-circle">
+                    <svg class="success-checkmark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <h2 class="success-title">Mesajınız Alındı!</h2>
+            <p class="success-message">Teşekkür ederiz. Yetkililer sizlere en kısa sürede dönüş yapacaktır.</p>
+
+            <a href="index.html" class="success-back-button">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Ana Sayfaya Dön
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+            authDomain: "maps-52b00.firebaseapp.com",
+            databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "maps-52b00",
+            storageBucket: "maps-52b00.firebasestorage.app",
+            messagingSenderId: "485125559932",
+            appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
+            measurementId: "G-YHHXDYCCG7"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Load background logos and testimonials
+        function loadBackgroundData() {
+            // Load logos for background
+            database.ref('references/logos').on('value', (snapshot) => {
+                const logos = [];
+                snapshot.forEach((childSnapshot) => {
+                    logos.push(childSnapshot.val());
+                });
+
+                if (logos.length > 0) {
+                    renderBackgroundLogos(logos);
+                }
+            });
+
+            // Load testimonials for background
+            database.ref('references/testimonials').on('value', (snapshot) => {
+                const testimonials = [];
+                snapshot.forEach((childSnapshot) => {
+                    testimonials.push(childSnapshot.val());
+                });
+
+                if (testimonials.length > 0) {
+                    renderBackgroundTestimonials(testimonials);
+                }
+            });
+        }
+
+        function renderBackgroundLogos(logos) {
+            const doubled = [...logos, ...logos, ...logos];
+            
+            const track1HTML = doubled.map(logo => `
+                <div class="bg-logo-item">
+                    <img src="${logo.url}" alt="${logo.name}">
+                </div>
+            `).join('');
+
+            const track2HTML = doubled.map(logo => `
+                <div class="bg-logo-item">
+                    <img src="${logo.url}" alt="${logo.name}">
+                </div>
+            `).join('');
+
+            document.getElementById('bgLogoTrack1').innerHTML = track1HTML;
+            document.getElementById('bgLogoTrack2').innerHTML = track2HTML;
+        }
+
+        function renderBackgroundTestimonials(testimonials) {
+            const doubled = [...testimonials, ...testimonials, ...testimonials];
+            
+            const trackHTML = doubled.map(testimonial => `
+                <div class="bg-testimonial-card">
+                    <p class="bg-testimonial-text">"${testimonial.text}"</p>
+                    <div class="bg-testimonial-author">
+                        <img src="${testimonial.avatar}" alt="${testimonial.name}" class="bg-author-avatar">
+                        <div>
+                            <div class="bg-author-name">${testimonial.name}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('bgTestimonialTrack').innerHTML = trackHTML;
+        }
+
+        // Form submission
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitButton = document.getElementById('submitButton');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Gönderiliyor...';
+
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                message: document.getElementById('message').value,
+                timestamp: new Date().toISOString(),
+                status: 'new'
+            };
+
+            try {
+                await database.ref('forms').push(formData);
+                
+                // Show success screen
+                document.getElementById('formContainer').style.display = 'none';
+                document.getElementById('successContainer').classList.add('active');
+
+            } catch (error) {
+                console.error('[v0] Form submission error:', error);
+                alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Gönder';
+            }
+        });
+
+        // Initialize
+        loadBackgroundData();
+    </script>
+</body>
+</html>
