@@ -268,6 +268,154 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
+        /* References Section */
+        .references-section {
+            padding: 6rem 2rem;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .references-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .references-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+            letter-spacing: -2px;
+        }
+
+        .references-subtitle {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            color: var(--text-color);
+            margin-bottom: 4rem;
+            text-align: center;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Logo Marquee */
+        .logo-marquee {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            padding: 3rem 0;
+            margin-bottom: 5rem;
+        }
+
+        .logo-track {
+            display: flex;
+            gap: 4rem;
+            animation: scroll 30s linear infinite;
+            width: fit-content;
+        }
+
+        .logo-item {
+            flex-shrink: 0;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 2rem;
+        }
+
+        .logo-item img {
+            height: 100%;
+            width: auto;
+            max-width: 200px;
+            object-fit: contain;
+            filter: grayscale(100%);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .logo-item:hover img {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Testimonials Marquee */
+        .testimonials-marquee {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            padding: 3rem 0;
+        }
+
+        .testimonials-track {
+            display: flex;
+            gap: 2rem;
+            animation: scroll 40s linear infinite;
+            width: fit-content;
+        }
+
+        .testimonial-card {
+            flex-shrink: 0;
+            width: 400px;
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .testimonial-text {
+            font-size: 1rem;
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .author-info {
+            flex: 1;
+        }
+
+        .author-name {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        .author-title {
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
         /* Showcase Section */
         .showcase-section {
             padding: 6rem 2rem;
@@ -649,6 +797,18 @@
                 text-align: center;
             }
 
+            .references-section {
+                padding: 4rem 1.25rem;
+            }
+
+            .logo-item {
+                height: 60px;
+            }
+
+            .testimonial-card {
+                width: 300px;
+            }
+
             .showcase-section {
                 padding: 4rem 1.25rem;
             }
@@ -745,6 +905,30 @@
                 <button id="startButton" class="cta-button">
                     SİZE ULAŞALIM
                 </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- References Section -->
+    <section class="references-section" id="references">
+        <div class="references-container">
+            <h2 class="references-title">Referanslarımız</h2>
+            <p class="references-subtitle">
+                Güvenilir markalarla çalışıyoruz ve onların başarısına katkıda bulunuyoruz
+            </p>
+            
+            <!-- Logo Marquee -->
+            <div class="logo-marquee">
+                <div class="logo-track" id="logoTrack">
+                    <!-- Logolar Firebase'den yüklenecek -->
+                </div>
+            </div>
+
+            <!-- Testimonials Marquee -->
+            <div class="testimonials-marquee">
+                <div class="testimonials-track" id="testimonialsTrack">
+                    <!-- Yorumlar Firebase'den yüklenecek -->
+                </div>
             </div>
         </div>
     </section>
@@ -886,11 +1070,60 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        // Load References from Firebase
+        function loadReferences() {
+            // Load Logos
+            database.ref('references/logos').on('value', (snapshot) => {
+                const logos = snapshot.val();
+                const logoTrack = document.getElementById('logoTrack');
+                
+                if (logos) {
+                    const logosArray = Object.values(logos);
+                    // Duplicate logos for infinite scroll effect
+                    const duplicatedLogos = [...logosArray, ...logosArray];
+                    
+                    logoTrack.innerHTML = duplicatedLogos.map(logo => `
+                        <div class="logo-item">
+                            <img src="${logo.url}" alt="${logo.name}">
+                        </div>
+                    `).join('');
+                }
+            });
+
+            // Load Testimonials
+            database.ref('references/testimonials').on('value', (snapshot) => {
+                const testimonials = snapshot.val();
+                const testimonialsTrack = document.getElementById('testimonialsTrack');
+                
+                if (testimonials) {
+                    const testimonialsArray = Object.values(testimonials);
+                    // Duplicate testimonials for infinite scroll effect
+                    const duplicatedTestimonials = [...testimonialsArray, ...testimonialsArray];
+                    
+                    testimonialsTrack.innerHTML = duplicatedTestimonials.map(testimonial => `
+                        <div class="testimonial-card">
+                            <div class="testimonial-text">"${testimonial.text}"</div>
+                            <div class="testimonial-author">
+                                <img src="${testimonial.avatar}" alt="${testimonial.name}" class="author-avatar">
+                                <div class="author-info">
+                                    <div class="author-name">${testimonial.name}</div>
+                                    <div class="author-title">${testimonial.title}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            });
+        }
+
         // Loading screen
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.getElementById('loading').classList.add('hidden');
             }, 1000);
+            
+            // Load references
+            loadReferences();
         });
 
         // Menu Toggle
@@ -912,11 +1145,13 @@
         const startButton = document.getElementById('startButton');
         const heroSection = document.getElementById('home');
         const showcaseSection = document.getElementById('showcase');
+        const referencesSection = document.getElementById('references');
         const contactFormSection = document.getElementById('contactForm');
 
         startButton.addEventListener('click', () => {
             heroSection.style.display = 'none';
             showcaseSection.style.display = 'none';
+            referencesSection.style.display = 'none';
             contactFormSection.classList.add('active');
         });
 
