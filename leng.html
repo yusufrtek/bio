@@ -870,17 +870,16 @@
 
     <script>
         //  Configuration
-        const Config = {
-            apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
-            authDomain: "maps-52b00.firebaseapp.com",
-            databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "maps-52b00",
-            storageBucket: "maps-52b00.firebasestorage.app",
-            messagingSenderId: "485125559932",
-            appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
-            measurementId: "G-YHHXDYCCG7"
+        const firebaseConfig = {
+          apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+          authDomain: "maps-52b00.firebaseapp.com",
+          databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "maps-52b00",
+          storageBucket: "maps-52b00.firebasestorage.app",
+          messagingSenderId: "485125559932",
+          appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
+          measurementId: "G-YHHXDYCCG7"
         };
-
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
