@@ -52,7 +52,7 @@
         .bg-marquee-container {
             position: absolute;
             width: 100%;
-            opacity: 0.08;
+            opacity: 0.15;
         }
 
         .bg-marquee-container.logos-top {
@@ -150,31 +150,46 @@
             padding: 3rem 1.5rem;
         }
 
-        /* Header Logo */
-        .header-logo {
+        /* Header Styles */
+        .header {
             position: fixed;
-            top: 2rem;
-            left: 2rem;
-            z-index: 100;
+            top: 0;
+            width: 100%;
+            background: transparent;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
             font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--primary-color);
+            font-size: clamp(1.5rem, 3.5vw, 1.8rem);
+            color: #000;
             letter-spacing: -0.8px;
             text-transform: uppercase;
             background: white;
             padding: 0.75rem 1.5rem;
             border-radius: 60px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            text-decoration: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
         }
 
-        .header-logo:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+        .logo:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
         }
 
         .logo-dots {
@@ -183,10 +198,101 @@
         }
 
         .dot {
-            width: 8px;
-            height: 8px;
+            width: clamp(8px, 1.8vw, 10px);
+            height: clamp(8px, 1.8vw, 10px);
             border-radius: 50%;
-            background: var(--primary-color);
+            background: #000;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Menu Button */
+        .menu-button {
+            width: 50px;
+            height: 50px;
+            background: #000;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-button span {
+            width: 25px;
+            height: 2px;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+
+        /* Full Screen Menu */
+        .fullscreen-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(-100%);
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .fullscreen-menu.active {
+            transform: translateY(0);
+        }
+
+        .menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .menu-item {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            color: #000;
+            text-decoration: none;
+            letter-spacing: -2px;
+            opacity: 0;
+            transform: translateY(-30px);
+            transition: all 0.4s ease;
+        }
+
+        .fullscreen-menu.active .menu-item {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fullscreen-menu.active .menu-item:nth-child(1) { transition-delay: 0.1s; }
+        .fullscreen-menu.active .menu-item:nth-child(2) { transition-delay: 0.2s; }
+        .fullscreen-menu.active .menu-item:nth-child(3) { transition-delay: 0.3s; }
+        .fullscreen-menu.active .menu-item:nth-child(4) { transition-delay: 0.4s; }
+        .fullscreen-menu.active .menu-item:nth-child(5) { transition-delay: 0.5s; }
+
+        .menu-item:hover {
+            color: #666;
+            transform: translateX(20px);
         }
 
         /* Form Container */
@@ -216,24 +322,6 @@
         .form-header {
             text-align: center;
             margin-bottom: 3rem;
-        }
-
-        .form-icon {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 1.5rem;
-            background: linear-gradient(135deg, var(--accent-color) 0%, #764ba2 100%);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        .form-icon svg {
-            width: 35px;
-            height: 35px;
-            color: white;
         }
 
         .form-title {
@@ -451,7 +539,7 @@
             }
 
             .bg-marquee-container {
-                opacity: 0.05;
+                opacity: 0.12;
             }
         }
 
@@ -481,26 +569,42 @@
         </div>
     </div>
 
-    <!-- Header Logo -->
-    <a href="index.html" class="header-logo">
-        <span>THE LENG</span>
-        <div class="logo-dots">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <span>THE LENG</span>
+                <div class="logo-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </a>
+            <div class="nav-right">
+                <button class="menu-button" id="menuButton">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Full Screen Menu -->
+    <div class="fullscreen-menu" id="fullscreenMenu">
+        <div class="menu-items">
+            <a href="index.html#hero" class="menu-item">ANA SAYFA</a>
+            <a href="index.html#services" class="menu-item">HİZMETLER</a>
+            <a href="index.html#portfolio" class="menu-item">PORTFÖY</a>
+            <a href="form.html" class="menu-item">İLETİŞİM</a>
         </div>
-    </a>
+    </div>
 
     <!-- Main Container -->
     <div class="main-container">
         <!-- Contact Form -->
         <div class="form-container" id="formContainer">
             <div class="form-header">
-                <div class="form-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
                 <h1 class="form-title">Bizimle İletişime Geçin</h1>
                 <p class="form-subtitle">Projeleriniz için en iyi çözümleri sunmak üzere buradayız. Formu doldurun, size en kısa sürede dönelim.</p>
             </div>
@@ -663,6 +767,21 @@
                 submitButton.disabled = false;
                 submitButton.textContent = 'Gönder';
             }
+        });
+
+        // Menu functionality
+        const menuButton = document.getElementById('menuButton');
+        const fullscreenMenu = document.getElementById('fullscreenMenu');
+
+        menuButton.addEventListener('click', () => {
+            fullscreenMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking on a menu item
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                fullscreenMenu.classList.remove('active');
+            });
         });
 
         // Initialize
