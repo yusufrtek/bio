@@ -739,10 +739,12 @@
                 </video>
             </div>
             <p class="hero-subtitle">
+                Dijital dünyada fark yaratan, sınırları zorlayan ve her projede mükemmelliği hedefleyen 
+                teknoloji şirketi. Hayallerinizi gerçeğe dönüştürüyoruz.
             </p>
             <div class="hero-actions">
                 <button id="startButton" class="cta-button">
-                    BİZE ULAŞ
+                    BAŞLA
                 </button>
             </div>
         </div>
@@ -869,17 +871,18 @@
     </footer>
 
     <script>
-        //  Configuration
+        // Firebase Configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
-          authDomain: "maps-52b00.firebaseapp.com",
-          databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
-          projectId: "maps-52b00",
-          storageBucket: "maps-52b00.firebasestorage.app",
-          messagingSenderId: "485125559932",
-          appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
-          measurementId: "G-YHHXDYCCG7"
+            apiKey: "AIzaSyCbBh9ulc4_tds31MsDbiSgaHPUU3l0Qx4",
+            authDomain: "maps-52b00.firebaseapp.com",
+            databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "maps-52b00",
+            storageBucket: "maps-52b00.firebasestorage.app",
+            messagingSenderId: "485125559932",
+            appId: "1:485125559932:web:7d304f3f2cda4ef4c21bf9",
+            measurementId: "G-YHHXDYCCG7"
         };
+
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -943,31 +946,24 @@
             try {
                 // Generate unique ID with timestamp
                 const timestamp = Date.now();
-                const uniqueId = `form_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
+                const uniqueId = `${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
                 
-                // Create a new reference in Firebase Realtime Database with unique ID
+                // Create form data object
                 const formData = {
-                    id: uniqueId,
                     companyName: companyName,
                     email: email,
                     phone: phone,
                     message: message,
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     dateCreated: new Date().toISOString(),
-                    status: 'new',
-                    source: 'website',
-                    userAgent: navigator.userAgent,
-                    screenSize: `${window.screen.width}x${window.screen.height}`
+                    status: 'yeni'
                 };
 
-                // Save to Firebase with push() for auto-generated key
-                const newFormRef = database.ref('contact-forms').push();
-                await newFormRef.set(formData);
+                // Save to Firebase Realtime Database under "form" path
+                await database.ref('form/' + uniqueId).set(formData);
 
-                // Also save with custom ID for easy retrieval
-                await database.ref(`contact-forms-by-id/${uniqueId}`).set(formData);
-
-                console.log('[v0] Form data saved to Firebase successfully with ID:', uniqueId);
+                console.log('[v0] Form data saved to Firebase successfully under "form" path');
+                console.log('[v0] Form ID:', uniqueId);
                 console.log('[v0] Form data:', formData);
 
                 // Show success message
