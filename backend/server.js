@@ -6,11 +6,11 @@ const app = express();
 
 app.use(cors({
   origin: "*",
-  methods: ["GET", "POST", "PUT", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Admin-Key"]
 }));
 app.options("*", cors());
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
 
 const ADMIN_KEY = process.env.ADMIN_KEY || "ertek123";
 
@@ -41,22 +41,47 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// root
+function slugify(input) {
+  // TR karakterleri sadeleştir, URL-safe yap
+  const map = {
+    "ç":"c","ğ":"g","ı":"i","ö":"o","ş":"s","ü":"u",
+    "Ç":"c","Ğ":"g","İ":"i","I":"i","Ö":"o","Ş":"s","Ü":"u"
+  };
+  const s = String(input || "")
+    .split("")
+    .map(ch => map[ch] ?? ch)
+    .join("")
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, " ve ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return s || ("makale-" + Date.now());
+}
+
 app.get("/", (req, res) => {
   res.json({
     ok: true,
-    service: "news-push-api",
-    routes: ["/ping", "/register-token", "/admin/add-tweet", "/admin/send"]
+    service: "news-api",
+    routes: [
+      "/ping",
+      "/register-token",
+      "/admin/add-tweet",
+      "/admin/delete-tweet",
+      "/admin/add-article",
+      "/admin/delete-article",
+      "/admin/send"
+    ]
   });
 });
 
 app.get("/ping", (req, res) => res.json({ ok: true }));
 
-// token register + topic subscribe
+// Push aboneliği (topic: all)
 app.post("/register-token", async (req, res) => {
   try {
     initFirebase();
-
     const token = String(req.body?.token || "").trim();
     const uid = String(req.body?.uid || "web").trim() || "web";
     if (!token) return res.status(400).json({ error: "missing token" });
@@ -76,18 +101,19 @@ app.post("/register-token", async (req, res) => {
   }
 });
 
-// ✅ NEW: admin tweet add (writes RTDB via service account)
+// ========== TWEETS ==========
 app.post("/admin/add-tweet", requireAdmin, async (req, res) => {
   try {
     initFirebase();
 
     const embedHtml = String(req.body?.embedHtml || "").trim();
-    const createdAt = Number(req.body?.createdAt || Date.now());
     if (!embedHtml) return res.status(400).json({ error: "missing embedHtml" });
 
     const id =
       String(req.body?.id || "").trim() ||
       ("tweet_" + Date.now() + "_" + Math.random().toString(16).slice(2, 8));
+
+    const createdAt = Number(req.body?.createdAt || Date.now());
 
     await withTimeout(
       admin.database().ref(`tweets/${id}`).set({ embedHtml, createdAt }),
@@ -101,7 +127,73 @@ app.post("/admin/add-tweet", requireAdmin, async (req, res) => {
   }
 });
 
-// admin send push
+app.post("/admin/delete-tweet", requireAdmin, async (req, res) => {
+  try {
+    initFirebase();
+    const id = String(req.body?.id || "").trim();
+    if (!id) return res.status(400).json({ error: "missing id" });
+
+    await withTimeout(admin.database().ref(`tweets/${id}`).remove(), 8000);
+    return res.json({ ok: true, id });
+  } catch (err) {
+    console.error("delete-tweet error:", err);
+    return res.status(500).json({ error: "delete-tweet failed", detail: String(err.message || err) });
+  }
+});
+
+// ========== ARTICLES ==========
+app.post("/admin/add-article", requireAdmin, async (req, res) => {
+  try {
+    initFirebase();
+
+    const title = String(req.body?.title || "").trim();
+    const html = String(req.body?.html || "").trim();   // içerik HTML
+    const coverImageUrl = String(req.body?.coverImageUrl || "").trim();
+    const excerpt = String(req.body?.excerpt || "").trim();
+
+    if (!title) return res.status(400).json({ error: "missing title" });
+    if (!html) return res.status(400).json({ error: "missing html" });
+
+    const desiredSlug = String(req.body?.slug || "").trim();
+    let slug = slugify(desiredSlug || title);
+
+    // slug çakışmasını çöz: -2, -3...
+    const base = slug;
+    let i = 2;
+    while ((await admin.database().ref(`articles/${slug}`).get()).exists()) {
+      slug = `${base}-${i++}`;
+    }
+
+    const createdAt = Date.now();
+    const article = { slug, title, excerpt, coverImageUrl, html, createdAt };
+
+    await withTimeout(
+      admin.database().ref(`articles/${slug}`).set(article),
+      8000
+    );
+
+    return res.json({ ok: true, slug, article });
+  } catch (err) {
+    console.error("add-article error:", err);
+    return res.status(500).json({ error: "add-article failed", detail: String(err.message || err) });
+  }
+});
+
+app.post("/admin/delete-article", requireAdmin, async (req, res) => {
+  try {
+    initFirebase();
+    const slug = String(req.body?.slug || "").trim();
+    if (!slug) return res.status(400).json({ error: "missing slug" });
+
+    await withTimeout(admin.database().ref(`articles/${slug}`).remove(), 8000);
+    return res.json({ ok: true, slug });
+  } catch (err) {
+    console.error("delete-article error:", err);
+    return res.status(500).json({ error: "delete-article failed", detail: String(err.message || err) });
+  }
+});
+
+// ========== PUSH ==========
 app.post("/admin/send", requireAdmin, async (req, res) => {
   try {
     initFirebase();
