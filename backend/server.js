@@ -71,6 +71,11 @@ app.get("/", (req, res) => {
       "/admin/delete-tweet",
       "/admin/add-article",
       "/admin/delete-article",
+      "/admin/add-category",
+      "/admin/delete-category",
+      "/admin/add-author",
+      "/admin/update-author",
+      "/admin/delete-author",
       "/admin/send"
     ]
   });
@@ -150,6 +155,8 @@ app.post("/admin/add-article", requireAdmin, async (req, res) => {
     const html = String(req.body?.html || "").trim();   // içerik HTML
     const coverImageUrl = String(req.body?.coverImageUrl || "").trim();
     const excerpt = String(req.body?.excerpt || "").trim();
+    const categoryId = String(req.body?.categoryId || "").trim();
+    const authorId = String(req.body?.authorId || "").trim();
 
     if (!title) return res.status(400).json({ error: "missing title" });
     if (!html) return res.status(400).json({ error: "missing html" });
@@ -165,7 +172,7 @@ app.post("/admin/add-article", requireAdmin, async (req, res) => {
     }
 
     const createdAt = Date.now();
-    const article = { slug, title, excerpt, coverImageUrl, html, createdAt };
+    const article = { slug, title, excerpt, coverImageUrl, html, categoryId, authorId, createdAt };
 
     await withTimeout(
       admin.database().ref(`articles/${slug}`).set(article),
@@ -190,6 +197,100 @@ app.post("/admin/delete-article", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("delete-article error:", err);
     return res.status(500).json({ error: "delete-article failed", detail: String(err.message || err) });
+  }
+});
+
+// ========== CATEGORIES ==========
+app.post("/admin/add-category", requireAdmin, async (req, res) => {
+  try {
+    initFirebase();
+    const name = String(req.body?.name || "").trim();
+    const color = String(req.body?.color || "#3b82f6").trim();
+    if (!name) return res.status(400).json({ error: "missing name" });
+
+    const id = slugify(name);
+    await withTimeout(
+      admin.database().ref(`categories/${id}`).set({ id, name, color, createdAt: Date.now() }),
+      8000
+    );
+    return res.json({ ok: true, id });
+  } catch (err) {
+    console.error("add-category error:", err);
+    return res.status(500).json({ error: "add-category failed", detail: String(err.message || err) });
+  }
+});
+
+app.post("/admin/delete-category", requireAdmin, async (req, res) => {
+  try {
+    initFirebase();
+    const id = String(req.body?.id || "").trim();
+    if (!id) return res.status(400).json({ error: "missing id" });
+
+    await withTimeout(admin.database().ref(`categories/${id}`).remove(), 8000);
+    return res.json({ ok: true, id });
+  } catch (err) {
+    console.error("delete-category error:", err);
+    return res.status(500).json({ error: "delete-category failed", detail: String(err.message || err) });
+  }
+});
+
+// ========== AUTHORS ==========
+app.post("/admin/add-author", requireAdmin, async (req, res) => {
+  try {
+    initFirebase();
+    const name = String(req.body?.name || "").trim();
+    const email = String(req.body?.email || "").trim();
+    const bio = String(req.body?.bio || "").trim();
+    const photoURL = String(req.body?.photoURL || "").trim();
+
+    if (!name) return res.status(400).json({ error: "missing name" });
+    if (!email) return res.status(400).json({ error: "missing email" });
+
+    const id = slugify(name) || ("author_" + Date.now());
+    await withTimeout(
+      admin.database().ref(`authors/${id}`).set({ id, name, email, bio, photoURL, createdAt: Date.now() }),
+      8000
+    );
+    return res.json({ ok: true, id });
+  } catch (err) {
+    console.error("add-author error:", err);
+    return res.status(500).json({ error: "add-author failed", detail: String(err.message || err) });
+  }
+});
+
+app.post("/admin/update-author", requireAdmin, async (req, res) => {
+  try {
+    initFirebase();
+    const id = String(req.body?.id || "").trim();
+    const name = String(req.body?.name || "").trim();
+    const email = String(req.body?.email || "").trim();
+    const bio = String(req.body?.bio || "").trim();
+    const photoURL = String(req.body?.photoURL || "").trim();
+
+    if (!id) return res.status(400).json({ error: "missing id" });
+
+    await withTimeout(
+      admin.database().ref(`authors/${id}`).update({ name, email, bio, photoURL }),
+      8000
+    );
+    return res.json({ ok: true, id });
+  } catch (err) {
+    console.error("update-author error:", err);
+    return res.status(500).json({ error: "update-author failed", detail: String(err.message || err) });
+  }
+});
+
+app.post("/admin/delete-author", requireAdmin, async (req, res) => {
+  try {
+    initFirebase();
+    const id = String(req.body?.id || "").trim();
+    if (!id) return res.status(400).json({ error: "missing id" });
+
+    await withTimeout(admin.database().ref(`authors/${id}`).remove(), 8000);
+    return res.json({ ok: true, id });
+  } catch (err) {
+    console.error("delete-author error:", err);
+    return res.status(500).json({ error: "delete-author failed", detail: String(err.message || err) });
   }
 });
 
