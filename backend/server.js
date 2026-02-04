@@ -1,325 +1,123 @@
-import express from "express";
-import cors from "cors";
-import admin from "firebase-admin";
-
+const express = require('express');
+const path = require('path');
 const app = express();
-
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Admin-Key"]
-}));
-app.options("*", cors());
-app.use(express.json({ limit: "2mb" }));
-
-const ADMIN_KEY = process.env.ADMIN_KEY || "ertek123";
-
-function initFirebase() {
-  if (admin.apps.length) return;
-
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!raw) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON missing");
-
-  const serviceAccount = JSON.parse(raw);
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://backend-6782d-default-rtdb.europe-west1.firebasedatabase.app"
-  });
-}
-
-function withTimeout(promise, ms = 8000) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))
-  ]);
-}
-
-function requireAdmin(req, res, next) {
-  const key = req.headers["x-admin-key"];
-  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: "unauthorized" });
-  next();
-}
-
-function slugify(input) {
-  // TR karakterleri sadeleştir, URL-safe yap
-  const map = {
-    "ç":"c","ğ":"g","ı":"i","ö":"o","ş":"s","ü":"u",
-    "Ç":"c","Ğ":"g","İ":"i","I":"i","Ö":"o","Ş":"s","Ü":"u"
-  };
-  const s = String(input || "")
-    .split("")
-    .map(ch => map[ch] ?? ch)
-    .join("")
-    .toLowerCase()
-    .trim()
-    .replace(/&/g, " ve ")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-  return s || ("makale-" + Date.now());
-}
-
-app.get("/", (req, res) => {
-  res.json({
-    ok: true,
-    service: "news-api",
-    routes: [
-      "/ping",
-      "/register-token",
-      "/admin/add-tweet",
-      "/admin/delete-tweet",
-      "/admin/add-article",
-      "/admin/delete-article",
-      "/admin/add-category",
-      "/admin/delete-category",
-      "/admin/add-author",
-      "/admin/update-author",
-      "/admin/delete-author",
-      "/admin/send"
-    ]
-  });
-});
-
-app.get("/ping", (req, res) => res.json({ ok: true }));
-
-// Push aboneliği (topic: all)
-app.post("/register-token", async (req, res) => {
-  try {
-    initFirebase();
-    const token = String(req.body?.token || "").trim();
-    const uid = String(req.body?.uid || "web").trim() || "web";
-    if (!token) return res.status(400).json({ error: "missing token" });
-
-    const hash = Buffer.from(token).toString("base64").replace(/[^a-zA-Z0-9]/g, "").slice(0, 40);
-
-    await withTimeout(
-      admin.database().ref(`tokens/${uid}/${hash}`).set({ token, createdAt: Date.now() }),
-      8000
-    );
-
-    const sub = await admin.messaging().subscribeToTopic([token], "all");
-    return res.json({ ok: true, uid, subscribed: sub.successCount });
-  } catch (err) {
-    console.error("register-token error:", err);
-    return res.status(500).json({ error: "register-token failed", detail: String(err.message || err) });
-  }
-});
-
-// ========== TWEETS ==========
-app.post("/admin/add-tweet", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-
-    const embedHtml = String(req.body?.embedHtml || "").trim();
-    if (!embedHtml) return res.status(400).json({ error: "missing embedHtml" });
-
-    const id =
-      String(req.body?.id || "").trim() ||
-      ("tweet_" + Date.now() + "_" + Math.random().toString(16).slice(2, 8));
-
-    const createdAt = Number(req.body?.createdAt || Date.now());
-
-    await withTimeout(
-      admin.database().ref(`tweets/${id}`).set({ embedHtml, createdAt }),
-      8000
-    );
-
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error("add-tweet error:", err);
-    return res.status(500).json({ error: "add-tweet failed", detail: String(err.message || err) });
-  }
-});
-
-app.post("/admin/delete-tweet", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-    const id = String(req.body?.id || "").trim();
-    if (!id) return res.status(400).json({ error: "missing id" });
-
-    await withTimeout(admin.database().ref(`tweets/${id}`).remove(), 8000);
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error("delete-tweet error:", err);
-    return res.status(500).json({ error: "delete-tweet failed", detail: String(err.message || err) });
-  }
-});
-
-// ========== ARTICLES ==========
-app.post("/admin/add-article", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-
-    const title = String(req.body?.title || "").trim();
-    const html = String(req.body?.html || "").trim();   // içerik HTML
-    const coverImageUrl = String(req.body?.coverImageUrl || "").trim();
-    const excerpt = String(req.body?.excerpt || "").trim();
-    const categoryId = String(req.body?.categoryId || "").trim();
-    const authorId = String(req.body?.authorId || "").trim();
-
-    if (!title) return res.status(400).json({ error: "missing title" });
-    if (!html) return res.status(400).json({ error: "missing html" });
-
-    const desiredSlug = String(req.body?.slug || "").trim();
-    let slug = slugify(desiredSlug || title);
-
-    // slug çakışmasını çöz: -2, -3...
-    const base = slug;
-    let i = 2;
-    while ((await admin.database().ref(`articles/${slug}`).get()).exists()) {
-      slug = `${base}-${i++}`;
-    }
-
-    const createdAt = Date.now();
-    const article = { slug, title, excerpt, coverImageUrl, html, categoryId, authorId, createdAt };
-
-    await withTimeout(
-      admin.database().ref(`articles/${slug}`).set(article),
-      8000
-    );
-
-    return res.json({ ok: true, slug, article });
-  } catch (err) {
-    console.error("add-article error:", err);
-    return res.status(500).json({ error: "add-article failed", detail: String(err.message || err) });
-  }
-});
-
-app.post("/admin/delete-article", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-    const slug = String(req.body?.slug || "").trim();
-    if (!slug) return res.status(400).json({ error: "missing slug" });
-
-    await withTimeout(admin.database().ref(`articles/${slug}`).remove(), 8000);
-    return res.json({ ok: true, slug });
-  } catch (err) {
-    console.error("delete-article error:", err);
-    return res.status(500).json({ error: "delete-article failed", detail: String(err.message || err) });
-  }
-});
-
-// ========== CATEGORIES ==========
-app.post("/admin/add-category", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-    const name = String(req.body?.name || "").trim();
-    const color = String(req.body?.color || "#3b82f6").trim();
-    if (!name) return res.status(400).json({ error: "missing name" });
-
-    const id = slugify(name);
-    await withTimeout(
-      admin.database().ref(`categories/${id}`).set({ id, name, color, createdAt: Date.now() }),
-      8000
-    );
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error("add-category error:", err);
-    return res.status(500).json({ error: "add-category failed", detail: String(err.message || err) });
-  }
-});
-
-app.post("/admin/delete-category", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-    const id = String(req.body?.id || "").trim();
-    if (!id) return res.status(400).json({ error: "missing id" });
-
-    await withTimeout(admin.database().ref(`categories/${id}`).remove(), 8000);
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error("delete-category error:", err);
-    return res.status(500).json({ error: "delete-category failed", detail: String(err.message || err) });
-  }
-});
-
-// ========== AUTHORS ==========
-app.post("/admin/add-author", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-    const name = String(req.body?.name || "").trim();
-    const email = String(req.body?.email || "").trim();
-    const bio = String(req.body?.bio || "").trim();
-    const photoURL = String(req.body?.photoURL || "").trim();
-
-    if (!name) return res.status(400).json({ error: "missing name" });
-    if (!email) return res.status(400).json({ error: "missing email" });
-
-    const id = slugify(name) || ("author_" + Date.now());
-    await withTimeout(
-      admin.database().ref(`authors/${id}`).set({ id, name, email, bio, photoURL, createdAt: Date.now() }),
-      8000
-    );
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error("add-author error:", err);
-    return res.status(500).json({ error: "add-author failed", detail: String(err.message || err) });
-  }
-});
-
-app.post("/admin/update-author", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-    const id = String(req.body?.id || "").trim();
-    const name = String(req.body?.name || "").trim();
-    const email = String(req.body?.email || "").trim();
-    const bio = String(req.body?.bio || "").trim();
-    const photoURL = String(req.body?.photoURL || "").trim();
-
-    if (!id) return res.status(400).json({ error: "missing id" });
-
-    await withTimeout(
-      admin.database().ref(`authors/${id}`).update({ name, email, bio, photoURL }),
-      8000
-    );
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error("update-author error:", err);
-    return res.status(500).json({ error: "update-author failed", detail: String(err.message || err) });
-  }
-});
-
-app.post("/admin/delete-author", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-    const id = String(req.body?.id || "").trim();
-    if (!id) return res.status(400).json({ error: "missing id" });
-
-    await withTimeout(admin.database().ref(`authors/${id}`).remove(), 8000);
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error("delete-author error:", err);
-    return res.status(500).json({ error: "delete-author failed", detail: String(err.message || err) });
-  }
-});
-
-// ========== PUSH ==========
-app.post("/admin/send", requireAdmin, async (req, res) => {
-  try {
-    initFirebase();
-
-    const title = String(req.body?.title || "Son Dakika").slice(0, 80);
-    const body = String(req.body?.body || "").slice(0, 140);
-    const url = String(req.body?.url || "/").slice(0, 400);
-
-    const message = {
-      topic: "all",
-      notification: { title, body },
-      data: { url },
-      webpush: {
-        fcmOptions: { link: url },
-        notification: { icon: "/icon-192.png", badge: "/icon-192.png" }
-      }
-    };
-
-    const id = await admin.messaging().send(message);
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error("admin/send error:", err);
-    return res.status(500).json({ error: "send failed", detail: String(err.message || err) });
-  }
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("🚀 Backend running on port", PORT));
+
+// Serve static files
+app.use(express.static(__dirname));
+
+// Route for home page
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Route for form page
+app.get('/form.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'form.html'));
+});
+
+// Route for admin page
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// Dynamic customer panel routes with slug
+// This handles paths like /ali, /mehmet, etc.
+app.get('/:slug', (req, res) => {
+    const slug = req.params.slug;
+    
+    // Ignore common files and paths
+    const ignoredPaths = ['index.html', 'form.html', 'admin.html', 'musteri.html', 'favicon.ico', 'robots.txt'];
+    
+    if (ignoredPaths.includes(slug)) {
+        return res.sendFile(path.join(__dirname, slug));
+    }
+    
+    // If file extension exists, try to serve as static file
+    if (slug.includes('.')) {
+        return res.sendFile(path.join(__dirname, slug), (err) => {
+            if (err) {
+                res.status(404).send('File not found');
+            }
+        });
+    }
+    
+    // Otherwise, serve customer panel
+    res.sendFile(path.join(__dirname, 'musteri.html'));
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).send(`
+        <!DOCTYPE html>
+        <html lang="tr">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>404 - Sayfa Bulunamadı</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    text-align: center;
+                    padding: 2rem;
+                }
+                .error-container {
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(10px);
+                    border-radius: 20px;
+                    padding: 3rem;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                    color: #333;
+                }
+                h1 {
+                    font-size: 4rem;
+                    color: #667eea;
+                    margin-bottom: 1rem;
+                }
+                p {
+                    font-size: 1.2rem;
+                    color: #666;
+                    margin-bottom: 2rem;
+                }
+                a {
+                    display: inline-block;
+                    padding: 1rem 2rem;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    transition: transform 0.3s;
+                }
+                a:hover {
+                    transform: translateY(-2px);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="error-container">
+                <h1>404</h1>
+                <p>Aradığınız sayfa bulunamadı.</p>
+                <a href="/">Ana Sayfaya Dön</a>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Customer panels are accessible via: http://localhost:${PORT}/[slug]`);
+    console.log(`Example: http://localhost:${PORT}/ali`);
+});
