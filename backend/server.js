@@ -13,13 +13,26 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app'
+    databaseURL: 'https://backend-6782d-default-rtdb.europe-west1.firebasedatabase.app'
 });
 
 const db = admin.database();
 const app = express();
 
-app.use(cors());
+// ===== CORS — allow all origins explicitly =====
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+    next();
+});
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // ===== Auth Middleware =====
