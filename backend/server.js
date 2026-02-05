@@ -1,115 +1,198 @@
+// ===== LENG — Backend (Node.js + Express) =====
+// Deploy this on Render (https://bio-rk2d.onrender.com)
+// Environment: Node.js
+// Required env vars: FIREBASE_SERVICE_ACCOUNT (JSON string)
+
 const express = require('express');
-const path = require('path');
+const cors = require('cors');
 const admin = require('firebase-admin');
 
+// ===== Firebase Admin Init =====
+// On Render, set FIREBASE_SERVICE_ACCOUNT env var with your service account JSON
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: 'https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app'
+});
+
+const db = admin.database();
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Firebase Admin SDK initialization
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    : null;
+app.use(cors());
+app.use(express.json());
 
-if (serviceAccount) {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://maps-52b00-default-rtdb.europe-west1.firebasedatabase.app"
-    });
+// ===== Auth Middleware =====
+async function authenticate(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Yetkilendirme basarisi gerekli.' });
+    }
+
+    const token = authHeader.split('Bearer ')[1];
+    try {
+        const decoded = await admin.auth().verifyIdToken(token);
+        req.uid = decoded.uid;
+        req.email = decoded.email;
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Gecersiz token.' });
+    }
 }
 
-// Middleware
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve index.html for root
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// ===== GET /ping =====
+app.get('/ping', (req, res) => {
+    res.json({ status: 'ok', timestamp: Date.now() });
 });
 
-// Serve form.html
-app.get('/form', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'form.html'));
-});
+// ===== POST /claim =====
+// Claim a slug for the authenticated user
+app.post('/claim', authenticate, async (req, res) => {
+    try {
+        const { slug } = req.body;
+        const uid = req.uid;
 
-// Serve admin.html
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-// Serve musteri.html for /musteri route
-app.get('/musteri', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'musteri.html'));
-});
-
-// Dynamic customer routes (slug-based)
-// This handles routes like /ali, /mehmet, etc.
-app.get('/:slug', async (req, res, next) => {
-    const slug = req.params.slug.toLowerCase();
-    
-    // Skip if it's a known static file or route
-    const staticRoutes = ['index.html', 'form.html', 'admin.html', 'musteri.html', 'favicon.ico'];
-    if (staticRoutes.includes(slug) || slug.includes('.')) {
-        return next();
-    }
-    
-    // Check if slug exists in Firebase
-    if (admin.apps.length > 0) {
-        try {
-            const db = admin.database();
-            const snapshot = await db.ref('musteriler').orderByChild('slug').equalTo(slug).once('value');
-            
-            if (snapshot.exists()) {
-                // Serve the customer panel
-                res.sendFile(path.join(__dirname, 'public', 'musteri.html'));
-            } else {
-                // Slug not found, redirect to home
-                res.redirect('/');
-            }
-        } catch (error) {
-            console.error('Firebase error:', error);
-            res.redirect('/');
+        // Validate slug
+        if (!slug || slug.length < 2 || slug.length > 30) {
+            return res.status(400).json({ error: 'Slug 2-30 karakter arasi olmali.' });
         }
-    } else {
-        // If Firebase Admin is not configured, just serve the customer panel
-        // The client-side will handle validation
-        res.sendFile(path.join(__dirname, 'public', 'musteri.html'));
+
+        if (!/^[a-z0-9\-_]+$/.test(slug)) {
+            return res.status(400).json({ error: 'Slug sadece kucuk harf, rakam, tire ve alt cizgi icermelidir.' });
+        }
+
+        // Reserved slugs
+        const reserved = ['admin', 'panel', 'api', 'login', 'register', 'settings', 'about', 'contact', 'help', 'support'];
+        if (reserved.includes(slug)) {
+            return res.status(400).json({ error: 'Bu slug kullanilamaz.' });
+        }
+
+        // Check if user already has a slug
+        const existingSlug = await db.ref('slugByUid/' + uid).once('value');
+        if (existingSlug.exists()) {
+            return res.status(400).json({ error: 'Zaten bir sayfaniz var: ' + existingSlug.val().slug });
+        }
+
+        // Check if slug is taken
+        const existingPage = await db.ref('pagesBySlug/' + slug).once('value');
+        if (existingPage.exists()) {
+            return res.status(400).json({ error: 'Bu slug zaten alinmis. Baska bir tane deneyin.' });
+        }
+
+        // Claim slug
+        await db.ref('slugByUid/' + uid).set({ slug: slug });
+        await db.ref('pagesBySlug/' + slug).set({
+            uid: uid,
+            slug: slug,
+            displayName: '',
+            bio: '',
+            photoUrl: '',
+            socials: {},
+            createdAt: admin.database.ServerValue.TIMESTAMP,
+            updatedAt: admin.database.ServerValue.TIMESTAMP
+        });
+
+        res.json({ success: true, slug: slug });
+    } catch (err) {
+        console.error('Claim error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
     }
 });
 
-// Handle .html extensions for backward compatibility
-app.get('/index.html', (req, res) => {
-    res.redirect('/');
+// ===== PUT /page =====
+// Update page data for the authenticated user
+app.put('/page', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const { slug, displayName, bio, photoUrl, socials } = req.body;
+
+        if (!slug) {
+            return res.status(400).json({ error: 'Slug gerekli.' });
+        }
+
+        // Verify ownership
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+        if (!pageSnap.exists()) {
+            return res.status(404).json({ error: 'Sayfa bulunamadi.' });
+        }
+
+        if (pageSnap.val().uid !== uid) {
+            return res.status(403).json({ error: 'Bu sayfayi duzenleme yetkiniz yok.' });
+        }
+
+        // Sanitize socials
+        const cleanSocials = {};
+        const allowedKeys = ['instagram', 'twitter', 'youtube', 'linkedin', 'github', 'website'];
+        if (socials && typeof socials === 'object') {
+            allowedKeys.forEach(key => {
+                if (socials[key] && typeof socials[key] === 'string') {
+                    cleanSocials[key] = socials[key].trim().substring(0, 500);
+                }
+            });
+        }
+
+        // Update
+        await db.ref('pagesBySlug/' + slug).update({
+            displayName: (displayName || '').trim().substring(0, 100),
+            bio: (bio || '').trim().substring(0, 500),
+            photoUrl: (photoUrl || '').trim().substring(0, 1000),
+            socials: cleanSocials,
+            updatedAt: admin.database.ServerValue.TIMESTAMP
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Update error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
 });
 
-app.get('/form.html', (req, res) => {
-    res.redirect('/form');
+// ===== GET /page/:slug =====
+// Public profile data
+app.get('/page/:slug', async (req, res) => {
+    try {
+        const slug = req.params.slug;
+        const snap = await db.ref('pagesBySlug/' + slug).once('value');
+
+        if (!snap.exists()) {
+            return res.status(404).json({ error: 'Sayfa bulunamadi.' });
+        }
+
+        const data = snap.val();
+        // Return only public fields
+        res.json({
+            slug: data.slug,
+            displayName: data.displayName,
+            bio: data.bio,
+            photoUrl: data.photoUrl,
+            socials: data.socials || {}
+        });
+    } catch (err) {
+        console.error('Get page error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
 });
 
-app.get('/admin.html', (req, res) => {
-    res.redirect('/admin');
+// ===== GET /my-slug =====
+// Get the slug for the authenticated user
+app.get('/my-slug', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const snap = await db.ref('slugByUid/' + uid).once('value');
+
+        if (!snap.exists()) {
+            return res.status(404).json({ error: 'Henuz bir sayfaniz yok.' });
+        }
+
+        res.json(snap.val());
+    } catch (err) {
+        console.error('My slug error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
 });
 
-app.get('/musteri.html', (req, res) => {
-    res.redirect('/musteri');
-});
-
-// 404 handler
-app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Bir şeyler yanlış gitti!');
-});
-
+// ===== Start Server =====
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Server ${PORT} portunda çalışıyor`);
-    console.log(`Ana Sayfa: http://localhost:${PORT}`);
-    console.log(`Form: http://localhost:${PORT}/form`);
-    console.log(`Admin: http://localhost:${PORT}/admin`);
-    console.log(`Müşteri Paneli: http://localhost:${PORT}/musteri`);
+    console.log('LENG API running on port ' + PORT);
 });
-
-module.exports = app;
