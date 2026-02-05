@@ -204,8 +204,34 @@ app.get('/my-slug', authenticate, async (req, res) => {
     }
 });
 
+// ===== Health =====
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        uptime: process.uptime(),
+        timestamp: Date.now(),
+        env: {
+            hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+            nodeVersion: process.version
+        }
+    });
+});
+
+// ===== 404 catch =====
+app.use((req, res) => {
+    res.status(404).json({ error: 'Endpoint bulunamadi: ' + req.method + ' ' + req.path });
+});
+
+// ===== Global error handler =====
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ error: 'Sunucu hatasi: ' + (err.message || 'Bilinmeyen') });
+});
+
 // ===== Start Server =====
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log('LENG API running on port ' + PORT);
+    console.log('CORS: all origins allowed');
+    console.log('Firebase project: backend-6782d');
 });
