@@ -142,7 +142,7 @@ app.post('/claim', authenticate, async (req, res) => {
 app.put('/page', authenticate, async (req, res) => {
     try {
         const uid = req.uid;
-        const { slug, displayName, bio, photoUrl, socials, blocks, background, styles, layerOrder } = req.body;
+        const { slug, displayName, bio, photoUrl, socials, blocks, customButtons, background, styles, layerOrder } = req.body;
 
         if (!slug) {
             return res.status(400).json({ error: 'Slug gerekli.' });
@@ -206,6 +206,17 @@ app.put('/page', authenticate, async (req, res) => {
             cleanStyles.btnStyle = allowedBtnStyles.includes(styles.btnStyle) ? styles.btnStyle : 'rounded';
         }
 
+        // Sanitize customButtons (max 10)
+        let cleanCustomButtons = [];
+        if (Array.isArray(customButtons)) {
+            cleanCustomButtons = customButtons.slice(0, 10).map((btn, idx) => ({
+                id: idx,
+                title: (btn.title || '').trim().substring(0, 100),
+                url: (btn.url || '').trim().substring(0, 1000),
+                logoUrl: (btn.logoUrl || '').trim().substring(0, 1000)
+            })).filter(btn => btn.title && btn.url);
+        }
+
         // Sanitize layerOrder
         const allowedLayers = ['blocks', 'polls', 'qa', 'links'];
         let cleanLayerOrder = ['blocks', 'polls', 'qa', 'links'];
@@ -225,6 +236,7 @@ app.put('/page', authenticate, async (req, res) => {
             photoUrl: (photoUrl || '').trim().substring(0, 1000),
             socials: Object.keys(cleanSocials).length > 0 ? cleanSocials : { instagram: '', twitter: '', youtube: '', linkedin: '', github: '', website: '' },
             blocks: cleanBlocks,
+            customButtons: cleanCustomButtons,
             background: cleanBg,
             styles: cleanStyles,
             layerOrder: cleanLayerOrder,
@@ -269,7 +281,7 @@ app.get('/page/:slug', async (req, res) => {
         }
 
         const data = snap.val();
-        // Return public fields including styles and layerOrder
+        // Return ALL public fields
         res.json({
             uid: data.uid,
             slug: data.slug,
@@ -278,6 +290,7 @@ app.get('/page/:slug', async (req, res) => {
             photoUrl: data.photoUrl,
             socials: data.socials || {},
             blocks: data.blocks || [],
+            customButtons: data.customButtons || [],
             background: data.background || {},
             styles: data.styles || { photoStyle: 'circle', btnStyle: 'rounded' },
             layerOrder: data.layerOrder || ['blocks', 'polls', 'qa', 'links']
@@ -888,16 +901,18 @@ app.post('/admin/users/:uid/unban', authenticateAdmin, async (req, res) => {
 // Create a new badge (admin only)
 app.post('/admin/badges', authenticateAdmin, async (req, res) => {
     try {
-        const { name, imageUrl, description, type } = req.body;
+        const { name, imageUrl, description, type, borderRadius } = req.body;
         if (!name || !imageUrl) return res.status(400).json({ error: 'Rozet adi ve gorsel URL gerekli.' });
         
         const badgeId = 'badge_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+        const allowedRadius = ['none', 'small', 'medium', 'full'];
         const badgeData = {
             id: badgeId,
             name: (name || '').trim().substring(0, 50),
             imageUrl: (imageUrl || '').trim().substring(0, 1000),
             description: (description || '').trim().substring(0, 200),
-            type: type || 'custom', // 'verified', 'custom', 'special'
+            type: type || 'custom',
+            borderRadius: allowedRadius.includes(borderRadius) ? borderRadius : 'none',
             createdBy: req.uid,
             createdAt: admin.database.ServerValue.TIMESTAMP
         };
@@ -1058,12 +1073,22 @@ app.get('/badges/:slug', async (req, res) => {
         const allBadges = allBadgesSnap.exists() ? allBadgesSnap.val() : {};
         const userBadges = userBadgesSnap.exists() ? userBadgesSnap.val() : {};
         
-        // Only return active badges
+        // Only return active badges with all properties including borderRadius
         const activeBadges = Object.entries(userBadges)
             .filter(([id, data]) => data.active && allBadges[id])
-            .map(([id]) => allBadges[id]);
+            .map(([id]) => ({
+                id: allBadges[id].id,
+                name: allBadges[id].name,
+                imageUrl: allBadges[id].imageUrl,
+                description: allBadges[id].description || '',
+                type: allBadges[id].type || 'custom',
+                borderRadius: allBadges[id].borderRadius || 'none'
+            }));
         
-        res.json({ badges: activeBadges });
+        // Check if user has any verified type badge active
+        const hasVerified = activeBadges.some(b => b.type === 'verified');
+        
+        res.json({ badges: activeBadges, verified: hasVerified });
     } catch (err) {
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
