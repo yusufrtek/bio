@@ -19,20 +19,21 @@ admin.initializeApp({
 const db = admin.database();
 const app = express();
 
-// ===== CORS — allow all origins explicitly =====
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Max-Age', '86400');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(204);
-    }
-    next();
-});
-app.use(cors({ origin: true, credentials: true }));
+// ===== CORS — single unified middleware =====
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow all origins (including no-origin requests like Postman/curl)
+        callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Access-Control-Allow-Origin'],
+    maxAge: 86400,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // ===== Auth Middleware =====
