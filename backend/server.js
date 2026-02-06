@@ -142,7 +142,7 @@ app.post('/claim', authenticate, async (req, res) => {
 app.put('/page', authenticate, async (req, res) => {
     try {
         const uid = req.uid;
-        const { slug, displayName, bio, photoUrl, socials, blocks, background, styles } = req.body;
+        const { slug, displayName, bio, photoUrl, socials, blocks, background, styles, layerOrder } = req.body;
 
         if (!slug) {
             return res.status(400).json({ error: 'Slug gerekli.' });
@@ -206,6 +206,16 @@ app.put('/page', authenticate, async (req, res) => {
             cleanStyles.btnStyle = allowedBtnStyles.includes(styles.btnStyle) ? styles.btnStyle : 'rounded';
         }
 
+        // Sanitize layerOrder
+        const allowedLayers = ['blocks', 'polls', 'qa', 'links'];
+        let cleanLayerOrder = ['blocks', 'polls', 'qa', 'links'];
+        if (Array.isArray(layerOrder)) {
+            const filtered = layerOrder.filter(l => allowedLayers.includes(l));
+            if (filtered.length === allowedLayers.length) {
+                cleanLayerOrder = filtered;
+            }
+        }
+
         // Build page data
         const pageData = {
             uid: uid,
@@ -217,6 +227,7 @@ app.put('/page', authenticate, async (req, res) => {
             blocks: cleanBlocks,
             background: cleanBg,
             styles: cleanStyles,
+            layerOrder: cleanLayerOrder,
             updatedAt: admin.database.ServerValue.TIMESTAMP
         };
 
@@ -258,8 +269,9 @@ app.get('/page/:slug', async (req, res) => {
         }
 
         const data = snap.val();
-        // Return only public fields
+        // Return public fields including styles and layerOrder
         res.json({
+            uid: data.uid,
             slug: data.slug,
             displayName: data.displayName,
             bio: data.bio,
@@ -267,8 +279,8 @@ app.get('/page/:slug', async (req, res) => {
             socials: data.socials || {},
             blocks: data.blocks || [],
             background: data.background || {},
-            hasPolls: !!(data.polls && (Array.isArray(data.polls) ? data.polls.length : Object.keys(data.polls).length)),
-            hasQuestions: !!(data.questions && (Array.isArray(data.questions) ? data.questions.length : Object.keys(data.questions).length))
+            styles: data.styles || { photoStyle: 'circle', btnStyle: 'rounded' },
+            layerOrder: data.layerOrder || ['blocks', 'polls', 'qa', 'links']
         });
     } catch (err) {
         console.error('Get page error:', err);
