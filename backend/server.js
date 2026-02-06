@@ -138,7 +138,7 @@ app.post('/claim', authenticate, async (req, res) => {
 app.put('/page', authenticate, async (req, res) => {
     try {
         const uid = req.uid;
-        const { slug, displayName, bio, photoUrl, socials } = req.body;
+        const { slug, displayName, bio, photoUrl, socials, blocks, background } = req.body;
 
         if (!slug) {
             return res.status(400).json({ error: 'Slug gerekli.' });
@@ -161,32 +161,66 @@ app.put('/page', authenticate, async (req, res) => {
             });
         }
 
-        // Check if page exists
+        // Sanitize content blocks (max 20 blocks)
+        let cleanBlocks = [];
+        if (Array.isArray(blocks)) {
+            cleanBlocks = blocks.slice(0, 20).map((block, idx) => {
+                const type = (block.type || '').trim();
+                if (type === 'text') {
+                    return { type: 'text', content: (block.content || '').trim().substring(0, 2000), id: idx };
+                } else if (type === 'image') {
+                    return { type: 'image', url: (block.url || '').trim().substring(0, 1000), id: idx };
+                } else if (type === 'youtube') {
+                    return { type: 'youtube', url: (block.url || '').trim().substring(0, 500), id: idx };
+                }
+                return null;
+            }).filter(Boolean);
+        }
+
+        // Sanitize background settings
+        let cleanBg = {};
+        if (background && typeof background === 'object') {
+            cleanBg.color = (background.color || '').trim().substring(0, 30);
+            cleanBg.imageUrl = (background.imageUrl || '').trim().substring(0, 1000);
+            cleanBg.opacity = Math.max(0, Math.min(1, parseFloat(background.opacity) || 1));
+            const allowedPatterns = ['none', 'dots', 'grid', 'diagonal', 'cross', 'waves'];
+            cleanBg.pattern = allowedPatterns.includes(background.pattern) ? background.pattern : 'none';
+        }
+
+        // Ensure blocks and bg are never undefined/null (RTDB drops empty arrays)
+        if (cleanBlocks.length === 0) cleanBlocks = [];
+        if (Object.keys(cleanBg).length === 0) {
+            cleanBg = { color: '', imageUrl: '', opacity: 1, pattern: 'none' };
+        }
+
+        // Build page data
+        const pageData = {
+            uid: uid,
+            slug: slug,
+            displayName: (displayName || '').trim().substring(0, 100),
+            bio: (bio || '').trim().substring(0, 500),
+            photoUrl: (photoUrl || '').trim().substring(0, 1000),
+            socials: Object.keys(cleanSocials).length > 0 ? cleanSocials : { instagram: '', twitter: '', youtube: '', linkedin: '', github: '', website: '' },
+            blocks: cleanBlocks,
+            background: cleanBg,
+            updatedAt: admin.database.ServerValue.TIMESTAMP
+        };
+
+        console.log('PUT /page - saving for slug:', slug, 'uid:', uid);
+
+        // Check if page exists — always use set to ensure full data
         const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
 
         if (!pageSnap.exists()) {
-            // Page data doesn't exist yet — create it (upsert)
-            await db.ref('pagesBySlug/' + slug).set({
-                uid: uid,
-                slug: slug,
-                displayName: (displayName || '').trim().substring(0, 100),
-                bio: (bio || '').trim().substring(0, 500),
-                photoUrl: (photoUrl || '').trim().substring(0, 1000),
-                socials: cleanSocials,
-                createdAt: admin.database.ServerValue.TIMESTAMP,
-                updatedAt: admin.database.ServerValue.TIMESTAMP
-            });
+            pageData.createdAt = admin.database.ServerValue.TIMESTAMP;
         } else {
-            // Update existing
-            await db.ref('pagesBySlug/' + slug).update({
-                displayName: (displayName || '').trim().substring(0, 100),
-                bio: (bio || '').trim().substring(0, 500),
-                photoUrl: (photoUrl || '').trim().substring(0, 1000),
-                socials: cleanSocials,
-                updatedAt: admin.database.ServerValue.TIMESTAMP
-            });
+            pageData.createdAt = pageSnap.val().createdAt || admin.database.ServerValue.TIMESTAMP;
         }
 
+        // Always use set (not update) to ensure complete overwrite
+        await db.ref('pagesBySlug/' + slug).set(pageData);
+
+        console.log('PUT /page - saved successfully for slug:', slug);
         res.json({ success: true });
     } catch (err) {
         console.error('Update error:', err);
@@ -212,7 +246,9 @@ app.get('/page/:slug', async (req, res) => {
             displayName: data.displayName,
             bio: data.bio,
             photoUrl: data.photoUrl,
-            socials: data.socials || {}
+            socials: data.socials || {},
+            blocks: data.blocks || [],
+            background: data.background || {}
         });
     } catch (err) {
         console.error('Get page error:', err);
@@ -235,6 +271,25 @@ app.get('/my-slug', authenticate, async (req, res) => {
     } catch (err) {
         console.error('My slug error:', err);
         res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== Debug: Check page data in RTDB =====
+app.get('/debug/page/:slug', async (req, res) => {
+    try {
+        const slug = req.params.slug;
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+        const slugByUidSnap = await db.ref('slugByUid').orderByChild('slug').equalTo(slug).once('value');
+
+        res.json({
+            slug: slug,
+            pageExists: pageSnap.exists(),
+            pageData: pageSnap.exists() ? pageSnap.val() : null,
+            slugByUidExists: slugByUidSnap.exists(),
+            slugByUidData: slugByUidSnap.exists() ? slugByUidSnap.val() : null
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
