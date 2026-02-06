@@ -84,13 +84,33 @@ app.post('/claim', authenticate, async (req, res) => {
         // Check if user already has a slug
         const existingSlug = await db.ref('slugByUid/' + uid).once('value');
         if (existingSlug.exists()) {
-            return res.status(400).json({ error: 'Zaten bir sayfaniz var: ' + existingSlug.val().slug });
+            const userSlug = existingSlug.val().slug;
+            if (userSlug === slug) {
+                // Same slug — user is re-claiming their own slug (e.g. page data was lost)
+                // Make sure pagesBySlug entry exists
+                const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+                if (!pageSnap.exists()) {
+                    await db.ref('pagesBySlug/' + slug).set({
+                        uid: uid,
+                        slug: slug,
+                        displayName: '',
+                        bio: '',
+                        photoUrl: '',
+                        socials: {},
+                        createdAt: admin.database.ServerValue.TIMESTAMP,
+                        updatedAt: admin.database.ServerValue.TIMESTAMP
+                    });
+                }
+                return res.json({ success: true, slug: slug, note: 'Slug zaten sizin, tekrar onaylandi.' });
+            } else {
+                return res.status(400).json({ error: 'Zaten bir sayfaniz var: ' + userSlug + '. Birden fazla sayfa olusturulamaz.' });
+            }
         }
 
-        // Check if slug is taken
+        // Check if slug is taken by someone else
         const existingPage = await db.ref('pagesBySlug/' + slug).once('value');
         if (existingPage.exists()) {
-            return res.status(400).json({ error: 'Bu slug zaten alinmis. Baska bir tane deneyin.' });
+            return res.status(409).json({ error: 'Bu slug baskasi tarafindan alinmis. Baska bir tane deneyin.' });
         }
 
         // Claim slug
@@ -124,14 +144,10 @@ app.put('/page', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Slug gerekli.' });
         }
 
-        // Verify ownership
-        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
-        if (!pageSnap.exists()) {
-            return res.status(404).json({ error: 'Sayfa bulunamadi.' });
-        }
-
-        if (pageSnap.val().uid !== uid) {
-            return res.status(403).json({ error: 'Bu sayfayi duzenleme yetkiniz yok.' });
+        // Verify ownership via slugByUid
+        const userSlugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!userSlugSnap.exists() || userSlugSnap.val().slug !== slug) {
+            return res.status(403).json({ error: 'Bu slug size ait degil.' });
         }
 
         // Sanitize socials
@@ -145,14 +161,31 @@ app.put('/page', authenticate, async (req, res) => {
             });
         }
 
-        // Update
-        await db.ref('pagesBySlug/' + slug).update({
-            displayName: (displayName || '').trim().substring(0, 100),
-            bio: (bio || '').trim().substring(0, 500),
-            photoUrl: (photoUrl || '').trim().substring(0, 1000),
-            socials: cleanSocials,
-            updatedAt: admin.database.ServerValue.TIMESTAMP
-        });
+        // Check if page exists
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+
+        if (!pageSnap.exists()) {
+            // Page data doesn't exist yet — create it (upsert)
+            await db.ref('pagesBySlug/' + slug).set({
+                uid: uid,
+                slug: slug,
+                displayName: (displayName || '').trim().substring(0, 100),
+                bio: (bio || '').trim().substring(0, 500),
+                photoUrl: (photoUrl || '').trim().substring(0, 1000),
+                socials: cleanSocials,
+                createdAt: admin.database.ServerValue.TIMESTAMP,
+                updatedAt: admin.database.ServerValue.TIMESTAMP
+            });
+        } else {
+            // Update existing
+            await db.ref('pagesBySlug/' + slug).update({
+                displayName: (displayName || '').trim().substring(0, 100),
+                bio: (bio || '').trim().substring(0, 500),
+                photoUrl: (photoUrl || '').trim().substring(0, 1000),
+                socials: cleanSocials,
+                updatedAt: admin.database.ServerValue.TIMESTAMP
+            });
+        }
 
         res.json({ success: true });
     } catch (err) {
