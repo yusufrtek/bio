@@ -248,7 +248,9 @@ app.get('/page/:slug', async (req, res) => {
             photoUrl: data.photoUrl,
             socials: data.socials || {},
             blocks: data.blocks || [],
-            background: data.background || {}
+            background: data.background || {},
+            hasPolls: !!(data.polls && (Array.isArray(data.polls) ? data.polls.length : Object.keys(data.polls).length)),
+            hasQuestions: !!(data.questions && (Array.isArray(data.questions) ? data.questions.length : Object.keys(data.questions).length))
         });
     } catch (err) {
         console.error('Get page error:', err);
@@ -270,6 +272,387 @@ app.get('/my-slug', authenticate, async (req, res) => {
         res.json(snap.val());
     } catch (err) {
         console.error('My slug error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== POLLS =====
+
+// POST /polls — Create a poll (auth required, page owner)
+app.post('/polls', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const { slug, question, options, multipleChoice, expiresInHours } = req.body;
+
+        if (!slug || !question || !Array.isArray(options) || options.length < 2 || options.length > 10) {
+            return res.status(400).json({ error: 'Soru ve en az 2, en fazla 10 secenek gerekli.' });
+        }
+
+        // Verify ownership
+        const userSlugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!userSlugSnap.exists() || userSlugSnap.val().slug !== slug) {
+            return res.status(403).json({ error: 'Bu slug size ait degil.' });
+        }
+
+        const pollId = 'poll_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        const cleanOptions = options.slice(0, 10).map((opt, i) => ({
+            id: i,
+            text: (opt.text || opt || '').toString().trim().substring(0, 200),
+            votes: 0
+        }));
+
+        const pollData = {
+            id: pollId,
+            slug: slug,
+            uid: uid,
+            question: question.trim().substring(0, 500),
+            options: cleanOptions,
+            multipleChoice: !!multipleChoice,
+            totalVotes: 0,
+            active: true,
+            createdAt: admin.database.ServerValue.TIMESTAMP,
+            expiresAt: expiresInHours ? Date.now() + (expiresInHours * 3600000) : null
+        };
+
+        await db.ref('polls/' + pollId).set(pollData);
+
+        // Add poll reference to page
+        const pagePolls = await db.ref('pagesBySlug/' + slug + '/polls').once('value');
+        const currentPolls = pagePolls.exists() ? pagePolls.val() : [];
+        const pollList = Array.isArray(currentPolls) ? currentPolls : Object.values(currentPolls);
+        pollList.push(pollId);
+        await db.ref('pagesBySlug/' + slug + '/polls').set(pollList);
+
+        res.json({ success: true, pollId: pollId });
+    } catch (err) {
+        console.error('Create poll error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /polls/:slug — Get all polls for a page (public)
+app.get('/polls/:slug', async (req, res) => {
+    try {
+        const slug = req.params.slug;
+        const pageSnap = await db.ref('pagesBySlug/' + slug + '/polls').once('value');
+        if (!pageSnap.exists()) return res.json({ polls: [] });
+
+        const pollIds = pageSnap.val();
+        const pollList = Array.isArray(pollIds) ? pollIds : Object.values(pollIds);
+
+        const polls = [];
+        for (const pid of pollList) {
+            const pollSnap = await db.ref('polls/' + pid).once('value');
+            if (pollSnap.exists()) {
+                const poll = pollSnap.val();
+                // Check expiry
+                if (poll.expiresAt && Date.now() > poll.expiresAt) {
+                    poll.active = false;
+                }
+                polls.push(poll);
+            }
+        }
+
+        res.json({ polls: polls.reverse() }); // newest first
+    } catch (err) {
+        console.error('Get polls error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// POST /polls/:pollId/vote — Vote on a poll (auth required)
+app.post('/polls/:pollId/vote', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const pollId = req.params.pollId;
+        const { optionId } = req.body;
+
+        if (optionId === undefined || optionId === null) {
+            return res.status(400).json({ error: 'Secenek ID gerekli.' });
+        }
+
+        const pollSnap = await db.ref('polls/' + pollId).once('value');
+        if (!pollSnap.exists()) return res.status(404).json({ error: 'Anket bulunamadi.' });
+
+        const poll = pollSnap.val();
+        if (!poll.active) return res.status(400).json({ error: 'Bu anket artik aktif degil.' });
+        if (poll.expiresAt && Date.now() > poll.expiresAt) return res.status(400).json({ error: 'Bu anketin suresi dolmus.' });
+
+        // Check if already voted
+        const voteSnap = await db.ref('pollVotes/' + pollId + '/' + uid).once('value');
+        if (voteSnap.exists()) {
+            return res.status(400).json({ error: 'Bu ankete zaten oy verdiniz.', existingVote: voteSnap.val() });
+        }
+
+        // Validate option
+        const optIdx = parseInt(optionId);
+        if (isNaN(optIdx) || optIdx < 0 || optIdx >= poll.options.length) {
+            return res.status(400).json({ error: 'Gecersiz secenek.' });
+        }
+
+        // Record vote
+        await db.ref('pollVotes/' + pollId + '/' + uid).set({
+            optionId: optIdx,
+            votedAt: admin.database.ServerValue.TIMESTAMP
+        });
+
+        // Increment vote count
+        await db.ref('polls/' + pollId + '/options/' + optIdx + '/votes').transaction(current => (current || 0) + 1);
+        await db.ref('polls/' + pollId + '/totalVotes').transaction(current => (current || 0) + 1);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Vote error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /polls/:pollId/my-vote — Check if user voted (auth required)
+app.get('/polls/:pollId/my-vote', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const pollId = req.params.pollId;
+        const voteSnap = await db.ref('pollVotes/' + pollId + '/' + uid).once('value');
+        if (voteSnap.exists()) {
+            res.json({ voted: true, vote: voteSnap.val() });
+        } else {
+            res.json({ voted: false });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// DELETE /polls/:pollId — Delete a poll (auth required, owner only)
+app.delete('/polls/:pollId', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const pollId = req.params.pollId;
+        const pollSnap = await db.ref('polls/' + pollId).once('value');
+        if (!pollSnap.exists()) return res.status(404).json({ error: 'Anket bulunamadi.' });
+        if (pollSnap.val().uid !== uid) return res.status(403).json({ error: 'Bu anket size ait degil.' });
+
+        const slug = pollSnap.val().slug;
+        await db.ref('polls/' + pollId).remove();
+        await db.ref('pollVotes/' + pollId).remove();
+
+        // Remove from page's poll list
+        const pagePolls = await db.ref('pagesBySlug/' + slug + '/polls').once('value');
+        if (pagePolls.exists()) {
+            const pollList = Array.isArray(pagePolls.val()) ? pagePolls.val() : Object.values(pagePolls.val());
+            const updated = pollList.filter(p => p !== pollId);
+            await db.ref('pagesBySlug/' + slug + '/polls').set(updated.length > 0 ? updated : null);
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Delete poll error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// PATCH /polls/:pollId — Toggle active state (auth required, owner only)
+app.patch('/polls/:pollId', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const pollId = req.params.pollId;
+        const pollSnap = await db.ref('polls/' + pollId).once('value');
+        if (!pollSnap.exists()) return res.status(404).json({ error: 'Anket bulunamadi.' });
+        if (pollSnap.val().uid !== uid) return res.status(403).json({ error: 'Bu anket size ait degil.' });
+
+        const newActive = !pollSnap.val().active;
+        await db.ref('polls/' + pollId + '/active').set(newActive);
+        res.json({ success: true, active: newActive });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== QUESTIONS (Q&A) =====
+
+// POST /questions — Create a question (auth required, page owner)
+app.post('/questions', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const { slug, question } = req.body;
+
+        if (!slug || !question) return res.status(400).json({ error: 'Slug ve soru gerekli.' });
+
+        const userSlugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!userSlugSnap.exists() || userSlugSnap.val().slug !== slug) {
+            return res.status(403).json({ error: 'Bu slug size ait degil.' });
+        }
+
+        const qId = 'q_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        const qData = {
+            id: qId,
+            slug: slug,
+            uid: uid,
+            question: question.trim().substring(0, 500),
+            active: true,
+            answerCount: 0,
+            createdAt: admin.database.ServerValue.TIMESTAMP
+        };
+
+        await db.ref('questions/' + qId).set(qData);
+
+        const pageQs = await db.ref('pagesBySlug/' + slug + '/questions').once('value');
+        const currentQs = pageQs.exists() ? pageQs.val() : [];
+        const qList = Array.isArray(currentQs) ? currentQs : Object.values(currentQs);
+        qList.push(qId);
+        await db.ref('pagesBySlug/' + slug + '/questions').set(qList);
+
+        res.json({ success: true, questionId: qId });
+    } catch (err) {
+        console.error('Create question error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /questions/:slug — Get all questions for a page (public)
+app.get('/questions/:slug', async (req, res) => {
+    try {
+        const slug = req.params.slug;
+        const pageSnap = await db.ref('pagesBySlug/' + slug + '/questions').once('value');
+        if (!pageSnap.exists()) return res.json({ questions: [] });
+
+        const qIds = pageSnap.val();
+        const qList = Array.isArray(qIds) ? qIds : Object.values(qIds);
+
+        const questions = [];
+        for (const qid of qList) {
+            const qSnap = await db.ref('questions/' + qid).once('value');
+            if (qSnap.exists()) {
+                const q = qSnap.val();
+                // Get answers
+                const ansSnap = await db.ref('questionAnswers/' + qid).once('value');
+                q.answers = [];
+                if (ansSnap.exists()) {
+                    const ansObj = ansSnap.val();
+                    q.answers = Object.values(ansObj).sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                }
+                questions.push(q);
+            }
+        }
+
+        res.json({ questions: questions.reverse() });
+    } catch (err) {
+        console.error('Get questions error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// POST /questions/:questionId/answer — Answer a question (auth required)
+app.post('/questions/:questionId/answer', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const questionId = req.params.questionId;
+        const { text } = req.body;
+
+        if (!text || text.trim().length < 1) return res.status(400).json({ error: 'Cevap metni gerekli.' });
+
+        const qSnap = await db.ref('questions/' + questionId).once('value');
+        if (!qSnap.exists()) return res.status(404).json({ error: 'Soru bulunamadi.' });
+        if (!qSnap.val().active) return res.status(400).json({ error: 'Bu soru artik aktif degil.' });
+
+        // Get user info
+        const userRecord = await admin.auth().getUser(uid);
+
+        const answerId = 'ans_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        const answerData = {
+            id: answerId,
+            uid: uid,
+            displayName: userRecord.displayName || 'Anonim',
+            photoUrl: userRecord.photoURL || '',
+            text: text.trim().substring(0, 1000),
+            likes: 0,
+            createdAt: admin.database.ServerValue.TIMESTAMP
+        };
+
+        await db.ref('questionAnswers/' + questionId + '/' + answerId).set(answerData);
+        await db.ref('questions/' + questionId + '/answerCount').transaction(c => (c || 0) + 1);
+
+        res.json({ success: true, answerId: answerId });
+    } catch (err) {
+        console.error('Answer error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// POST /questions/:questionId/answers/:answerId/like — Like an answer (auth required)
+app.post('/questions/:questionId/answers/:answerId/like', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const { questionId, answerId } = req.params;
+
+        const likeSnap = await db.ref('answerLikes/' + answerId + '/' + uid).once('value');
+        if (likeSnap.exists()) {
+            // Unlike
+            await db.ref('answerLikes/' + answerId + '/' + uid).remove();
+            await db.ref('questionAnswers/' + questionId + '/' + answerId + '/likes').transaction(c => Math.max(0, (c || 0) - 1));
+            return res.json({ success: true, liked: false });
+        }
+
+        await db.ref('answerLikes/' + answerId + '/' + uid).set(true);
+        await db.ref('questionAnswers/' + questionId + '/' + answerId + '/likes').transaction(c => (c || 0) + 1);
+        res.json({ success: true, liked: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// DELETE /questions/:questionId — Delete a question (auth required, owner only)
+app.delete('/questions/:questionId', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const questionId = req.params.questionId;
+        const qSnap = await db.ref('questions/' + questionId).once('value');
+        if (!qSnap.exists()) return res.status(404).json({ error: 'Soru bulunamadi.' });
+        if (qSnap.val().uid !== uid) return res.status(403).json({ error: 'Bu soru size ait degil.' });
+
+        const slug = qSnap.val().slug;
+        await db.ref('questions/' + questionId).remove();
+        await db.ref('questionAnswers/' + questionId).remove();
+
+        const pageQs = await db.ref('pagesBySlug/' + slug + '/questions').once('value');
+        if (pageQs.exists()) {
+            const qList = Array.isArray(pageQs.val()) ? pageQs.val() : Object.values(pageQs.val());
+            const updated = qList.filter(q => q !== questionId);
+            await db.ref('pagesBySlug/' + slug + '/questions').set(updated.length > 0 ? updated : null);
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Delete question error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /polls/:pollId/results — Detailed poll results (auth required, owner only)
+app.get('/polls/:pollId/results', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const pollId = req.params.pollId;
+        const pollSnap = await db.ref('polls/' + pollId).once('value');
+        if (!pollSnap.exists()) return res.status(404).json({ error: 'Anket bulunamadi.' });
+        if (pollSnap.val().uid !== uid) return res.status(403).json({ error: 'Bu anket size ait degil.' });
+
+        const votesSnap = await db.ref('pollVotes/' + pollId).once('value');
+        const voters = votesSnap.exists() ? votesSnap.val() : {};
+        const voterCount = Object.keys(voters).length;
+
+        const poll = pollSnap.val();
+        const options = poll.options.map(opt => ({
+            ...opt,
+            percentage: poll.totalVotes > 0 ? Math.round((opt.votes / poll.totalVotes) * 100) : 0
+        }));
+
+        res.json({
+            poll: { ...poll, options: options },
+            voterCount: voterCount,
+            voters: voters
+        });
+    } catch (err) {
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
 });
