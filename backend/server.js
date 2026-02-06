@@ -97,6 +97,8 @@ app.post('/claim', authenticate, async (req, res) => {
                         bio: '',
                         photoUrl: '',
                         socials: {},
+                        blocks: [],
+                        background: { color: '', imageUrl: '', opacity: 1, pattern: 'none' },
                         createdAt: admin.database.ServerValue.TIMESTAMP,
                         updatedAt: admin.database.ServerValue.TIMESTAMP
                     });
@@ -122,6 +124,8 @@ app.post('/claim', authenticate, async (req, res) => {
             bio: '',
             photoUrl: '',
             socials: {},
+            blocks: [],
+            background: { color: '', imageUrl: '', opacity: 1, pattern: 'none' },
             createdAt: admin.database.ServerValue.TIMESTAMP,
             updatedAt: admin.database.ServerValue.TIMESTAMP
         });
@@ -208,16 +212,20 @@ app.put('/page', authenticate, async (req, res) => {
 
         console.log('PUT /page - saving for slug:', slug, 'uid:', uid);
 
-        // Check if page exists — always use set to ensure full data
+        // Check if page exists — preserve polls/questions references
         const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
 
         if (!pageSnap.exists()) {
             pageData.createdAt = admin.database.ServerValue.TIMESTAMP;
         } else {
-            pageData.createdAt = pageSnap.val().createdAt || admin.database.ServerValue.TIMESTAMP;
+            const existingData = pageSnap.val();
+            pageData.createdAt = existingData.createdAt || admin.database.ServerValue.TIMESTAMP;
+            // Preserve polls and questions references (they are managed by poll/question endpoints)
+            if (existingData.polls) pageData.polls = existingData.polls;
+            if (existingData.questions) pageData.questions = existingData.questions;
         }
 
-        // Always use set (not update) to ensure complete overwrite
+        // Always use set to ensure complete overwrite (with preserved polls/questions)
         await db.ref('pagesBySlug/' + slug).set(pageData);
 
         console.log('PUT /page - saved successfully for slug:', slug);
