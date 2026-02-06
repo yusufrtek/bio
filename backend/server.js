@@ -706,6 +706,357 @@ app.get('/debug/page/:slug', async (req, res) => {
     }
 });
 
+// ===== ADMIN MIDDLEWARE =====
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+
+async function authenticateAdmin(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
+    }
+    const token = authHeader.split('Bearer ')[1];
+    try {
+        const decoded = await admin.auth().verifyIdToken(token);
+        req.uid = decoded.uid;
+        req.email = decoded.email;
+        if (!ADMIN_EMAILS.includes((decoded.email || '').toLowerCase())) {
+            return res.status(403).json({ error: 'Admin yetkisi gerekli.' });
+        }
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Gecersiz token.' });
+    }
+}
+
+// ===== ADMIN: Check admin status =====
+app.get('/admin/check', authenticate, (req, res) => {
+    const isAdmin = ADMIN_EMAILS.includes((req.email || '').toLowerCase());
+    res.json({ isAdmin });
+});
+
+// ===== ADMIN: List all users =====
+app.get('/admin/users', authenticateAdmin, async (req, res) => {
+    try {
+        const slugsSnap = await db.ref('slugByUid').once('value');
+        const users = [];
+        
+        if (slugsSnap.exists()) {
+            const slugData = slugsSnap.val();
+            const promises = Object.entries(slugData).map(async ([uid, data]) => {
+                const slug = data.slug;
+                const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+                const page = pageSnap.exists() ? pageSnap.val() : {};
+                
+                // Get Firebase Auth user info
+                let authUser = {};
+                try {
+                    authUser = await admin.auth().getUser(uid);
+                } catch (e) {}
+                
+                // Get badges
+                const badgesSnap = await db.ref('userBadges/' + uid).once('value');
+                const badges = badgesSnap.exists() ? badgesSnap.val() : {};
+                
+                // Get ban status
+                const banSnap = await db.ref('bannedUsers/' + uid).once('value');
+                
+                users.push({
+                    uid,
+                    slug,
+                    email: authUser.email || '',
+                    displayName: page.displayName || authUser.displayName || '',
+                    photoUrl: page.photoUrl || authUser.photoURL || '',
+                    bio: page.bio || '',
+                    socials: page.socials || {},
+                    createdAt: page.createdAt || null,
+                    updatedAt: page.updatedAt || null,
+                    banned: banSnap.exists(),
+                    banReason: banSnap.exists() ? banSnap.val().reason : '',
+                    badges: badges,
+                    lastSignIn: authUser.metadata ? authUser.metadata.lastSignInTime : null,
+                    creationTime: authUser.metadata ? authUser.metadata.creationTime : null,
+                    provider: authUser.providerData ? authUser.providerData.map(p => p.providerId).join(', ') : ''
+                });
+            });
+            await Promise.all(promises);
+        }
+        
+        users.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        res.json({ users, totalCount: users.length });
+    } catch (err) {
+        console.error('Admin list users error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== ADMIN: Get single user details =====
+app.get('/admin/users/:uid', authenticateAdmin, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const slugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!slugSnap.exists()) return res.status(404).json({ error: 'Kullanici bulunamadi.' });
+        
+        const slug = slugSnap.val().slug;
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+        const page = pageSnap.exists() ? pageSnap.val() : {};
+        
+        let authUser = {};
+        try { authUser = await admin.auth().getUser(uid); } catch(e) {}
+        
+        const badgesSnap = await db.ref('userBadges/' + uid).once('value');
+        const banSnap = await db.ref('bannedUsers/' + uid).once('value');
+        
+        // Count polls and questions
+        const pollsSnap = await db.ref('polls').orderByChild('uid').equalTo(uid).once('value');
+        const questionsSnap = await db.ref('questions').orderByChild('uid').equalTo(uid).once('value');
+        
+        res.json({
+            uid,
+            slug,
+            email: authUser.email || '',
+            displayName: page.displayName || '',
+            photoUrl: page.photoUrl || '',
+            bio: page.bio || '',
+            socials: page.socials || {},
+            blocks: page.blocks || [],
+            background: page.background || {},
+            badges: badgesSnap.exists() ? badgesSnap.val() : {},
+            banned: banSnap.exists(),
+            banReason: banSnap.exists() ? banSnap.val().reason : '',
+            pollCount: pollsSnap.exists() ? Object.keys(pollsSnap.val()).length : 0,
+            questionCount: questionsSnap.exists() ? Object.keys(questionsSnap.val()).length : 0,
+            lastSignIn: authUser.metadata ? authUser.metadata.lastSignInTime : null,
+            creationTime: authUser.metadata ? authUser.metadata.creationTime : null
+        });
+    } catch (err) {
+        console.error('Admin get user error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== ADMIN: Ban/Unban user =====
+app.post('/admin/users/:uid/ban', authenticateAdmin, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const { reason } = req.body;
+        await db.ref('bannedUsers/' + uid).set({
+            banned: true,
+            reason: reason || 'Admin tarafindan engellendi',
+            bannedBy: req.uid,
+            bannedAt: admin.database.ServerValue.TIMESTAMP
+        });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+app.post('/admin/users/:uid/unban', authenticateAdmin, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        await db.ref('bannedUsers/' + uid).remove();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== ADMIN: Badge Management =====
+
+// Create a new badge (admin only)
+app.post('/admin/badges', authenticateAdmin, async (req, res) => {
+    try {
+        const { name, imageUrl, description, type } = req.body;
+        if (!name || !imageUrl) return res.status(400).json({ error: 'Rozet adi ve gorsel URL gerekli.' });
+        
+        const badgeId = 'badge_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+        const badgeData = {
+            id: badgeId,
+            name: (name || '').trim().substring(0, 50),
+            imageUrl: (imageUrl || '').trim().substring(0, 1000),
+            description: (description || '').trim().substring(0, 200),
+            type: type || 'custom', // 'verified', 'custom', 'special'
+            createdBy: req.uid,
+            createdAt: admin.database.ServerValue.TIMESTAMP
+        };
+        
+        await db.ref('badges/' + badgeId).set(badgeData);
+        res.json({ success: true, badgeId });
+    } catch (err) {
+        console.error('Create badge error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// List all badges
+app.get('/admin/badges', authenticateAdmin, async (req, res) => {
+    try {
+        const snap = await db.ref('badges').once('value');
+        const badges = snap.exists() ? Object.values(snap.val()) : [];
+        res.json({ badges });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// Delete a badge
+app.delete('/admin/badges/:badgeId', authenticateAdmin, async (req, res) => {
+    try {
+        const badgeId = req.params.badgeId;
+        await db.ref('badges/' + badgeId).remove();
+        // Also remove from all users
+        const usersSnap = await db.ref('userBadges').once('value');
+        if (usersSnap.exists()) {
+            const updates = {};
+            Object.entries(usersSnap.val()).forEach(([uid, badges]) => {
+                if (badges[badgeId]) {
+                    updates['userBadges/' + uid + '/' + badgeId] = null;
+                }
+            });
+            if (Object.keys(updates).length > 0) await db.ref().update(updates);
+        }
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// Grant badge to a specific user
+app.post('/admin/users/:uid/badges', authenticateAdmin, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const { badgeId } = req.body;
+        if (!badgeId) return res.status(400).json({ error: 'Badge ID gerekli.' });
+        
+        // Check badge exists
+        const badgeSnap = await db.ref('badges/' + badgeId).once('value');
+        if (!badgeSnap.exists()) return res.status(404).json({ error: 'Rozet bulunamadi.' });
+        
+        await db.ref('userBadges/' + uid + '/' + badgeId).set({
+            grantedBy: req.uid,
+            grantedAt: admin.database.ServerValue.TIMESTAMP,
+            active: false // user needs to activate in panel
+        });
+        
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// Revoke badge from user
+app.delete('/admin/users/:uid/badges/:badgeId', authenticateAdmin, async (req, res) => {
+    try {
+        await db.ref('userBadges/' + req.params.uid + '/' + req.params.badgeId).remove();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// Grant badge to ALL users
+app.post('/admin/badges/:badgeId/grant-all', authenticateAdmin, async (req, res) => {
+    try {
+        const badgeId = req.params.badgeId;
+        const badgeSnap = await db.ref('badges/' + badgeId).once('value');
+        if (!badgeSnap.exists()) return res.status(404).json({ error: 'Rozet bulunamadi.' });
+        
+        const slugsSnap = await db.ref('slugByUid').once('value');
+        if (!slugsSnap.exists()) return res.json({ success: true, count: 0 });
+        
+        const updates = {};
+        Object.keys(slugsSnap.val()).forEach(uid => {
+            updates['userBadges/' + uid + '/' + badgeId] = {
+                grantedBy: req.uid,
+                grantedAt: Date.now(),
+                active: false
+            };
+        });
+        
+        await db.ref().update(updates);
+        res.json({ success: true, count: Object.keys(slugsSnap.val()).length });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== USER: Get my badges =====
+app.get('/my-badges', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const userBadgesSnap = await db.ref('userBadges/' + uid).once('value');
+        const allBadgesSnap = await db.ref('badges').once('value');
+        
+        const allBadges = allBadgesSnap.exists() ? allBadgesSnap.val() : {};
+        const userBadges = userBadgesSnap.exists() ? userBadgesSnap.val() : {};
+        
+        const result = Object.values(allBadges).map(badge => ({
+            ...badge,
+            owned: !!userBadges[badge.id],
+            active: userBadges[badge.id] ? !!userBadges[badge.id].active : false
+        }));
+        
+        res.json({ badges: result });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== USER: Toggle badge active state =====
+app.post('/my-badges/:badgeId/toggle', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const badgeId = req.params.badgeId;
+        
+        const snap = await db.ref('userBadges/' + uid + '/' + badgeId).once('value');
+        if (!snap.exists()) return res.status(403).json({ error: 'Bu rozet size ait degil.' });
+        
+        const current = snap.val();
+        const newActive = !current.active;
+        await db.ref('userBadges/' + uid + '/' + badgeId + '/active').set(newActive);
+        
+        res.json({ success: true, active: newActive });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== PUBLIC: Get user badges for display =====
+app.get('/badges/:slug', async (req, res) => {
+    try {
+        const slug = req.params.slug;
+        // Find uid from slug
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+        if (!pageSnap.exists()) return res.status(404).json({ error: 'Sayfa bulunamadi.' });
+        
+        const uid = pageSnap.val().uid;
+        const userBadgesSnap = await db.ref('userBadges/' + uid).once('value');
+        const allBadgesSnap = await db.ref('badges').once('value');
+        
+        const allBadges = allBadgesSnap.exists() ? allBadgesSnap.val() : {};
+        const userBadges = userBadgesSnap.exists() ? userBadgesSnap.val() : {};
+        
+        // Only return active badges
+        const activeBadges = Object.entries(userBadges)
+            .filter(([id, data]) => data.active && allBadges[id])
+            .map(([id]) => allBadges[id]);
+        
+        res.json({ badges: activeBadges });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== Ban check middleware for page access =====
+app.get('/ban-check/:uid', async (req, res) => {
+    try {
+        const snap = await db.ref('bannedUsers/' + req.params.uid).once('value');
+        res.json({ banned: snap.exists() });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
 // ===== Health =====
 app.get('/health', (req, res) => {
     res.json({
