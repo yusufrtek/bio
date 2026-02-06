@@ -285,6 +285,20 @@ app.get('/my-slug', authenticate, async (req, res) => {
 });
 
 // ===== POLLS =====
+// IMPORTANT: Firebase RTDB requires index rules for queries.
+// Add these rules to your Firebase RTDB Rules:
+// {
+//   "rules": {
+//     ".read": false, ".write": false,
+//     "polls": { ".indexOn": ["slug"], ".read": true },
+//     "questions": { ".indexOn": ["slug"], ".read": true },
+//     "pagesBySlug": { ".read": true, "$slug": { ".write": "auth != null" } },
+//     "slugByUid": { "$uid": { ".read": "auth != null && auth.uid == $uid", ".write": "auth != null && auth.uid == $uid" } },
+//     "pollVotes": { ".read": true, "$pollId": { "$uid": { ".write": "auth != null && auth.uid == $uid" } } },
+//     "questionAnswers": { ".read": true, "$qId": { "$ansId": { ".write": "auth != null" } } },
+//     "answerLikes": { ".read": true, "$ansId": { "$uid": { ".write": "auth != null && auth.uid == $uid" } } }
+//   }
+// }
 
 // POST /polls — Create a poll (auth required, page owner)
 app.post('/polls', authenticate, async (req, res) => {
@@ -339,29 +353,31 @@ app.post('/polls', authenticate, async (req, res) => {
 });
 
 // GET /polls/:slug — Get all polls for a page (public)
+// Query directly from polls collection by slug field (not dependent on pagesBySlug references)
 app.get('/polls/:slug', async (req, res) => {
     try {
         const slug = req.params.slug;
-        const pageSnap = await db.ref('pagesBySlug/' + slug + '/polls').once('value');
-        if (!pageSnap.exists()) return res.json({ polls: [] });
+        console.log('GET /polls/' + slug + ' - querying polls collection directly');
 
-        const pollIds = pageSnap.val();
-        const pollList = Array.isArray(pollIds) ? pollIds : Object.values(pollIds);
+        const pollsSnap = await db.ref('polls').orderByChild('slug').equalTo(slug).once('value');
 
         const polls = [];
-        for (const pid of pollList) {
-            const pollSnap = await db.ref('polls/' + pid).once('value');
-            if (pollSnap.exists()) {
-                const poll = pollSnap.val();
+        if (pollsSnap.exists()) {
+            pollsSnap.forEach(child => {
+                const poll = child.val();
                 // Check expiry
                 if (poll.expiresAt && Date.now() > poll.expiresAt) {
                     poll.active = false;
                 }
                 polls.push(poll);
-            }
+            });
         }
 
-        res.json({ polls: polls.reverse() }); // newest first
+        // Sort newest first by createdAt
+        polls.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        console.log('GET /polls/' + slug + ' - found ' + polls.length + ' polls');
+        res.json({ polls: polls });
     } catch (err) {
         console.error('Get polls error:', err);
         res.status(500).json({ error: 'Sunucu hatasi.' });
@@ -518,32 +534,38 @@ app.post('/questions', authenticate, async (req, res) => {
 });
 
 // GET /questions/:slug — Get all questions for a page (public)
+// Query directly from questions collection by slug field
 app.get('/questions/:slug', async (req, res) => {
     try {
         const slug = req.params.slug;
-        const pageSnap = await db.ref('pagesBySlug/' + slug + '/questions').once('value');
-        if (!pageSnap.exists()) return res.json({ questions: [] });
+        console.log('GET /questions/' + slug + ' - querying questions collection directly');
 
-        const qIds = pageSnap.val();
-        const qList = Array.isArray(qIds) ? qIds : Object.values(qIds);
+        const qSnap = await db.ref('questions').orderByChild('slug').equalTo(slug).once('value');
 
         const questions = [];
-        for (const qid of qList) {
-            const qSnap = await db.ref('questions/' + qid).once('value');
-            if (qSnap.exists()) {
-                const q = qSnap.val();
-                // Get answers
-                const ansSnap = await db.ref('questionAnswers/' + qid).once('value');
-                q.answers = [];
-                if (ansSnap.exists()) {
-                    const ansObj = ansSnap.val();
-                    q.answers = Object.values(ansObj).sort((a, b) => (b.likes || 0) - (a.likes || 0));
-                }
-                questions.push(q);
-            }
+        if (qSnap.exists()) {
+            const promises = [];
+            qSnap.forEach(child => {
+                const q = child.val();
+                // Get answers for each question
+                const p = db.ref('questionAnswers/' + q.id).once('value').then(ansSnap => {
+                    q.answers = [];
+                    if (ansSnap.exists()) {
+                        const ansObj = ansSnap.val();
+                        q.answers = Object.values(ansObj).sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                    }
+                    questions.push(q);
+                });
+                promises.push(p);
+            });
+            await Promise.all(promises);
         }
 
-        res.json({ questions: questions.reverse() });
+        // Sort newest first
+        questions.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        console.log('GET /questions/' + slug + ' - found ' + questions.length + ' questions');
+        res.json({ questions: questions });
     } catch (err) {
         console.error('Get questions error:', err);
         res.status(500).json({ error: 'Sunucu hatasi.' });
