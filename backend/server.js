@@ -142,7 +142,7 @@ app.post('/claim', authenticate, async (req, res) => {
 app.put('/page', authenticate, async (req, res) => {
     try {
         const uid = req.uid;
-        const { slug, displayName, bio, photoUrl, socials, blocks, background } = req.body;
+        const { slug, displayName, bio, photoUrl, socials, blocks, background, styles } = req.body;
 
         if (!slug) {
             return res.status(400).json({ error: 'Slug gerekli.' });
@@ -197,6 +197,15 @@ app.put('/page', authenticate, async (req, res) => {
             cleanBg = { color: '', imageUrl: '', opacity: 1, pattern: 'none' };
         }
 
+        // Sanitize styles
+        let cleanStyles = { photoStyle: 'circle', btnStyle: 'rounded' };
+        if (styles && typeof styles === 'object') {
+            const allowedPhotoStyles = ['circle', 'rounded', 'square'];
+            const allowedBtnStyles = ['rounded', 'default', 'sharp', 'outline'];
+            cleanStyles.photoStyle = allowedPhotoStyles.includes(styles.photoStyle) ? styles.photoStyle : 'circle';
+            cleanStyles.btnStyle = allowedBtnStyles.includes(styles.btnStyle) ? styles.btnStyle : 'rounded';
+        }
+
         // Build page data
         const pageData = {
             uid: uid,
@@ -207,6 +216,7 @@ app.put('/page', authenticate, async (req, res) => {
             socials: Object.keys(cleanSocials).length > 0 ? cleanSocials : { instagram: '', twitter: '', youtube: '', linkedin: '', github: '', website: '' },
             blocks: cleanBlocks,
             background: cleanBg,
+            styles: cleanStyles,
             updatedAt: admin.database.ServerValue.TIMESTAMP
         };
 
