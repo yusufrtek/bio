@@ -154,13 +154,27 @@ app.put('/page', authenticate, async (req, res) => {
             return res.status(403).json({ error: 'Bu slug size ait degil.' });
         }
 
-        // Sanitize socials
+        // Sanitize socials — auto-prefix URLs from usernames
         const cleanSocials = {};
-        const allowedKeys = ['instagram', 'twitter', 'youtube', 'linkedin', 'github', 'website'];
+        const allowedKeys = ['instagram', 'twitter', 'youtube', 'linkedin', 'github', 'website', 'tiktok'];
+        const socialUrlPrefixes = {
+            instagram: 'https://instagram.com/',
+            twitter: 'https://x.com/',
+            youtube: 'https://youtube.com/@',
+            linkedin: 'https://linkedin.com/in/',
+            github: 'https://github.com/',
+            tiktok: 'https://tiktok.com/@',
+            website: ''
+        };
         if (socials && typeof socials === 'object') {
             allowedKeys.forEach(key => {
                 if (socials[key] && typeof socials[key] === 'string') {
-                    cleanSocials[key] = socials[key].trim().substring(0, 500);
+                    let val = socials[key].trim().substring(0, 500);
+                    if (val && key !== 'website' && !val.startsWith('http')) {
+                        val = val.replace(/^@/, '');
+                        val = socialUrlPrefixes[key] + val;
+                    }
+                    cleanSocials[key] = val;
                 }
             });
         }
@@ -234,7 +248,7 @@ app.put('/page', authenticate, async (req, res) => {
             displayName: (displayName || '').trim().substring(0, 100),
             bio: (bio || '').trim().substring(0, 500),
             photoUrl: (photoUrl || '').trim().substring(0, 1000),
-            socials: Object.keys(cleanSocials).length > 0 ? cleanSocials : { instagram: '', twitter: '', youtube: '', linkedin: '', github: '', website: '' },
+            socials: Object.keys(cleanSocials).length > 0 ? cleanSocials : { instagram: '', twitter: '', youtube: '', linkedin: '', github: '', website: '', tiktok: '' },
             blocks: cleanBlocks,
             customButtons: cleanCustomButtons,
             background: cleanBg,
@@ -795,6 +809,10 @@ app.get('/admin/users', authenticateAdmin, async (req, res) => {
                 // Get ban status
                 const banSnap = await db.ref('bannedUsers/' + uid).once('value');
                 
+                // Get subscription
+                const subSnap = await db.ref('userSubscriptions/' + uid).once('value');
+                const subscription = subSnap.exists() ? subSnap.val().plan : 'basic';
+                
                 users.push({
                     uid,
                     slug,
@@ -808,6 +826,7 @@ app.get('/admin/users', authenticateAdmin, async (req, res) => {
                     banned: banSnap.exists(),
                     banReason: banSnap.exists() ? banSnap.val().reason : '',
                     badges: badges,
+                    subscription: subscription,
                     lastSignIn: authUser.metadata ? authUser.metadata.lastSignInTime : null,
                     creationTime: authUser.metadata ? authUser.metadata.creationTime : null,
                     provider: authUser.providerData ? authUser.providerData.map(p => p.providerId).join(', ') : ''
@@ -1089,6 +1108,406 @@ app.get('/badges/:slug', async (req, res) => {
         const hasVerified = activeBadges.some(b => b.type === 'verified');
         
         res.json({ badges: activeBadges, verified: hasVerified });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== ADMIN: Delete user completely =====
+app.delete('/admin/users/:uid', authenticateAdmin, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const slugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!slugSnap.exists()) return res.status(404).json({ error: 'Kullanici bulunamadi.' });
+        const slug = slugSnap.val().slug;
+
+        // Delete all user data
+        await db.ref('pagesBySlug/' + slug).remove();
+        await db.ref('slugByUid/' + uid).remove();
+        await db.ref('userBadges/' + uid).remove();
+        await db.ref('bannedUsers/' + uid).remove();
+        await db.ref('userSubscriptions/' + uid).remove();
+
+        // Delete polls
+        const pollsSnap = await db.ref('polls').orderByChild('uid').equalTo(uid).once('value');
+        if (pollsSnap.exists()) {
+            const updates = {};
+            Object.keys(pollsSnap.val()).forEach(pollId => {
+                updates['polls/' + pollId] = null;
+                updates['pollVotes/' + pollId] = null;
+            });
+            await db.ref().update(updates);
+        }
+
+        // Delete questions
+        const qSnap = await db.ref('questions').orderByChild('uid').equalTo(uid).once('value');
+        if (qSnap.exists()) {
+            const updates = {};
+            Object.keys(qSnap.val()).forEach(qId => {
+                updates['questions/' + qId] = null;
+                updates['questionAnswers/' + qId] = null;
+            });
+            await db.ref().update(updates);
+        }
+
+        res.json({ success: true, deletedSlug: slug });
+    } catch (err) {
+        console.error('Delete user error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== SUBSCRIPTION SYSTEM =====
+// Subscription plans & category access are managed by admin
+
+// GET /subscription-plans — Public: get all plans
+app.get('/subscription-plans', async (req, res) => {
+    try {
+        const snap = await db.ref('subscriptionPlans').once('value');
+        const plans = snap.exists() ? snap.val() : {};
+        // Default plans if none exist
+        if (!plans.basic) {
+            const defaults = {
+                basic: { id: 'basic', name: 'Basic', order: 1, description: 'Temel ozellikler', color: '#888', categories: {} },
+                pro: { id: 'pro', name: 'Pro', order: 2, description: 'Gelismis ozellikler', color: '#3b82f6', categories: {} },
+                premium: { id: 'premium', name: 'Premium', order: 3, description: 'Tum ozellikler', color: '#f59e0b', categories: {} }
+            };
+            await db.ref('subscriptionPlans').set(defaults);
+            return res.json({ plans: defaults });
+        }
+        res.json({ plans });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /my-subscription — Get current user subscription
+app.get('/my-subscription', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const snap = await db.ref('userSubscriptions/' + uid).once('value');
+        if (!snap.exists()) {
+            // Default to basic
+            return res.json({ plan: 'basic', grantedAt: null });
+        }
+        res.json(snap.val());
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /my-plan — Get user's current plan
+app.get('/my-plan', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const snap = await db.ref('userSubscriptions/' + uid).once('value');
+        res.json({ plan: snap.exists() ? snap.val().plan : 'basic' });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /plan-locks — Get locked categories for the current user's plan
+app.get('/plan-locks', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const subSnap = await db.ref('userSubscriptions/' + uid).once('value');
+        const userPlan = subSnap.exists() ? subSnap.val().plan : 'basic';
+        const configSnap = await db.ref('planAccessConfig').once('value');
+
+        const allCategories = ['profil', 'sosyal', 'butonlar', 'tasarim', 'buton', 'profil-foto', 'icerik', 'anket', 'soru', 'katman', 'rozetler'];
+        const defaultAccess = {
+            basic: ['profil', 'sosyal', 'butonlar', 'tasarim'],
+            pro: ['profil', 'sosyal', 'butonlar', 'tasarim', 'buton', 'profil-foto', 'icerik'],
+            premium: allCategories
+        };
+
+        let planAccess;
+        if (configSnap.exists()) {
+            const config = configSnap.val();
+            planAccess = config[userPlan] || defaultAccess[userPlan] || [];
+        } else {
+            planAccess = defaultAccess[userPlan] || [];
+        }
+
+        const lockedCategories = allCategories.filter(cat => !planAccess.includes(cat));
+        res.json({ plan: userPlan, lockedCategories, allowedCategories: planAccess });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /plan-config — Public: get plan display data
+app.get('/plan-config', async (req, res) => {
+    try {
+        const configSnap = await db.ref('planAccessConfig').once('value');
+        const config = configSnap.exists() ? configSnap.val() : null;
+
+        const allCategories = ['profil', 'sosyal', 'butonlar', 'tasarim', 'buton', 'profil-foto', 'icerik', 'anket', 'soru', 'katman', 'rozetler'];
+        const catLabels = { profil: 'Profil', sosyal: 'Sosyal Medya', butonlar: 'Ozel Butonlar', tasarim: 'Arka Plan', buton: 'Buton Stili', 'profil-foto': 'Foto Stili', icerik: 'Bloklar', anket: 'Anketler', soru: 'Soru & Cevap', katman: 'Katman Sirasi', rozetler: 'Rozetler' };
+
+        const defaultAccess = {
+            basic: ['profil', 'sosyal', 'butonlar', 'tasarim'],
+            pro: ['profil', 'sosyal', 'butonlar', 'tasarim', 'buton', 'profil-foto', 'icerik'],
+            premium: allCategories
+        };
+
+        const access = config || defaultAccess;
+
+        const plans = [
+            { id: 'basic', name: 'Basic', desc: 'Ucretsiz plan. Temel ozellikler.',
+                features: (access.basic || []).map(c => catLabels[c] || c),
+                locked: allCategories.filter(c => !(access.basic || []).includes(c)).map(c => catLabels[c] || c) },
+            { id: 'pro', name: 'Pro', desc: 'Gelismis ozellikler ve erisim.',
+                features: (access.pro || []).map(c => catLabels[c] || c),
+                locked: allCategories.filter(c => !(access.pro || []).includes(c)).map(c => catLabels[c] || c) },
+            { id: 'premium', name: 'Premium', desc: 'Tum ozellikler sinirsiz.',
+                features: (access.premium || []).map(c => catLabels[c] || c),
+                locked: allCategories.filter(c => !(access.premium || []).includes(c)).map(c => catLabels[c] || c) }
+        ];
+
+        res.json({ plans });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: GET /admin/plan-config — Get plan access config
+app.get('/admin/plan-config', authenticateAdmin, async (req, res) => {
+    try {
+        const snap = await db.ref('planAccessConfig').once('value');
+        res.json({ config: snap.exists() ? snap.val() : null });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: PUT /admin/plan-config — Save plan access config
+app.put('/admin/plan-config', authenticateAdmin, async (req, res) => {
+    try {
+        const { config } = req.body;
+        if (!config) return res.status(400).json({ error: 'Config gerekli.' });
+        await db.ref('planAccessConfig').set(config);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: POST /admin/change-plan — Change user plan by slug
+app.post('/admin/change-plan', authenticateAdmin, async (req, res) => {
+    try {
+        const { slug, plan } = req.body;
+        if (!slug) return res.status(400).json({ error: 'Slug gerekli.' });
+        if (!['basic', 'pro', 'premium'].includes(plan)) return res.status(400).json({ error: 'Gecersiz plan.' });
+
+        // Find uid by slug
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+        if (!pageSnap.exists()) return res.status(404).json({ error: 'Kullanici bulunamadi.' });
+        const uid = pageSnap.val().uid;
+
+        await db.ref('userSubscriptions/' + uid).set({
+            plan: plan,
+            grantedBy: req.uid,
+            grantedAt: admin.database.ServerValue.TIMESTAMP
+        });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: Update plan category access
+app.put('/admin/subscription-plans/:planId', authenticateAdmin, async (req, res) => {
+    try {
+        const planId = req.params.planId;
+        const { categories, description, color } = req.body;
+        const updates = {};
+        if (categories !== undefined) updates['subscriptionPlans/' + planId + '/categories'] = categories;
+        if (description !== undefined) updates['subscriptionPlans/' + planId + '/description'] = description;
+        if (color !== undefined) updates['subscriptionPlans/' + planId + '/color'] = color;
+        await db.ref().update(updates);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: Set user subscription plan
+app.post('/admin/users/:uid/subscription', authenticateAdmin, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const { plan } = req.body;
+        if (!['basic', 'pro', 'premium'].includes(plan)) return res.status(400).json({ error: 'Gecersiz plan.' });
+        await db.ref('userSubscriptions/' + uid).set({
+            plan: plan,
+            grantedBy: req.uid,
+            grantedAt: admin.database.ServerValue.TIMESTAMP
+        });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== ACCESS CODES =====
+// ADMIN: Create access code
+app.post('/admin/access-codes', authenticateAdmin, async (req, res) => {
+    try {
+        const { code, badgeId, planUpgrade, maxUses, description } = req.body;
+        if (!code || code.length < 3) return res.status(400).json({ error: 'Kod en az 3 karakter olmali.' });
+        const codeId = code.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+        const existing = await db.ref('accessCodes/' + codeId).once('value');
+        if (existing.exists()) return res.status(409).json({ error: 'Bu kod zaten var.' });
+        await db.ref('accessCodes/' + codeId).set({
+            id: codeId,
+            code: codeId,
+            badgeId: badgeId || null,
+            planUpgrade: planUpgrade || null,
+            maxUses: parseInt(maxUses) || 0,
+            usedCount: 0,
+            description: (description || '').substring(0, 200),
+            createdBy: req.uid,
+            createdAt: admin.database.ServerValue.TIMESTAMP,
+            active: true
+        });
+        res.json({ success: true, code: codeId });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: List all access codes
+app.get('/admin/access-codes', authenticateAdmin, async (req, res) => {
+    try {
+        const snap = await db.ref('accessCodes').once('value');
+        const codes = snap.exists() ? Object.values(snap.val()) : [];
+        res.json({ codes });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: Delete access code
+app.delete('/admin/access-codes/:codeId', authenticateAdmin, async (req, res) => {
+    try {
+        await db.ref('accessCodes/' + req.params.codeId).remove();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// USER: Redeem access code
+app.post('/redeem-code', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const { code } = req.body;
+        if (!code) return res.status(400).json({ error: 'Kod gerekli.' });
+        const codeId = code.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+        const codeSnap = await db.ref('accessCodes/' + codeId).once('value');
+        if (!codeSnap.exists()) return res.status(404).json({ error: 'Gecersiz kod.' });
+        const codeData = codeSnap.val();
+        if (!codeData.active) return res.status(400).json({ error: 'Bu kod artik aktif degil.' });
+        if (codeData.maxUses > 0 && codeData.usedCount >= codeData.maxUses) return res.status(400).json({ error: 'Bu kodun kullanim limiti dolmus.' });
+
+        // Check if user already used this code
+        const usedSnap = await db.ref('codeRedemptions/' + codeId + '/' + uid).once('value');
+        if (usedSnap.exists()) return res.status(400).json({ error: 'Bu kodu zaten kullandiniz.' });
+
+        const rewards = [];
+
+        // Grant badge if specified
+        if (codeData.badgeId) {
+            const badgeSnap = await db.ref('badges/' + codeData.badgeId).once('value');
+            if (badgeSnap.exists()) {
+                await db.ref('userBadges/' + uid + '/' + codeData.badgeId).set({
+                    grantedBy: 'code:' + codeId,
+                    grantedAt: admin.database.ServerValue.TIMESTAMP,
+                    active: false
+                });
+                rewards.push({ type: 'badge', badge: badgeSnap.val() });
+            }
+        }
+
+        // Upgrade plan if specified
+        if (codeData.planUpgrade && ['pro', 'premium'].includes(codeData.planUpgrade)) {
+            await db.ref('userSubscriptions/' + uid).set({
+                plan: codeData.planUpgrade,
+                grantedBy: 'code:' + codeId,
+                grantedAt: admin.database.ServerValue.TIMESTAMP
+            });
+            rewards.push({ type: 'plan', plan: codeData.planUpgrade });
+        }
+
+        // Record redemption
+        await db.ref('codeRedemptions/' + codeId + '/' + uid).set({
+            redeemedAt: admin.database.ServerValue.TIMESTAMP
+        });
+        await db.ref('accessCodes/' + codeId + '/usedCount').transaction(c => (c || 0) + 1);
+
+        res.json({ success: true, rewards });
+    } catch (err) {
+        console.error('Redeem code error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== SHOWCASE PROFILES (Admin managed) =====
+app.get('/showcase-profiles', async (req, res) => {
+    try {
+        const snap = await db.ref('showcaseProfiles').once('value');
+        const slugs = snap.exists() ? Object.values(snap.val()) : [];
+        const profiles = [];
+        for (const item of slugs) {
+            const pageSnap = await db.ref('pagesBySlug/' + item.slug).once('value');
+            if (pageSnap.exists()) {
+                const p = pageSnap.val();
+                profiles.push({
+                    slug: p.slug,
+                    displayName: p.displayName || '',
+                    photoUrl: p.photoUrl || '',
+                    bio: p.bio || '',
+                    background: p.background || {},
+                    order: item.order || 0
+                });
+            }
+        }
+        profiles.sort((a, b) => (a.order || 0) - (b.order || 0));
+        res.json({ profiles });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+app.post('/admin/showcase-profiles', authenticateAdmin, async (req, res) => {
+    try {
+        const { slug, order } = req.body;
+        if (!slug) return res.status(400).json({ error: 'Slug gerekli.' });
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+        if (!pageSnap.exists()) return res.status(404).json({ error: 'Sayfa bulunamadi.' });
+        const id = 'sc_' + Date.now();
+        await db.ref('showcaseProfiles/' + id).set({ id, slug, order: order || 0, addedAt: admin.database.ServerValue.TIMESTAMP });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+app.delete('/admin/showcase-profiles/:id', authenticateAdmin, async (req, res) => {
+    try {
+        await db.ref('showcaseProfiles/' + req.params.id).remove();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+app.get('/admin/showcase-profiles', authenticateAdmin, async (req, res) => {
+    try {
+        const snap = await db.ref('showcaseProfiles').once('value');
+        const items = snap.exists() ? Object.values(snap.val()) : [];
+        res.json({ items });
     } catch (err) {
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
