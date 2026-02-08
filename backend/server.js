@@ -71,8 +71,8 @@ app.post('/claim', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Slug 2-30 karakter arasi olmali.' });
         }
 
-        if (!/^[a-z0-9\-_]+$/.test(slug)) {
-            return res.status(400).json({ error: 'Slug sadece kucuk harf, rakam, tire ve alt cizgi icermelidir.' });
+        if (!/^[a-z0-9]+$/.test(slug)) {
+            return res.status(400).json({ error: 'Slug sadece kucuk harf ve rakam icermelidir. Ozel karakter kullanilamaz.' });
         }
 
         // Reserved slugs
@@ -1593,6 +1593,98 @@ app.delete('/admin/custom-icons/:id', authenticateAdmin, async (req, res) => {
     try {
         await db.ref('customIcons/' + req.params.id).remove();
         res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== Documents =====
+function generateDocNumber() {
+    const num = Math.floor(10000000 + Math.random() * 90000000).toString();
+    return num.substring(0, 4) + '-' + num.substring(4);
+}
+
+app.post('/documents', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const userSlugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!userSlugSnap.exists()) return res.status(400).json({ error: 'Slug bulunamadi.' });
+        const slug = userSlugSnap.val().slug;
+
+        // Generate unique doc number
+        let docNumber;
+        let attempts = 0;
+        do {
+            docNumber = generateDocNumber();
+            const existing = await db.ref('documents/' + docNumber).once('value');
+            if (!existing.exists()) break;
+            attempts++;
+        } while (attempts < 10);
+
+        // Get page stats
+        const statsSnap = await db.ref('pageViews/' + slug).once('value');
+        const stats = statsSnap.exists() ? statsSnap.val() : { daily: {}, total: 0 };
+
+        const now = new Date();
+        const docData = {
+            docNumber,
+            slug,
+            uid,
+            createdAt: now.toISOString(),
+            createdAtTimestamp: admin.database.ServerValue.TIMESTAMP,
+            stats: {
+                total: stats.total || 0,
+                daily: stats.daily || {}
+            }
+        };
+
+        await db.ref('documents/' + docNumber).set(docData);
+        // Also index under user
+        await db.ref('userDocuments/' + uid + '/' + docNumber).set({ createdAt: now.toISOString() });
+
+        res.json({ success: true, document: docData });
+    } catch (err) {
+        res.status(500).json({ error: 'Belge olusturulamadi.' });
+    }
+});
+
+app.get('/documents/:docNumber', async (req, res) => {
+    try {
+        const docNumber = req.params.docNumber;
+        if (!/^\d{4}-\d{4}$/.test(docNumber)) return res.status(400).json({ error: 'Gecersiz belge numarasi.' });
+        const snap = await db.ref('documents/' + docNumber).once('value');
+        if (!snap.exists()) return res.status(404).json({ error: 'Belge bulunamadi.' });
+        res.json(snap.val());
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+app.get('/user-documents/:uid', authenticate, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const snap = await db.ref('userDocuments/' + uid).once('value');
+        if (!snap.exists()) return res.json({ documents: [] });
+        const docKeys = Object.keys(snap.val());
+        const docs = [];
+        for (const key of docKeys) {
+            const docSnap = await db.ref('documents/' + key).once('value');
+            if (docSnap.exists()) docs.push(docSnap.val());
+        }
+        res.json({ documents: docs });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// Admin: list all documents
+app.get('/admin/documents', authenticateAdmin, async (req, res) => {
+    try {
+        const snap = await db.ref('documents').once('value');
+        if (!snap.exists()) return res.json({ documents: [] });
+        const docs = Object.values(snap.val());
+        docs.sort((a, b) => (b.createdAtTimestamp || 0) - (a.createdAtTimestamp || 0));
+        res.json({ documents: docs });
     } catch (err) {
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
