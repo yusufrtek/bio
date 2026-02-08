@@ -201,6 +201,7 @@ app.put('/page', authenticate, async (req, res) => {
             cleanBg.color = (background.color || '').trim().substring(0, 30);
             cleanBg.imageUrl = (background.imageUrl || '').trim().substring(0, 1000);
             cleanBg.opacity = Math.max(0, Math.min(1, parseFloat(background.opacity) || 1));
+            cleanBg.blur = Math.max(0, Math.min(20, parseInt(background.blur) || 0));
             const allowedPatterns = ['none', 'dots', 'grid', 'diagonal', 'cross', 'waves'];
             cleanBg.pattern = allowedPatterns.includes(background.pattern) ? background.pattern : 'none';
         }
@@ -218,6 +219,8 @@ app.put('/page', authenticate, async (req, res) => {
             const allowedBtnStyles = ['rounded', 'default', 'sharp', 'outline'];
             cleanStyles.photoStyle = allowedPhotoStyles.includes(styles.photoStyle) ? styles.photoStyle : 'circle';
             cleanStyles.btnStyle = allowedBtnStyles.includes(styles.btnStyle) ? styles.btnStyle : 'rounded';
+            const allowedIconStyles = ['minimal', 'branded'];
+            cleanStyles.socialIconStyle = allowedIconStyles.includes(styles.socialIconStyle) ? styles.socialIconStyle : 'minimal';
         }
 
         // Sanitize customButtons (max 10)
@@ -227,7 +230,8 @@ app.put('/page', authenticate, async (req, res) => {
                 id: idx,
                 title: (btn.title || '').trim().substring(0, 100),
                 url: (btn.url || '').trim().substring(0, 1000),
-                logoUrl: (btn.logoUrl || '').trim().substring(0, 1000)
+                logoUrl: (btn.logoUrl || '').trim().substring(0, 1000),
+                iconId: (btn.iconId || '').trim().substring(0, 100)
             })).filter(btn => btn.title && btn.url);
         }
 
@@ -306,7 +310,7 @@ app.get('/page/:slug', async (req, res) => {
             blocks: data.blocks || [],
             customButtons: data.customButtons || [],
             background: data.background || {},
-            styles: data.styles || { photoStyle: 'circle', btnStyle: 'rounded' },
+            styles: data.styles || { photoStyle: 'circle', btnStyle: 'rounded', socialIconStyle: 'minimal' },
             layerOrder: data.layerOrder || ['blocks', 'polls', 'qa', 'links']
         });
     } catch (err) {
@@ -1518,6 +1522,77 @@ app.get('/ban-check/:uid', async (req, res) => {
     try {
         const snap = await db.ref('bannedUsers/' + req.params.uid).once('value');
         res.json({ banned: snap.exists() });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== Page View Tracking =====
+app.post('/page-view/:slug', async (req, res) => {
+    try {
+        const slug = req.params.slug;
+        const now = new Date();
+        const dateKey = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        const hourKey = now.getHours().toString();
+        await db.ref('pageViews/' + slug + '/daily/' + dateKey).transaction(val => (val || 0) + 1);
+        await db.ref('pageViews/' + slug + '/hourly/' + dateKey + '/' + hourKey).transaction(val => (val || 0) + 1);
+        await db.ref('pageViews/' + slug + '/total').transaction(val => (val || 0) + 1);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+app.get('/page-stats/:slug', authenticate, async (req, res) => {
+    try {
+        const slug = req.params.slug;
+        // Verify ownership
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+        if (!pageSnap.exists() || pageSnap.val().uid !== req.uid) {
+            return res.status(403).json({ error: 'Yetki yok.' });
+        }
+        const snap = await db.ref('pageViews/' + slug).once('value');
+        const data = snap.exists() ? snap.val() : { daily: {}, hourly: {}, total: 0 };
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== Admin Custom Icons =====
+app.get('/custom-icons', async (req, res) => {
+    try {
+        const snap = await db.ref('customIcons').once('value');
+        const icons = snap.exists() ? Object.values(snap.val()) : [];
+        res.json({ icons });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+app.post('/admin/custom-icons', authenticateAdmin, async (req, res) => {
+    try {
+        const { name, imageUrl, borderRadius } = req.body;
+        if (!name || !imageUrl) return res.status(400).json({ error: 'Isim ve gorsel gerekli.' });
+        const id = 'ci_' + Date.now();
+        const iconData = {
+            id,
+            name: name.substring(0, 100),
+            imageUrl: imageUrl.substring(0, 1000),
+            borderRadius: ['none', 'small', 'medium', 'full'].includes(borderRadius) ? borderRadius : 'medium',
+            createdAt: admin.database.ServerValue.TIMESTAMP
+        };
+        await db.ref('customIcons/' + id).set(iconData);
+        res.json({ success: true, icon: iconData });
+    } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+app.delete('/admin/custom-icons/:id', authenticateAdmin, async (req, res) => {
+    try {
+        await db.ref('customIcons/' + req.params.id).remove();
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
