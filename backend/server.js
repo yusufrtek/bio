@@ -6,6 +6,8 @@
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 // ===== Firebase Admin Init =====
 // On Render, set FIREBASE_SERVICE_ACCOUNT env var with your service account JSON
@@ -18,6 +20,16 @@ admin.initializeApp({
 
 const db = admin.database();
 const app = express();
+
+// ===== Cloudflare R2 Client =====
+const R2 = new S3Client({
+    region: 'auto',
+    endpoint: process.env.R2_ENDPOINT,
+    credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY
+    }
+});
 
 // ===== CORS — single unified middleware =====
 const corsOptions = {
@@ -1686,6 +1698,155 @@ app.get('/admin/documents', authenticateAdmin, async (req, res) => {
         docs.sort((a, b) => (b.createdAtTimestamp || 0) - (a.createdAtTimestamp || 0));
         res.json({ documents: docs });
     } catch (err) {
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== R2 Image Upload (Presigned URL) =====
+// POST /upload/presign — Generate presigned PUT URL for R2
+app.post('/upload/presign', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const { type, target } = req.body; // type: 'avatar' | 'background', target: slug
+
+        if (!type || !['avatar', 'background'].includes(type)) {
+            return res.status(400).json({ error: 'Gecersiz tip. avatar veya background olmali.' });
+        }
+
+        // Verify ownership
+        const userSlugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!userSlugSnap.exists()) {
+            return res.status(403).json({ error: 'Slug bulunamadi.' });
+        }
+
+        const contentType = req.body.contentType || 'image/webp';
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(contentType)) {
+            return res.status(400).json({ error: 'Sadece JPEG, PNG ve WebP desteklenir.' });
+        }
+
+        const ext = contentType === 'image/jpeg' ? 'jpg' : contentType === 'image/png' ? 'png' : 'webp';
+        const folder = type === 'avatar' ? 'avatars' : 'backgrounds';
+        const key = folder + '/' + uid + '.' + ext;
+
+        const command = new PutObjectCommand({
+            Bucket: process.env.R2_BUCKET,
+            Key: key,
+            ContentType: contentType
+        });
+
+        const uploadUrl = await getSignedUrl(R2, command, { expiresIn: 300 }); // 5 min
+        const publicUrl = 'https://cdn.leng.tr/' + key;
+
+        res.json({ uploadUrl, publicUrl, key });
+    } catch (err) {
+        console.error('Presign error:', err);
+        res.status(500).json({ error: 'Presign URL olusturulamadi.' });
+    }
+});
+
+// POST /upload/confirm — Confirm upload and save URL to Firebase
+app.post('/upload/confirm', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const { type, publicUrl } = req.body;
+
+        if (!type || !publicUrl) {
+            return res.status(400).json({ error: 'Tip ve URL gerekli.' });
+        }
+
+        // Verify ownership
+        const userSlugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!userSlugSnap.exists()) {
+            return res.status(403).json({ error: 'Slug bulunamadi.' });
+        }
+        const slug = userSlugSnap.val().slug;
+
+        if (type === 'avatar') {
+            await db.ref('pagesBySlug/' + slug + '/photoUrl').set(publicUrl);
+        } else if (type === 'background') {
+            await db.ref('pagesBySlug/' + slug + '/background/imageUrl').set(publicUrl);
+        }
+
+        res.json({ success: true, publicUrl });
+    } catch (err) {
+        console.error('Confirm upload error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== ADMIN: Change user slug =====
+app.post('/admin/change-slug', authenticateAdmin, async (req, res) => {
+    try {
+        const { uid, oldSlug, newSlug } = req.body;
+
+        if (!uid || !oldSlug || !newSlug) {
+            return res.status(400).json({ error: 'uid, oldSlug ve newSlug gerekli.' });
+        }
+
+        // Validate new slug
+        if (!/^[a-z0-9]+$/.test(newSlug) || newSlug.length < 2 || newSlug.length > 30) {
+            return res.status(400).json({ error: 'Yeni slug gecersiz. 2-30 karakter, sadece kucuk harf ve rakam.' });
+        }
+
+        const reserved = ['admin', 'panel', 'api', 'login', 'register', 'settings', 'about', 'contact', 'help', 'support'];
+        if (reserved.includes(newSlug)) {
+            return res.status(400).json({ error: 'Bu slug kullanilamaz.' });
+        }
+
+        // Check if new slug is taken
+        const existingPage = await db.ref('pagesBySlug/' + newSlug).once('value');
+        if (existingPage.exists()) {
+            return res.status(409).json({ error: 'Bu slug zaten kullanimda.' });
+        }
+
+        // Get old page data
+        const oldPageSnap = await db.ref('pagesBySlug/' + oldSlug).once('value');
+        if (!oldPageSnap.exists()) {
+            return res.status(404).json({ error: 'Eski sayfa bulunamadi.' });
+        }
+
+        const pageData = oldPageSnap.val();
+        pageData.slug = newSlug;
+        pageData.updatedAt = admin.database.ServerValue.TIMESTAMP;
+
+        // Write new slug data
+        await db.ref('pagesBySlug/' + newSlug).set(pageData);
+        // Update slugByUid
+        await db.ref('slugByUid/' + uid).set({ slug: newSlug });
+        // Delete old slug
+        await db.ref('pagesBySlug/' + oldSlug).remove();
+
+        // Update polls with new slug
+        const pollsSnap = await db.ref('polls').orderByChild('slug').equalTo(oldSlug).once('value');
+        if (pollsSnap.exists()) {
+            const updates = {};
+            Object.keys(pollsSnap.val()).forEach(pollId => {
+                updates['polls/' + pollId + '/slug'] = newSlug;
+            });
+            await db.ref().update(updates);
+        }
+
+        // Update questions with new slug
+        const qSnap = await db.ref('questions').orderByChild('slug').equalTo(oldSlug).once('value');
+        if (qSnap.exists()) {
+            const updates = {};
+            Object.keys(qSnap.val()).forEach(qId => {
+                updates['questions/' + qId + '/slug'] = newSlug;
+            });
+            await db.ref().update(updates);
+        }
+
+        // Move page views
+        const viewsSnap = await db.ref('pageViews/' + oldSlug).once('value');
+        if (viewsSnap.exists()) {
+            await db.ref('pageViews/' + newSlug).set(viewsSnap.val());
+            await db.ref('pageViews/' + oldSlug).remove();
+        }
+
+        res.json({ success: true, oldSlug, newSlug });
+    } catch (err) {
+        console.error('Change slug error:', err);
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
 });
