@@ -1,12 +1,12 @@
 // ===== LENG — Backend (Node.js + Express) =====
-// Deploy this on Render (https://bio-rk2d.onrender.com)
+// Deploy this on Render (https://engine.leng.tr)
 // Environment: Node.js
 // Required env vars: FIREBASE_SERVICE_ACCOUNT (JSON string)
 
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 // ===== Firebase Admin Init =====
@@ -1727,7 +1727,8 @@ app.post('/upload/presign', authenticate, async (req, res) => {
 
         const ext = contentType === 'image/jpeg' ? 'jpg' : contentType === 'image/png' ? 'png' : 'webp';
         const folder = type === 'avatar' ? 'avatars' : 'backgrounds';
-        const key = folder + '/' + uid + '.' + ext;
+        const timestamp = Date.now();
+        const key = folder + '/' + uid + '-' + timestamp + '.' + ext;
 
         const command = new PutObjectCommand({
             Bucket: process.env.R2_BUCKET,
@@ -1762,13 +1763,43 @@ app.post('/upload/confirm', authenticate, async (req, res) => {
         }
         const slug = userSlugSnap.val().slug;
 
+        // Read current URL to find old R2 key
+        let oldKey = null;
+        if (type === 'avatar') {
+            const oldSnap = await db.ref('pagesBySlug/' + slug + '/photoUrl').once('value');
+            const oldUrl = oldSnap.val();
+            if (oldUrl && oldUrl.includes('cdn.leng.tr/')) {
+                oldKey = oldUrl.split('cdn.leng.tr/')[1];
+            }
+        } else if (type === 'background') {
+            const oldSnap = await db.ref('pagesBySlug/' + slug + '/background/imageUrl').once('value');
+            const oldUrl = oldSnap.val();
+            if (oldUrl && oldUrl.includes('cdn.leng.tr/')) {
+                oldKey = oldUrl.split('cdn.leng.tr/')[1];
+            }
+        }
+
+        // Delete old object from R2 if exists
+        if (oldKey) {
+            try {
+                await R2.send(new DeleteObjectCommand({
+                    Bucket: process.env.R2_BUCKET,
+                    Key: oldKey
+                }));
+                console.log('Deleted old R2 object:', oldKey);
+            } catch (delErr) {
+                console.warn('Failed to delete old R2 object:', oldKey, delErr.message);
+            }
+        }
+
+        // Save new URL to Firebase
         if (type === 'avatar') {
             await db.ref('pagesBySlug/' + slug + '/photoUrl').set(publicUrl);
         } else if (type === 'background') {
             await db.ref('pagesBySlug/' + slug + '/background/imageUrl').set(publicUrl);
         }
 
-        res.json({ success: true, publicUrl });
+        res.json({ success: true, publicUrl, deletedOld: oldKey || null });
     } catch (err) {
         console.error('Confirm upload error:', err);
         res.status(500).json({ error: 'Sunucu hatasi.' });
