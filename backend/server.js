@@ -88,7 +88,7 @@ app.post('/claim', authenticate, async (req, res) => {
         }
 
         // Reserved slugs
-        const reserved = ['admin', 'panel', 'api', 'login', 'register', 'settings', 'about', 'contact', 'help', 'support'];
+        const reserved = ['admin', 'panel', 'api', 'login', 'register', 'settings', 'about', 'contact', 'help', 'support', 'dash', 'kisalt'];
         if (reserved.includes(slug)) {
             return res.status(400).json({ error: 'Bu slug kullanilamaz.' });
         }
@@ -202,6 +202,8 @@ app.put('/page', authenticate, async (req, res) => {
                     return { type: 'image', url: (block.url || '').trim().substring(0, 1000), id: idx };
                 } else if (type === 'youtube') {
                     return { type: 'youtube', url: (block.url || '').trim().substring(0, 500), id: idx };
+                } else if (type === 'spotify') {
+                    return { type: 'spotify', url: (block.url || '').trim().substring(0, 500), id: idx };
                 }
                 return null;
             }).filter(Boolean);
@@ -233,6 +235,8 @@ app.put('/page', authenticate, async (req, res) => {
             cleanStyles.btnStyle = allowedBtnStyles.includes(styles.btnStyle) ? styles.btnStyle : 'rounded';
             const allowedIconStyles = ['minimal', 'branded'];
             cleanStyles.socialIconStyle = allowedIconStyles.includes(styles.socialIconStyle) ? styles.socialIconStyle : 'minimal';
+            const allowedDisplayModes = ['button', 'icon-only'];
+            cleanStyles.socialDisplayMode = allowedDisplayModes.includes(styles.socialDisplayMode) ? styles.socialDisplayMode : 'button';
         }
 
         // Sanitize customButtons (max 10)
@@ -322,7 +326,7 @@ app.get('/page/:slug', async (req, res) => {
             blocks: data.blocks || [],
             customButtons: data.customButtons || [],
             background: data.background || {},
-            styles: data.styles || { photoStyle: 'circle', btnStyle: 'rounded', socialIconStyle: 'minimal' },
+            styles: data.styles || { photoStyle: 'circle', btnStyle: 'rounded', socialIconStyle: 'minimal', socialDisplayMode: 'button' },
             layerOrder: data.layerOrder || ['blocks', 'polls', 'qa', 'links']
         });
     } catch (err) {
@@ -1820,7 +1824,7 @@ app.post('/admin/change-slug', authenticateAdmin, async (req, res) => {
             return res.status(400).json({ error: 'Yeni slug gecersiz. 2-30 karakter, sadece kucuk harf ve rakam.' });
         }
 
-        const reserved = ['admin', 'panel', 'api', 'login', 'register', 'settings', 'about', 'contact', 'help', 'support'];
+        const reserved = ['admin', 'panel', 'api', 'login', 'register', 'settings', 'about', 'contact', 'help', 'support', 'dash', 'kisalt'];
         if (reserved.includes(newSlug)) {
             return res.status(400).json({ error: 'Bu slug kullanilamaz.' });
         }
@@ -1878,6 +1882,70 @@ app.post('/admin/change-slug', authenticateAdmin, async (req, res) => {
         res.json({ success: true, oldSlug, newSlug });
     } catch (err) {
         console.error('Change slug error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: POST /admin/find-user-by-email — Find Firebase Auth user by email
+app.post('/admin/find-user-by-email', authenticateAdmin, async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'E-posta gerekli.' });
+        const userRecord = await admin.auth().getUserByEmail(email);
+        const slugSnap = await db.ref('slugByUid/' + userRecord.uid).once('value');
+        const slug = slugSnap.exists() ? slugSnap.val().slug : null;
+        res.json({
+            uid: userRecord.uid,
+            email: userRecord.email,
+            displayName: userRecord.displayName || '',
+            photoURL: userRecord.photoURL || '',
+            slug: slug
+        });
+    } catch (err) {
+        if (err.code === 'auth/user-not-found') return res.status(404).json({ error: 'Bu e-posta ile kullanici bulunamadi.' });
+        console.error('Find user by email error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ADMIN: POST /admin/transfer-page — Transfer a page from one user to another
+app.post('/admin/transfer-page', authenticateAdmin, async (req, res) => {
+    try {
+        const { slug, fromUid, toEmail } = req.body;
+        if (!slug || !fromUid || !toEmail) return res.status(400).json({ error: 'slug, fromUid ve toEmail gerekli.' });
+
+        // Find target user by email
+        let targetUser;
+        try {
+            targetUser = await admin.auth().getUserByEmail(toEmail);
+        } catch (e) {
+            return res.status(404).json({ error: 'Hedef e-posta ile kullanici bulunamadi. Kullanici once sisteme giris yapmis olmali.' });
+        }
+
+        const toUid = targetUser.uid;
+        if (fromUid === toUid) return res.status(400).json({ error: 'Kaynak ve hedef kullanici ayni olamaz.' });
+
+        // Check if target user already has a slug
+        const targetSlugSnap = await db.ref('slugByUid/' + toUid).once('value');
+        if (targetSlugSnap.exists()) {
+            return res.status(409).json({ error: 'Hedef kullanicinin zaten bir sayfasi var (' + targetSlugSnap.val().slug + '). Once o sayfayi silmeniz gerekir.' });
+        }
+
+        // Verify page exists
+        const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+        if (!pageSnap.exists()) return res.status(404).json({ error: 'Sayfa bulunamadi.' });
+
+        // Transfer: update slugByUid for both users
+        await db.ref('slugByUid/' + fromUid).remove();
+        await db.ref('slugByUid/' + toUid).set({ slug: slug });
+
+        // Update page data owner info
+        await db.ref('pagesBySlug/' + slug + '/transferredAt').set(admin.database.ServerValue.TIMESTAMP);
+        await db.ref('pagesBySlug/' + slug + '/transferredFrom').set(fromUid);
+
+        res.json({ success: true, slug, fromUid, toUid, toEmail });
+    } catch (err) {
+        console.error('Transfer page error:', err);
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
 });
