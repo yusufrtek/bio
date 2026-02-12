@@ -855,6 +855,38 @@ app.get('/admin/users', authenticateAdmin, async (req, res) => {
             await Promise.all(promises);
         }
         
+        // Also fetch Firebase Auth users who have NOT claimed a slug yet
+        const uidSet = new Set(users.map(u => u.uid));
+        try {
+            const listResult = await admin.auth().listUsers(1000);
+            for (const authUser of listResult.users) {
+                if (!uidSet.has(authUser.uid)) {
+                    const banSnap = await db.ref('bannedUsers/' + authUser.uid).once('value');
+                    const subSnap = await db.ref('userSubscriptions/' + authUser.uid).once('value');
+                    const badgesSnap = await db.ref('userBadges/' + authUser.uid).once('value');
+                    users.push({
+                        uid: authUser.uid,
+                        slug: '',
+                        email: authUser.email || '',
+                        displayName: authUser.displayName || '',
+                        photoUrl: authUser.photoURL || '',
+                        bio: '',
+                        socials: {},
+                        createdAt: null,
+                        updatedAt: null,
+                        banned: banSnap.exists(),
+                        banReason: banSnap.exists() ? banSnap.val().reason : '',
+                        badges: badgesSnap.exists() ? badgesSnap.val() : {},
+                        subscription: subSnap.exists() ? subSnap.val().plan : 'basic',
+                        lastSignIn: authUser.metadata ? authUser.metadata.lastSignInTime : null,
+                        creationTime: authUser.metadata ? authUser.metadata.creationTime : null,
+                        provider: authUser.providerData ? authUser.providerData.map(p => p.providerId).join(', ') : '',
+                        noSlug: true
+                    });
+                }
+            }
+        } catch (e) { console.error('Error fetching slugless users:', e); }
+
         users.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         res.json({ users, totalCount: users.length });
     } catch (err) {
@@ -1946,6 +1978,126 @@ app.post('/admin/transfer-page', authenticateAdmin, async (req, res) => {
         res.json({ success: true, slug, fromUid, toUid, toEmail });
     } catch (err) {
         console.error('Transfer page error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== Short Links =====
+// POST /short-links — Create a short link (authenticated)
+app.post('/short-links', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Yetkisiz.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const uid = decoded.uid;
+
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ error: 'URL gerekli.' });
+
+        // Validate URL
+        try { new URL(url); } catch (e) { return res.status(400).json({ error: 'Gecerli bir URL girin.' }); }
+
+        // Generate unique short code (uppercase + digits)
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code, exists = true, attempts = 0;
+        while (exists && attempts < 15) {
+            code = '';
+            for (let i = 0; i < 5; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+            const snap = await db.ref('shortLinks/' + code).once('value');
+            exists = snap.exists();
+            attempts++;
+        }
+        if (exists) return res.status(500).json({ error: 'Kod uretilemedi, tekrar deneyin.' });
+
+        await db.ref('shortLinks/' + code).set({
+            url: url,
+            uid: uid,
+            createdAt: admin.database.ServerValue.TIMESTAMP,
+            clicks: 0
+        });
+
+        res.json({ code, url });
+    } catch (err) {
+        console.error('Create short link error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /short-links — List user's short links (authenticated)
+app.get('/short-links', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Yetkisiz.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const uid = decoded.uid;
+
+        const snap = await db.ref('shortLinks').orderByChild('uid').equalTo(uid).once('value');
+        const links = [];
+        if (snap.exists()) {
+            snap.forEach(child => {
+                links.push({ code: child.key, ...child.val() });
+            });
+        }
+        links.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        res.json({ links });
+    } catch (err) {
+        console.error('List short links error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// DELETE /short-links/:code — Delete a short link (authenticated, owner only)
+app.delete('/short-links/:code', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Yetkisiz.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const uid = decoded.uid;
+
+        const { code } = req.params;
+        const snap = await db.ref('shortLinks/' + code).once('value');
+        if (!snap.exists()) return res.status(404).json({ error: 'Link bulunamadi.' });
+        if (snap.val().uid !== uid) return res.status(403).json({ error: 'Bu link size ait degil.' });
+
+        await db.ref('shortLinks/' + code).remove();
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Delete short link error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /r/:code — Redirect short link (public, no auth needed)
+app.get('/r/:code', async (req, res) => {
+    try {
+        const { code } = req.params;
+        const snap = await db.ref('shortLinks/' + code).once('value');
+        if (!snap.exists()) return res.status(404).json({ error: 'Link bulunamadi.' });
+
+        const data = snap.val();
+        // Increment clicks
+        await db.ref('shortLinks/' + code + '/clicks').set(admin.database.ServerValue.increment(1));
+        res.redirect(302, data.url);
+    } catch (err) {
+        console.error('Redirect short link error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /short-links/resolve/:code — Resolve short link without redirect (public)
+app.get('/short-links/resolve/:code', async (req, res) => {
+    try {
+        const { code } = req.params;
+        const snap = await db.ref('shortLinks/' + code).once('value');
+        if (!snap.exists()) return res.status(404).json({ error: 'Link bulunamadi.' });
+        const data = snap.val();
+        // Increment clicks
+        await db.ref('shortLinks/' + code + '/clicks').set(admin.database.ServerValue.increment(1));
+        res.json({ url: data.url });
+    } catch (err) {
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
 });
