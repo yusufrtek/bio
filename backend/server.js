@@ -166,7 +166,7 @@ app.post('/claim', authenticate, async (req, res) => {
 app.put('/page', authenticate, async (req, res) => {
     try {
         const uid = req.uid;
-        const { slug, displayName, bio, photoUrl, socials, blocks, customButtons, background, styles, layerOrder } = req.body;
+        const { slug, displayName, bio, photoUrl, socials, blocks, customButtons, background, styles, layerOrder, vitrin } = req.body;
 
         if (!slug) {
             return res.status(400).json({ error: 'Slug gerekli.' });
@@ -273,6 +273,16 @@ app.put('/page', authenticate, async (req, res) => {
             }
         }
 
+        // Sanitize vitrin settings (agency showcase)
+        let cleanVitrin = null;
+        if (vitrin && typeof vitrin === 'object') {
+            cleanVitrin = {
+                enabled: !!vitrin.enabled,
+                title: (vitrin.title || 'Uyelerimiz').trim().substring(0, 100),
+                agencyId: (vitrin.agencyId || '').trim().substring(0, 200)
+            };
+        }
+
         // Build page data
         const pageData = {
             uid: uid,
@@ -288,6 +298,7 @@ app.put('/page', authenticate, async (req, res) => {
             layerOrder: cleanLayerOrder,
             updatedAt: admin.database.ServerValue.TIMESTAMP
         };
+        if (cleanVitrin) pageData.vitrin = cleanVitrin;
 
         console.log('PUT /page - saving for slug:', slug, 'uid:', uid);
 
@@ -299,9 +310,10 @@ app.put('/page', authenticate, async (req, res) => {
         } else {
             const existingData = pageSnap.val();
             pageData.createdAt = existingData.createdAt || admin.database.ServerValue.TIMESTAMP;
-            // Preserve polls and questions references (they are managed by poll/question endpoints)
+            // Preserve polls, questions, and vitrin references
             if (existingData.polls) pageData.polls = existingData.polls;
             if (existingData.questions) pageData.questions = existingData.questions;
+            if (!pageData.vitrin && existingData.vitrin) pageData.vitrin = existingData.vitrin;
         }
 
         // Always use set to ensure complete overwrite (with preserved polls/questions)
@@ -2479,6 +2491,37 @@ app.get('/agency/public/:code', async (req, res) => {
             id: agencyId, name: agency.name, code: agency.code, logoUrl: agency.logoUrl || '',
             bio: agency.bio || '', socials: agency.socials || {}, badge: agency.badge || {},
             formFields: agency.formFields || [], members: membersList
+        });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// GET /agency/vitrin/:agencyId — Public vitrin members for bio page
+app.get('/agency/vitrin/:agencyId', async (req, res) => {
+    try {
+        const agencyId = req.params.agencyId;
+        const agencySnap = await db.ref('agencies/' + agencyId).once('value');
+        if (!agencySnap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agency = agencySnap.val();
+        const membersSnap = await db.ref('agencyMembers/' + agencyId).once('value');
+        const membersList = [];
+        if (membersSnap.exists()) {
+            for (const [uid, mData] of Object.entries(membersSnap.val())) {
+                const slug = mData.slug;
+                if (!slug) continue;
+                const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+                const page = pageSnap && pageSnap.exists() ? pageSnap.val() : {};
+                membersList.push({
+                    slug,
+                    displayName: mData.displayName || page.displayName || slug,
+                    photo: page.photoUrl || mData.photo || '',
+                    background: page.background || {}
+                });
+            }
+        }
+        res.json({
+            agencyName: agency.name || '',
+            agencyLogo: agency.logoUrl || '',
+            members: membersList
         });
     } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
 });
