@@ -93,6 +93,18 @@ app.post('/claim', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Bu slug kullanilamaz.' });
         }
 
+        // Block agency emails from creating personal pages
+        const userEmail = (req.email || '').toLowerCase();
+        const agenciesSnap = await db.ref('agencies').once('value');
+        if (agenciesSnap.exists()) {
+            const agencies = agenciesSnap.val();
+            for (const aId of Object.keys(agencies)) {
+                if ((agencies[aId].email || '').toLowerCase() === userEmail) {
+                    return res.status(403).json({ error: 'Bu e-posta bir ajansa ait. Ajans panelinden bio sayfasi olusturabilirsiniz.' });
+                }
+            }
+        }
+
         // Check if user already has a slug
         const existingSlug = await db.ref('slugByUid/' + uid).once('value');
         if (existingSlug.exists()) {
@@ -2308,8 +2320,113 @@ app.post('/agency/document', async (req, res) => {
 
 // ===== AGENCY BIO + FORM ENDPOINTS =====
 
-// PUT /agency/bio/:id — Save agency bio page settings
+// PUT /agency/bio/:id — Save agency bio page settings (full panel features)
 app.put('/agency/bio/:id', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const email = (decoded.email || '').toLowerCase();
+        const uid = decoded.uid;
+        const agencySnap = await db.ref('agencies/' + req.params.id).once('value');
+        if (!agencySnap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agency = agencySnap.val();
+        if (agency.email !== email && !ADMIN_EMAILS.includes(email)) return res.status(403).json({ error: 'Yetkiniz yok.' });
+        const { bio, socials, badge, formFields, bioSlug, displayName, photoUrl, blocks, customButtons, background, styles, layerOrder } = req.body;
+        const updates = {};
+        if (bio !== undefined) updates.bio = bio;
+        if (socials !== undefined) updates.socials = socials;
+        if (badge !== undefined) updates.badge = badge;
+        if (formFields !== undefined) updates.formFields = formFields;
+        if (displayName !== undefined) updates.bioDisplayName = displayName;
+        if (photoUrl !== undefined) updates.bioPhotoUrl = photoUrl;
+        if (blocks !== undefined) updates.bioBlocks = blocks;
+        if (customButtons !== undefined) updates.bioCustomButtons = customButtons;
+        if (background !== undefined) updates.bioBackground = background;
+        if (styles !== undefined) updates.bioStyles = styles;
+        if (layerOrder !== undefined) updates.bioLayerOrder = layerOrder;
+        if (bioSlug) updates.bioSlug = bioSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
+        await db.ref('agencies/' + req.params.id).update(updates);
+        res.json({ success: true });
+    } catch (err) { console.error('Agency bio error:', err); res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// POST /agency/claim-slug/:id — Agency claims a slug for their bio page
+app.post('/agency/claim-slug/:id', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const email = (decoded.email || '').toLowerCase();
+        const uid = decoded.uid;
+        const agencySnap = await db.ref('agencies/' + req.params.id).once('value');
+        if (!agencySnap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agency = agencySnap.val();
+        if (agency.email !== email && !ADMIN_EMAILS.includes(email)) return res.status(403).json({ error: 'Yetkiniz yok.' });
+
+        const { slug } = req.body;
+        if (!slug || slug.length < 2 || slug.length > 30) return res.status(400).json({ error: 'Slug 2-30 karakter arasi olmali.' });
+        if (!/^[a-z0-9]+$/.test(slug)) return res.status(400).json({ error: 'Slug sadece kucuk harf ve rakam icermelidir.' });
+
+        const reserved = ['admin', 'panel', 'api', 'login', 'register', 'settings', 'about', 'contact', 'help', 'support', 'dash', 'kisalt'];
+        if (reserved.includes(slug)) return res.status(400).json({ error: 'Bu slug kullanilamaz.' });
+
+        // If agency already has a slug and it's the same, just confirm
+        if (agency.bioSlug && agency.bioSlug === slug) {
+            // Re-ensure page exists
+            const pageSnap = await db.ref('pagesBySlug/' + slug).once('value');
+            if (!pageSnap.exists()) {
+                await db.ref('pagesBySlug/' + slug).set({
+                    uid: uid, slug: slug, displayName: agency.name || '', bio: agency.bio || '',
+                    photoUrl: agency.logoUrl || '', socials: agency.socials || {}, blocks: [],
+                    background: { color: '#000000', imageUrl: '', opacity: 1, pattern: 'none' },
+                    isAgency: true, agencyId: req.params.id,
+                    createdAt: admin.database.ServerValue.TIMESTAMP, updatedAt: admin.database.ServerValue.TIMESTAMP
+                });
+            }
+            return res.json({ success: true, slug });
+        }
+
+        // If agency had a different slug before, release it
+        if (agency.bioSlug && agency.bioSlug !== slug) {
+            const oldPage = await db.ref('pagesBySlug/' + agency.bioSlug).once('value');
+            if (oldPage.exists() && oldPage.val().isAgency && oldPage.val().agencyId === req.params.id) {
+                await db.ref('pagesBySlug/' + agency.bioSlug).remove();
+            }
+        }
+
+        // Check if slug taken by someone else (not this agency)
+        const existingPage = await db.ref('pagesBySlug/' + slug).once('value');
+        if (existingPage.exists()) {
+            const ep = existingPage.val();
+            if (!ep.isAgency || ep.agencyId !== req.params.id) {
+                return res.status(409).json({ error: 'Bu slug baskasi tarafindan alinmis.' });
+            }
+        }
+
+        // Also check slugByUid (personal slugs)
+        // No need — pagesBySlug check covers it
+
+        // Create page
+        await db.ref('pagesBySlug/' + slug).set({
+            uid: uid, slug: slug, displayName: agency.name || '', bio: agency.bio || '',
+            photoUrl: agency.logoUrl || '', socials: agency.socials || {}, blocks: [],
+            background: { color: '#000000', imageUrl: '', opacity: 1, pattern: 'none' },
+            isAgency: true, agencyId: req.params.id,
+            createdAt: admin.database.ServerValue.TIMESTAMP, updatedAt: admin.database.ServerValue.TIMESTAMP
+        });
+
+        // Save slug to agency
+        await db.ref('agencies/' + req.params.id).update({ bioSlug: slug });
+
+        res.json({ success: true, slug });
+    } catch (err) { console.error('Agency claim slug error:', err); res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// PUT /agency/page/:id — Save full agency bio page data (like /page PUT for users)
+app.put('/agency/page/:id', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
@@ -2320,16 +2437,25 @@ app.put('/agency/bio/:id', async (req, res) => {
         if (!agencySnap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
         const agency = agencySnap.val();
         if (agency.email !== email && !ADMIN_EMAILS.includes(email)) return res.status(403).json({ error: 'Yetkiniz yok.' });
-        const { bio, socials, badge, formFields, bioSlug } = req.body;
-        const updates = {};
-        if (bio !== undefined) updates.bio = bio;
-        if (socials !== undefined) updates.socials = socials;
-        if (badge !== undefined) updates.badge = badge;
-        if (formFields !== undefined) updates.formFields = formFields;
-        if (bioSlug) updates.bioSlug = bioSlug.toLowerCase().replace(/[^a-z0-9-]/g, '');
-        await db.ref('agencies/' + req.params.id).update(updates);
+
+        const slug = agency.bioSlug;
+        if (!slug) return res.status(400).json({ error: 'Ajans icin slug tanimlanmamis.' });
+
+        const { displayName, bio, photoUrl, socials, blocks, customButtons, background, styles, layerOrder } = req.body;
+        const updateData = { updatedAt: admin.database.ServerValue.TIMESTAMP };
+        if (displayName !== undefined) updateData.displayName = displayName;
+        if (bio !== undefined) updateData.bio = bio;
+        if (photoUrl !== undefined) updateData.photoUrl = photoUrl;
+        if (socials !== undefined) updateData.socials = socials;
+        if (blocks !== undefined) updateData.blocks = blocks;
+        if (customButtons !== undefined) updateData.customButtons = customButtons;
+        if (background !== undefined) updateData.background = background;
+        if (styles !== undefined) updateData.styles = styles;
+        if (layerOrder !== undefined) updateData.layerOrder = layerOrder;
+
+        await db.ref('pagesBySlug/' + slug).update(updateData);
         res.json({ success: true });
-    } catch (err) { console.error('Agency bio error:', err); res.status(500).json({ error: 'Sunucu hatasi.' }); }
+    } catch (err) { console.error('Agency page save error:', err); res.status(500).json({ error: 'Sunucu hatasi.' }); }
 });
 
 // GET /agency/public/:code — Public agency bio page data
