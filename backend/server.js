@@ -340,7 +340,7 @@ app.get('/page/:slug', async (req, res) => {
 
         const data = snap.val();
         // Return ALL public fields
-        res.json({
+        const response = {
             uid: data.uid,
             slug: data.slug,
             displayName: data.displayName,
@@ -352,7 +352,9 @@ app.get('/page/:slug', async (req, res) => {
             background: data.background || {},
             styles: data.styles || { photoStyle: 'circle', btnStyle: 'rounded', socialIconStyle: 'minimal', socialDisplayMode: 'button' },
             layerOrder: data.layerOrder || ['blocks', 'polls', 'qa', 'links']
-        });
+        };
+        if (data.vitrin) response.vitrin = data.vitrin;
+        res.json(response);
     } catch (err) {
         console.error('Get page error:', err);
         res.status(500).json({ error: 'Sunucu hatasi.' });
