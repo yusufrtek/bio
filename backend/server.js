@@ -798,8 +798,12 @@ async function authenticateAdmin(req, res, next) {
 }
 
 // ===== ADMIN: Check admin status =====
-app.get('/admin/check', authenticate, (req, res) => {
+app.get('/admin/check', authenticate, async (req, res) => {
     const isAdmin = ADMIN_EMAILS.includes((req.email || '').toLowerCase());
+    // Sync admin status to RTDB so client-side security rules work
+    if (isAdmin && req.uid) {
+        await db.ref('adminUsers/' + req.uid).set(true);
+    }
     res.json({ isAdmin });
 });
 
@@ -2100,6 +2104,168 @@ app.get('/short-links/resolve/:code', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: 'Sunucu hatasi.' });
     }
+});
+
+// ===== AGENCY ENDPOINTS =====
+
+// POST /admin/agencies — Create agency (admin only)
+app.post('/admin/agencies', authenticateAdmin, async (req, res) => {
+    try {
+        const { name, code, logoUrl, email } = req.body;
+        if (!name || !code || !email) return res.status(400).json({ error: 'Ajans adi, kodu ve email gerekli.' });
+        // Check code uniqueness
+        const existing = await db.ref('agencies').orderByChild('code').equalTo(code.toUpperCase()).once('value');
+        if (existing.exists()) return res.status(400).json({ error: 'Bu ajans kodu zaten kullaniliyor.' });
+        const agencyId = db.ref('agencies').push().key;
+        await db.ref('agencies/' + agencyId).set({
+            name, code: code.toUpperCase(), logoUrl: logoUrl || '', email: email.toLowerCase(),
+            createdAt: admin.database.ServerValue.TIMESTAMP
+        });
+        res.json({ id: agencyId, code: code.toUpperCase() });
+    } catch (err) { console.error('Create agency error:', err); res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// GET /admin/agencies — List all agencies (admin only)
+app.get('/admin/agencies', authenticateAdmin, async (req, res) => {
+    try {
+        const snap = await db.ref('agencies').once('value');
+        const agencies = [];
+        if (snap.exists()) {
+            for (const [id, data] of Object.entries(snap.val())) {
+                const membersSnap = await db.ref('agencyMembers/' + id).once('value');
+                agencies.push({ id, ...data, memberCount: membersSnap.exists() ? Object.keys(membersSnap.val()).length : 0 });
+            }
+        }
+        res.json({ agencies });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// DELETE /admin/agencies/:id — Delete agency (admin only)
+app.delete('/admin/agencies/:id', authenticateAdmin, async (req, res) => {
+    try {
+        await db.ref('agencies/' + req.params.id).remove();
+        await db.ref('agencyMembers/' + req.params.id).remove();
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// PUT /admin/agencies/:id — Update agency (admin only)
+app.put('/admin/agencies/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const { name, code, logoUrl, email } = req.body;
+        const updates = {};
+        if (name) updates.name = name;
+        if (code) updates.code = code.toUpperCase();
+        if (logoUrl !== undefined) updates.logoUrl = logoUrl;
+        if (email) updates.email = email.toLowerCase();
+        await db.ref('agencies/' + req.params.id).update(updates);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// POST /agency/join — User joins agency by code
+app.post('/agency/join', authenticate, async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code) return res.status(400).json({ error: 'Ajans kodu gerekli.' });
+        const snap = await db.ref('agencies').orderByChild('code').equalTo(code.toUpperCase()).once('value');
+        if (!snap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agencyId = Object.keys(snap.val())[0];
+        const agencyData = snap.val()[agencyId];
+        // Get user slug
+        const slugSnap = await db.ref('slugByUid/' + req.uid + '/slug').once('value');
+        const slug = slugSnap.exists() ? slugSnap.val() : '';
+        const pageSnap = slug ? await db.ref('pagesBySlug/' + slug).once('value') : null;
+        const displayName = (pageSnap && pageSnap.exists()) ? (pageSnap.val().title || slug) : slug;
+        await db.ref('agencyMembers/' + agencyId + '/' + req.uid).set({
+            joinedAt: admin.database.ServerValue.TIMESTAMP, slug, displayName
+        });
+        res.json({ success: true, agencyName: agencyData.name });
+    } catch (err) { console.error('Agency join error:', err); res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// GET /agency/my — Get user's current agency
+app.get('/agency/my', authenticate, async (req, res) => {
+    try {
+        const agenciesSnap = await db.ref('agencies').once('value');
+        if (!agenciesSnap.exists()) return res.json({ agency: null });
+        for (const [id, data] of Object.entries(agenciesSnap.val())) {
+            const memberSnap = await db.ref('agencyMembers/' + id + '/' + req.uid).once('value');
+            if (memberSnap.exists()) return res.json({ agency: { id, ...data }, member: memberSnap.val() });
+        }
+        res.json({ agency: null });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// POST /agency/leave — User leaves agency
+app.post('/agency/leave', authenticate, async (req, res) => {
+    try {
+        const { agencyId } = req.body;
+        await db.ref('agencyMembers/' + agencyId + '/' + req.uid).remove();
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// GET /agency/panel/:id — Agency panel data (agency email auth)
+app.get('/agency/panel/:id', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const email = (decoded.email || '').toLowerCase();
+        const agencySnap = await db.ref('agencies/' + req.params.id).once('value');
+        if (!agencySnap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agency = agencySnap.val();
+        // Check agency email or admin
+        if (agency.email !== email && !ADMIN_EMAILS.includes(email)) {
+            return res.status(403).json({ error: 'Bu ajansa erisim yetkiniz yok.' });
+        }
+        // Get members with stats
+        const membersSnap = await db.ref('agencyMembers/' + req.params.id).once('value');
+        const members = [];
+        if (membersSnap.exists()) {
+            for (const [uid, memberData] of Object.entries(membersSnap.val())) {
+                const slug = memberData.slug;
+                const pageSnap = slug ? await db.ref('pagesBySlug/' + slug).once('value') : null;
+                const page = pageSnap && pageSnap.exists() ? pageSnap.val() : {};
+                const viewsSnap = slug ? await db.ref('pageViews/' + slug).once('value') : null;
+                const views = viewsSnap && viewsSnap.exists() ? viewsSnap.val() : { daily: {}, hourly: {}, total: 0 };
+                members.push({
+                    uid, slug,
+                    displayName: memberData.displayName || page.title || slug,
+                    photo: page.photo || '',
+                    joinedAt: memberData.joinedAt,
+                    stats: { total: views.total || 0, daily: views.daily || {}, hourly: views.hourly || {} }
+                });
+            }
+        }
+        res.json({ agency: { id: req.params.id, ...agency }, members });
+    } catch (err) { console.error('Agency panel error:', err); res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// GET /agency/auth — Check agency access by email
+app.get('/agency/auth', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const email = (decoded.email || '').toLowerCase();
+        const agenciesSnap = await db.ref('agencies').once('value');
+        if (!agenciesSnap.exists()) return res.json({ agencies: [] });
+        const myAgencies = [];
+        for (const [id, data] of Object.entries(agenciesSnap.val())) {
+            if (data.email === email) myAgencies.push({ id, ...data });
+        }
+        // Also allow admins to see all
+        if (ADMIN_EMAILS.includes(email)) {
+            for (const [id, data] of Object.entries(agenciesSnap.val())) {
+                if (!myAgencies.find(a => a.id === id)) myAgencies.push({ id, ...data });
+            }
+        }
+        res.json({ agencies: myAgencies });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
 });
 
 // ===== Health =====
