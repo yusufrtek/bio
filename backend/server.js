@@ -2268,6 +2268,44 @@ app.get('/agency/auth', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
 });
 
+// POST /agency/document — Create agency report document
+app.post('/agency/document', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const email = (decoded.email || '').toLowerCase();
+        const { agencyId, memberUid, range } = req.body;
+        if (!agencyId) return res.status(400).json({ error: 'Ajans ID gerekli.' });
+        const agencySnap = await db.ref('agencies/' + agencyId).once('value');
+        if (!agencySnap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agency = agencySnap.val();
+        if (agency.email !== email && !ADMIN_EMAILS.includes(email)) return res.status(403).json({ error: 'Yetkiniz yok.' });
+        // Get members
+        const membersSnap = await db.ref('agencyMembers/' + agencyId).once('value');
+        let members = [];
+        if (membersSnap.exists()) {
+            for (const [uid, mData] of Object.entries(membersSnap.val())) {
+                if (memberUid && memberUid !== uid) continue;
+                const slug = mData.slug;
+                const pageSnap = slug ? await db.ref('pagesBySlug/' + slug).once('value') : null;
+                const page = pageSnap && pageSnap.exists() ? pageSnap.val() : {};
+                const viewsSnap = slug ? await db.ref('pageViews/' + slug).once('value') : null;
+                const views = viewsSnap && viewsSnap.exists() ? viewsSnap.val() : { daily: {}, total: 0 };
+                members.push({ uid, slug, displayName: mData.displayName || page.title || slug, photo: page.photo || '', stats: { total: views.total || 0, daily: views.daily || {} } });
+            }
+        }
+        // Generate doc number
+        let docNumber; let attempts = 0;
+        do { docNumber = generateDocNumber(); const ex = await db.ref('documents/' + docNumber).once('value'); if (!ex.exists()) break; attempts++; } while (attempts < 10);
+        const now = new Date();
+        const docData = { docNumber, type: 'agency', agencyId, agencyName: agency.name, agencyCode: agency.code, createdAt: now.toISOString(), createdAtTimestamp: admin.database.ServerValue.TIMESTAMP, range: range || 14, members, slug: 'ajans-' + agency.code.toLowerCase() };
+        await db.ref('documents/' + docNumber).set(docData);
+        res.json({ success: true, document: docData });
+    } catch (err) { console.error('Agency doc error:', err); res.status(500).json({ error: 'Belge olusturulamadi.' }); }
+});
+
 // ===== Health =====
 app.get('/health', (req, res) => {
     res.json({
