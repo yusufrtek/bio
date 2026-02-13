@@ -2306,6 +2306,94 @@ app.post('/agency/document', async (req, res) => {
     } catch (err) { console.error('Agency doc error:', err); res.status(500).json({ error: 'Belge olusturulamadi.' }); }
 });
 
+// ===== AGENCY BIO + FORM ENDPOINTS =====
+
+// PUT /agency/bio/:id — Save agency bio page settings
+app.put('/agency/bio/:id', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const email = (decoded.email || '').toLowerCase();
+        const agencySnap = await db.ref('agencies/' + req.params.id).once('value');
+        if (!agencySnap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agency = agencySnap.val();
+        if (agency.email !== email && !ADMIN_EMAILS.includes(email)) return res.status(403).json({ error: 'Yetkiniz yok.' });
+        const { bio, socials, badge, formFields, bioSlug } = req.body;
+        const updates = {};
+        if (bio !== undefined) updates.bio = bio;
+        if (socials !== undefined) updates.socials = socials;
+        if (badge !== undefined) updates.badge = badge;
+        if (formFields !== undefined) updates.formFields = formFields;
+        if (bioSlug) updates.bioSlug = bioSlug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        await db.ref('agencies/' + req.params.id).update(updates);
+        res.json({ success: true });
+    } catch (err) { console.error('Agency bio error:', err); res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// GET /agency/public/:code — Public agency bio page data
+app.get('/agency/public/:code', async (req, res) => {
+    try {
+        const snap = await db.ref('agencies').orderByChild('code').equalTo(req.params.code.toUpperCase()).once('value');
+        if (!snap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agencyId = Object.keys(snap.val())[0];
+        const agency = snap.val()[agencyId];
+        const membersSnap = await db.ref('agencyMembers/' + agencyId).once('value');
+        const membersList = [];
+        if (membersSnap.exists()) {
+            for (const [uid, mData] of Object.entries(membersSnap.val())) {
+                const slug = mData.slug;
+                const pageSnap = slug ? await db.ref('pagesBySlug/' + slug).once('value') : null;
+                const page = pageSnap && pageSnap.exists() ? pageSnap.val() : {};
+                membersList.push({ slug, displayName: mData.displayName || page.title || slug, photo: page.photo || '' });
+            }
+        }
+        res.json({
+            id: agencyId, name: agency.name, code: agency.code, logoUrl: agency.logoUrl || '',
+            bio: agency.bio || '', socials: agency.socials || {}, badge: agency.badge || {},
+            formFields: agency.formFields || [], members: membersList
+        });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// POST /agency/form-submit/:code — Public form submission
+app.post('/agency/form-submit/:code', async (req, res) => {
+    try {
+        const snap = await db.ref('agencies').orderByChild('code').equalTo(req.params.code.toUpperCase()).once('value');
+        if (!snap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agencyId = Object.keys(snap.val())[0];
+        const { answers } = req.body;
+        const submissionId = db.ref('agencyFormSubmissions/' + agencyId).push().key;
+        await db.ref('agencyFormSubmissions/' + agencyId + '/' + submissionId).set({
+            answers: answers || {}, submittedAt: admin.database.ServerValue.TIMESTAMP
+        });
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
+// GET /agency/form-submissions/:id — Get form submissions (agency owner)
+app.get('/agency/form-submissions/:id', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Yetkilendirme gerekli.' });
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        const email = (decoded.email || '').toLowerCase();
+        const agencySnap = await db.ref('agencies/' + req.params.id).once('value');
+        if (!agencySnap.exists()) return res.status(404).json({ error: 'Ajans bulunamadi.' });
+        const agency = agencySnap.val();
+        if (agency.email !== email && !ADMIN_EMAILS.includes(email)) return res.status(403).json({ error: 'Yetkiniz yok.' });
+        const snap = await db.ref('agencyFormSubmissions/' + req.params.id).once('value');
+        const submissions = [];
+        if (snap.exists()) {
+            for (const [id, data] of Object.entries(snap.val())) submissions.push({ id, ...data });
+        }
+        submissions.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+        res.json({ submissions });
+    } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+});
+
 // ===== Health =====
 app.get('/health', (req, res) => {
     res.json({
