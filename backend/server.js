@@ -374,7 +374,13 @@ app.get('/page/:slug', async (req, res) => {
         };
         if (data.vitrin) response.vitrin = data.vitrin;
         if (data.qaFormTitle) response.qaFormTitle = data.qaFormTitle;
-        if (data.formConfig) response.formConfig = data.formConfig;
+        if (data.formConfig) {
+            response.formConfig = data.formConfig;
+            // Firebase RTDB may convert arrays to objects with numeric keys
+            if (response.formConfig.fields && !Array.isArray(response.formConfig.fields)) {
+                response.formConfig.fields = Object.values(response.formConfig.fields);
+            }
+        }
         res.json(response);
     } catch (err) {
         console.error('Get page error:', err);
@@ -739,7 +745,9 @@ app.post('/form-submit/:slug', async (req, res) => {
         const pageSnap = await db.ref('pagesBySlug/' + slug + '/formConfig').once('value');
         if (pageSnap.exists()) {
             const fc = pageSnap.val();
-            const fields = fc.fields || [];
+            let rawFields = fc.fields || [];
+            if (!Array.isArray(rawFields)) rawFields = Object.values(rawFields);
+            const fields = rawFields;
             for (const f of fields) {
                 if (f.required) {
                     const ans = answers.find(a => a.fieldId === f.id);
@@ -805,7 +813,12 @@ app.get('/form-submissions/:slug', authenticate, async (req, res) => {
         const submissions = [];
         if (subsSnap.exists()) {
             subsSnap.forEach(child => {
-                submissions.push(child.val());
+                const sub = child.val();
+                // Firebase RTDB may convert arrays to objects
+                if (sub.answers && !Array.isArray(sub.answers)) {
+                    sub.answers = Object.values(sub.answers);
+                }
+                submissions.push(sub);
             });
         }
         // Reverse so newest first
