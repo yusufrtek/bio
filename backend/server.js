@@ -301,19 +301,26 @@ app.put('/page', authenticate, async (req, res) => {
         if (cleanVitrin) pageData.vitrin = cleanVitrin;
         if (qaFormTitle !== undefined) pageData.qaFormTitle = (qaFormTitle || 'Form').trim().substring(0, 100);
         if (formConfig !== undefined) {
-            pageData.formConfig = {
-                title: (formConfig.title || 'Form').trim().substring(0, 100),
-                description: (formConfig.description || '').trim().substring(0, 300),
-                enabled: formConfig.enabled !== false,
-                fields: (formConfig.fields || []).slice(0, 20).map(f => ({
+            const rawFormFields = Array.isArray(formConfig.fields) ? formConfig.fields : (formConfig.fields ? Object.values(formConfig.fields) : []);
+            const cleanFormFields = rawFormFields.slice(0, 20).map(f => {
+                const field = {
                     id: f.id || ('f_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6)),
                     label: (f.label || '').trim().substring(0, 200),
                     type: ['text', 'email', 'phone', 'textarea', 'select'].includes(f.type) ? f.type : 'text',
                     required: f.required !== false,
                     placeholder: (f.placeholder || '').trim().substring(0, 200),
-                    options: f.type === 'select' ? (f.options || []).slice(0, 10).map(o => (o || '').trim().substring(0, 100)) : undefined,
                     builtin: f.builtin || false
-                }))
+                };
+                if (f.type === 'select' && f.options) {
+                    field.options = (Array.isArray(f.options) ? f.options : Object.values(f.options)).slice(0, 10).map(o => (o || '').trim().substring(0, 100));
+                }
+                return field;
+            });
+            pageData.formConfig = {
+                title: (formConfig.title || 'Form').trim().substring(0, 100),
+                description: (formConfig.description || '').trim().substring(0, 300),
+                enabled: formConfig.enabled !== false,
+                fields: cleanFormFields
             };
         }
 
@@ -335,14 +342,28 @@ app.put('/page', authenticate, async (req, res) => {
             if (!pageData.formConfig && existingData.formConfig) pageData.formConfig = existingData.formConfig;
         }
 
+        // Remove any undefined values recursively (Firebase RTDB rejects undefined)
+        function cleanForFirebase(obj) {
+            if (obj === null || obj === undefined) return null;
+            if (typeof obj !== 'object') return obj;
+            // Preserve Firebase ServerValue sentinels
+            if (obj['.sv']) return obj;
+            if (Array.isArray(obj)) return obj.map(cleanForFirebase);
+            const cleaned = {};
+            for (const [k, v] of Object.entries(obj)) {
+                if (v !== undefined) cleaned[k] = cleanForFirebase(v);
+            }
+            return cleaned;
+        }
+
         // Always use set to ensure complete overwrite (with preserved polls/questions)
-        await db.ref('pagesBySlug/' + slug).set(pageData);
+        await db.ref('pagesBySlug/' + slug).set(cleanForFirebase(pageData));
 
         console.log('PUT /page - saved successfully for slug:', slug);
         res.json({ success: true });
     } catch (err) {
-        console.error('Update error:', err);
-        res.status(500).json({ error: 'Sunucu hatasi.' });
+        console.error('PUT /page error:', err.message, err.stack);
+        res.status(500).json({ error: 'Sunucu hatasi: ' + err.message });
     }
 });
 
