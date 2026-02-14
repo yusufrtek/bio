@@ -166,7 +166,7 @@ app.post('/claim', authenticate, async (req, res) => {
 app.put('/page', authenticate, async (req, res) => {
     try {
         const uid = req.uid;
-        const { slug, displayName, bio, photoUrl, socials, blocks, customButtons, background, styles, layerOrder, vitrin } = req.body;
+        const { slug, displayName, bio, photoUrl, socials, blocks, customButtons, background, styles, layerOrder, vitrin, qaFormTitle } = req.body;
 
         if (!slug) {
             return res.status(400).json({ error: 'Slug gerekli.' });
@@ -299,6 +299,7 @@ app.put('/page', authenticate, async (req, res) => {
             updatedAt: admin.database.ServerValue.TIMESTAMP
         };
         if (cleanVitrin) pageData.vitrin = cleanVitrin;
+        if (qaFormTitle !== undefined) pageData.qaFormTitle = (qaFormTitle || 'Form').trim().substring(0, 100);
 
         console.log('PUT /page - saving for slug:', slug, 'uid:', uid);
 
@@ -314,6 +315,7 @@ app.put('/page', authenticate, async (req, res) => {
             if (existingData.polls) pageData.polls = existingData.polls;
             if (existingData.questions) pageData.questions = existingData.questions;
             if (!pageData.vitrin && existingData.vitrin) pageData.vitrin = existingData.vitrin;
+            if (!pageData.qaFormTitle && existingData.qaFormTitle) pageData.qaFormTitle = existingData.qaFormTitle;
         }
 
         // Always use set to ensure complete overwrite (with preserved polls/questions)
@@ -354,6 +356,7 @@ app.get('/page/:slug', async (req, res) => {
             layerOrder: data.layerOrder || ['blocks', 'polls', 'qa', 'links']
         };
         if (data.vitrin) response.vitrin = data.vitrin;
+        if (data.qaFormTitle) response.qaFormTitle = data.qaFormTitle;
         res.json(response);
     } catch (err) {
         console.error('Get page error:', err);
