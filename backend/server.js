@@ -166,7 +166,7 @@ app.post('/claim', authenticate, async (req, res) => {
 app.put('/page', authenticate, async (req, res) => {
     try {
         const uid = req.uid;
-        const { slug, displayName, bio, photoUrl, socials, blocks, customButtons, background, styles, layerOrder, vitrin, qaFormTitle } = req.body;
+        const { slug, displayName, bio, photoUrl, socials, blocks, customButtons, background, styles, layerOrder, vitrin, qaFormTitle, formConfig } = req.body;
 
         if (!slug) {
             return res.status(400).json({ error: 'Slug gerekli.' });
@@ -300,6 +300,22 @@ app.put('/page', authenticate, async (req, res) => {
         };
         if (cleanVitrin) pageData.vitrin = cleanVitrin;
         if (qaFormTitle !== undefined) pageData.qaFormTitle = (qaFormTitle || 'Form').trim().substring(0, 100);
+        if (formConfig !== undefined) {
+            pageData.formConfig = {
+                title: (formConfig.title || 'Form').trim().substring(0, 100),
+                description: (formConfig.description || '').trim().substring(0, 300),
+                enabled: formConfig.enabled !== false,
+                fields: (formConfig.fields || []).slice(0, 20).map(f => ({
+                    id: f.id || ('f_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6)),
+                    label: (f.label || '').trim().substring(0, 200),
+                    type: ['text', 'email', 'phone', 'textarea', 'select'].includes(f.type) ? f.type : 'text',
+                    required: f.required !== false,
+                    placeholder: (f.placeholder || '').trim().substring(0, 200),
+                    options: f.type === 'select' ? (f.options || []).slice(0, 10).map(o => (o || '').trim().substring(0, 100)) : undefined,
+                    builtin: f.builtin || false
+                }))
+            };
+        }
 
         console.log('PUT /page - saving for slug:', slug, 'uid:', uid);
 
@@ -316,6 +332,7 @@ app.put('/page', authenticate, async (req, res) => {
             if (existingData.questions) pageData.questions = existingData.questions;
             if (!pageData.vitrin && existingData.vitrin) pageData.vitrin = existingData.vitrin;
             if (!pageData.qaFormTitle && existingData.qaFormTitle) pageData.qaFormTitle = existingData.qaFormTitle;
+            if (!pageData.formConfig && existingData.formConfig) pageData.formConfig = existingData.formConfig;
         }
 
         // Always use set to ensure complete overwrite (with preserved polls/questions)
@@ -357,6 +374,7 @@ app.get('/page/:slug', async (req, res) => {
         };
         if (data.vitrin) response.vitrin = data.vitrin;
         if (data.qaFormTitle) response.qaFormTitle = data.qaFormTitle;
+        if (data.formConfig) response.formConfig = data.formConfig;
         res.json(response);
     } catch (err) {
         console.error('Get page error:', err);
@@ -707,55 +725,62 @@ app.post('/questions/:questionId/answer', authenticate, async (req, res) => {
     }
 });
 
-// POST /form-submit/:slug — Submit all form answers as a single submission (public, optional auth)
+// POST /form-submit/:slug — Submit form (public, no auth required)
 app.post('/form-submit/:slug', async (req, res) => {
     try {
         const slug = req.params.slug;
-        const { answers, submitterName } = req.body;
-        // answers = [{ questionId, questionText, text }]
+        const { answers } = req.body;
+        // answers = [{ fieldId, label, type, value }]
         if (!answers || !Array.isArray(answers) || answers.length === 0) {
-            return res.status(400).json({ error: 'En az bir cevap gerekli.' });
+            return res.status(400).json({ error: 'Tum alanlari doldurun.' });
         }
 
-        // Get uid from token if provided
-        let uid = null;
-        let displayName = submitterName || 'Anonim';
-        let photoUrl = '';
-        const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            try {
-                const token = authHeader.split('Bearer ')[1];
-                const decoded = await admin.auth().verifyIdToken(token);
-                uid = decoded.uid;
-                const userRecord = await admin.auth().getUser(uid);
-                displayName = userRecord.displayName || displayName;
-                photoUrl = userRecord.photoURL || '';
-            } catch (e) { /* ignore auth errors for public submissions */ }
+        // Load page formConfig to validate required fields
+        const pageSnap = await db.ref('pagesBySlug/' + slug + '/formConfig').once('value');
+        if (pageSnap.exists()) {
+            const fc = pageSnap.val();
+            const fields = fc.fields || [];
+            for (const f of fields) {
+                if (f.required) {
+                    const ans = answers.find(a => a.fieldId === f.id);
+                    if (!ans || !(ans.value || '').trim()) {
+                        return res.status(400).json({ error: '"' + (f.label || 'Alan') + '" zorunludur.' });
+                    }
+                }
+                // Validate email format
+                if (f.type === 'email') {
+                    const ans = answers.find(a => a.fieldId === f.id);
+                    if (ans && ans.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ans.value.trim())) {
+                        return res.status(400).json({ error: 'Gecerli bir e-posta adresi girin.' });
+                    }
+                }
+                // Validate phone format
+                if (f.type === 'phone') {
+                    const ans = answers.find(a => a.fieldId === f.id);
+                    if (ans && ans.value && !/^[\d\s\+\-\(\)]{7,20}$/.test(ans.value.trim())) {
+                        return res.status(400).json({ error: 'Gecerli bir telefon numarasi girin.' });
+                    }
+                }
+            }
         }
 
         const subId = 'fsub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
         const submissionData = {
             id: subId,
             slug: slug,
-            uid: uid,
-            displayName: displayName,
-            photoUrl: photoUrl,
             answers: answers.map(a => ({
-                questionId: a.questionId,
-                questionText: a.questionText || '',
-                text: (a.text || '').trim().substring(0, 1000)
+                fieldId: a.fieldId || '',
+                label: (a.label || '').trim().substring(0, 200),
+                type: a.type || 'text',
+                value: (a.value || '').trim().substring(0, 2000)
             })),
             submittedAt: admin.database.ServerValue.TIMESTAMP
         };
 
         await db.ref('formSubmissions/' + slug + '/' + subId).set(submissionData);
 
-        // Also update individual answer counts
-        for (const a of answers) {
-            if (a.questionId) {
-                await db.ref('questions/' + a.questionId + '/answerCount').transaction(c => (c || 0) + 1);
-            }
-        }
+        // Increment submission count on page
+        await db.ref('pagesBySlug/' + slug + '/formSubmissionCount').transaction(c => (c || 0) + 1);
 
         res.json({ success: true, submissionId: subId });
     } catch (err) {
