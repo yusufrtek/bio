@@ -249,6 +249,8 @@ app.put('/page', authenticate, async (req, res) => {
             cleanStyles.socialIconStyle = allowedIconStyles.includes(styles.socialIconStyle) ? styles.socialIconStyle : 'minimal';
             const allowedDisplayModes = ['button', 'icon-only'];
             cleanStyles.socialDisplayMode = allowedDisplayModes.includes(styles.socialDisplayMode) ? styles.socialDisplayMode : 'button';
+            const allowedPageThemes = ['glass', 'light', 'dark', 'midnight'];
+            cleanStyles.pageTheme = allowedPageThemes.includes(styles.pageTheme) ? styles.pageTheme : 'glass';
         }
 
         // Sanitize customButtons (max 10)
