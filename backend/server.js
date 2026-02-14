@@ -707,6 +707,92 @@ app.post('/questions/:questionId/answer', authenticate, async (req, res) => {
     }
 });
 
+// POST /form-submit/:slug — Submit all form answers as a single submission (public, optional auth)
+app.post('/form-submit/:slug', async (req, res) => {
+    try {
+        const slug = req.params.slug;
+        const { answers, submitterName } = req.body;
+        // answers = [{ questionId, questionText, text }]
+        if (!answers || !Array.isArray(answers) || answers.length === 0) {
+            return res.status(400).json({ error: 'En az bir cevap gerekli.' });
+        }
+
+        // Get uid from token if provided
+        let uid = null;
+        let displayName = submitterName || 'Anonim';
+        let photoUrl = '';
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const token = authHeader.split('Bearer ')[1];
+                const decoded = await admin.auth().verifyIdToken(token);
+                uid = decoded.uid;
+                const userRecord = await admin.auth().getUser(uid);
+                displayName = userRecord.displayName || displayName;
+                photoUrl = userRecord.photoURL || '';
+            } catch (e) { /* ignore auth errors for public submissions */ }
+        }
+
+        const subId = 'fsub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        const submissionData = {
+            id: subId,
+            slug: slug,
+            uid: uid,
+            displayName: displayName,
+            photoUrl: photoUrl,
+            answers: answers.map(a => ({
+                questionId: a.questionId,
+                questionText: a.questionText || '',
+                text: (a.text || '').trim().substring(0, 1000)
+            })),
+            submittedAt: admin.database.ServerValue.TIMESTAMP
+        };
+
+        await db.ref('formSubmissions/' + slug + '/' + subId).set(submissionData);
+
+        // Also update individual answer counts
+        for (const a of answers) {
+            if (a.questionId) {
+                await db.ref('questions/' + a.questionId + '/answerCount').transaction(c => (c || 0) + 1);
+            }
+        }
+
+        res.json({ success: true, submissionId: subId });
+    } catch (err) {
+        console.error('Form submit error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// GET /form-submissions/:slug — Get grouped form submissions (auth, page owner only)
+app.get('/form-submissions/:slug', authenticate, async (req, res) => {
+    try {
+        const uid = req.uid;
+        const slug = req.params.slug;
+
+        // Verify ownership
+        const userSlugSnap = await db.ref('slugByUid/' + uid).once('value');
+        if (!userSlugSnap.exists() || userSlugSnap.val().slug !== slug) {
+            return res.status(403).json({ error: 'Bu slug size ait degil.' });
+        }
+
+        const subsSnap = await db.ref('formSubmissions/' + slug).orderByChild('submittedAt').once('value');
+        const submissions = [];
+        if (subsSnap.exists()) {
+            subsSnap.forEach(child => {
+                submissions.push(child.val());
+            });
+        }
+        // Reverse so newest first
+        submissions.reverse();
+
+        res.json({ submissions });
+    } catch (err) {
+        console.error('Get form submissions error:', err);
+        res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
 // POST /questions/:questionId/answers/:answerId/like — Like an answer (auth required)
 app.post('/questions/:questionId/answers/:answerId/like', authenticate, async (req, res) => {
     try {
@@ -2262,8 +2348,8 @@ app.get('/agency/panel/:id', async (req, res) => {
                 const views = viewsSnap && viewsSnap.exists() ? viewsSnap.val() : { daily: {}, hourly: {}, total: 0 };
                 members.push({
                     uid, slug,
-                    displayName: memberData.displayName || page.title || slug,
-                    photo: page.photo || '',
+                    displayName: memberData.displayName || page.displayName || page.title || slug,
+                    photo: page.photoUrl || page.photo || '',
                     joinedAt: memberData.joinedAt,
                     stats: { total: views.total || 0, daily: views.daily || {}, hourly: views.hourly || {} }
                 });
@@ -2322,7 +2408,7 @@ app.post('/agency/document', async (req, res) => {
                 const page = pageSnap && pageSnap.exists() ? pageSnap.val() : {};
                 const viewsSnap = slug ? await db.ref('pageViews/' + slug).once('value') : null;
                 const views = viewsSnap && viewsSnap.exists() ? viewsSnap.val() : { daily: {}, total: 0 };
-                members.push({ uid, slug, displayName: mData.displayName || page.title || slug, photo: page.photo || '', stats: { total: views.total || 0, daily: views.daily || {} } });
+                members.push({ uid, slug, displayName: mData.displayName || page.displayName || page.title || slug, photo: page.photoUrl || page.photo || '', stats: { total: views.total || 0, daily: views.daily || {} } });
             }
         }
         // Generate doc number
@@ -2489,7 +2575,7 @@ app.get('/agency/public/:code', async (req, res) => {
                 const slug = mData.slug;
                 const pageSnap = slug ? await db.ref('pagesBySlug/' + slug).once('value') : null;
                 const page = pageSnap && pageSnap.exists() ? pageSnap.val() : {};
-                membersList.push({ slug, displayName: mData.displayName || page.title || slug, photo: page.photo || '' });
+                membersList.push({ slug, displayName: mData.displayName || page.displayName || page.title || slug, photo: page.photoUrl || page.photo || '' });
             }
         }
         res.json({
