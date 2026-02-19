@@ -60,7 +60,7 @@ async function authenticate(req, res, next) {
         const decoded = await admin.auth().verifyIdToken(token);
         // Require email verification (skip for social sign-in — Google/X always verified)
         const provider = decoded.firebase && decoded.firebase.sign_in_provider;
-        const isSocial = provider === 'google.com' || provider === 'twitter.com';
+        const isSocial = provider === 'google.com' || provider === 'twitter.com' || provider === 'github.com';
         if (!isSocial && !decoded.email_verified) {
             return res.status(403).json({ error: 'E-posta adresiniz dogrulanmamis. Lutfen mailinizi kontrol edin.' });
         }
