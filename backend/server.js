@@ -58,9 +58,10 @@ async function authenticate(req, res, next) {
     const token = authHeader.split('Bearer ')[1];
     try {
         const decoded = await admin.auth().verifyIdToken(token);
-        // Require email verification (skip for Google sign-in — always verified)
-        const isGoogle = decoded.firebase && decoded.firebase.sign_in_provider === 'google.com';
-        if (!isGoogle && !decoded.email_verified) {
+        // Require email verification (skip for social sign-in — Google/X always verified)
+        const provider = decoded.firebase && decoded.firebase.sign_in_provider;
+        const isSocial = provider === 'google.com' || provider === 'twitter.com';
+        if (!isSocial && !decoded.email_verified) {
             return res.status(403).json({ error: 'E-posta adresiniz dogrulanmamis. Lutfen mailinizi kontrol edin.' });
         }
         req.uid = decoded.uid;
