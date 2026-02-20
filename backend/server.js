@@ -1118,11 +1118,42 @@ app.get('/admin/users/:uid', authenticateAdmin, async (req, res) => {
             pollCount: pollsSnap.exists() ? Object.keys(pollsSnap.val()).length : 0,
             questionCount: questionsSnap.exists() ? Object.keys(questionsSnap.val()).length : 0,
             lastSignIn: authUser.metadata ? authUser.metadata.lastSignInTime : null,
-            creationTime: authUser.metadata ? authUser.metadata.creationTime : null
+            creationTime: authUser.metadata ? authUser.metadata.creationTime : null,
+            provider: authUser.providerData ? authUser.providerData.map(p => p.providerId).join(', ') : '',
+            emailVerified: authUser.emailVerified || false,
+            subscription: (await db.ref('userSubscriptions/' + uid).once('value')).exists() ? (await db.ref('userSubscriptions/' + uid).once('value')).val().plan : 'basic'
         });
     } catch (err) {
         console.error('Admin get user error:', err);
         res.status(500).json({ error: 'Sunucu hatasi.' });
+    }
+});
+
+// ===== ADMIN: Send Password Reset Email =====
+app.post('/admin/users/:uid/reset-password', authenticateAdmin, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const authUser = await admin.auth().getUser(uid);
+        if (!authUser.email) return res.status(400).json({ error: 'Kullanicinin e-postasi yok.' });
+        const link = await admin.auth().generatePasswordResetLink(authUser.email);
+        res.json({ success: true, link });
+    } catch (err) {
+        console.error('Reset password error:', err);
+        res.status(500).json({ error: 'Sifre sifirlama hatasi: ' + err.message });
+    }
+});
+
+// ===== ADMIN: Send Email Verification =====
+app.post('/admin/users/:uid/verify-email', authenticateAdmin, async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const authUser = await admin.auth().getUser(uid);
+        if (!authUser.email) return res.status(400).json({ error: 'Kullanicinin e-postasi yok.' });
+        const link = await admin.auth().generateEmailVerificationLink(authUser.email);
+        res.json({ success: true, link });
+    } catch (err) {
+        console.error('Verify email error:', err);
+        res.status(500).json({ error: 'Dogrulama hatasi: ' + err.message });
     }
 });
 
