@@ -222,6 +222,10 @@ app.put('/page', authenticate, async (req, res) => {
                     return { type: 'youtube', url: (block.url || '').trim().substring(0, 500), id: idx };
                 } else if (type === 'spotify') {
                     return { type: 'spotify', url: (block.url || '').trim().substring(0, 500), id: idx };
+                } else if (type === 'kick') {
+                    return { type: 'kick', username: (block.username || '').trim().substring(0, 100), id: idx };
+                } else if (type === 'customEmbed') {
+                    return { type: 'customEmbed', embedCode: (block.embedCode || '').trim().substring(0, 5000), id: idx };
                 }
                 return null;
             }).filter(Boolean);
